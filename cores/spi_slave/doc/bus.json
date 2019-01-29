@@ -1,0 +1,8 @@
+{signal: [
+  {name: 'clk',    wave: 'p................' },  
+  {name: 'addr',   wave: 'x..3...........x.', data:['address'] },
+  {name: 'data',   wave: 'x....4x..5x...4x.', data:['d0', 'd1', 'd2']},
+  {name: 'first',  wave: 'x....1x..0x...0x.' },
+  {name: 'last',   wave: 'x....0x..0x...1x.' },
+  {name: 'strobe', wave: '0....10..10...10.' },
+]}
