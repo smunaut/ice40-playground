@@ -1,0 +1,49 @@
+#
+# core-rules.mk
+#
+
+# Save value
+THIS_CORE := $(CORE)
+
+# Default tools
+IVERILOG ?= iverilog
+
+ICE40_LIBS ?= $(shell yosys-config --datdir/ice40/cells_sim.v)
+
+
+# Must be first rule and call it 'all' by convention
+all: sim
+
+# Root directory
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
+
+# Temporary build-directory
+BUILD_TMP := $(abspath build-tmp)
+
+$(BUILD_TMP):
+	mkdir -p $(BUILD_TMP)
+
+# Discover all cores
+$(foreach core_dir, $(wildcard $(ROOT)/cores/*), $(eval include $(core_dir)/core.mk))
+
+# Resolve dependency tree for project and collect sources
+$(BUILD_TMP)/proj-deps.mk: Makefile $(BUILD_TMP) deps-core-$(THIS_CORE)
+	@echo "CORE_ALL_DEPS := $(DEPS_SOLVE_TMP)" > $@
+	@echo "CORE_ALL_SRCS := $(SRCS_SOLVE_TMP)" >> $@
+	@echo "CORE_ALL_PREREQ := $(PREREQ_SOLVE_TMP)" >> $@
+
+include $(BUILD_TMP)/proj-deps.mk
+
+# Simulation
+$(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(CORE_ALL_PREREQ) $(CORE_ALL_SRCS)
+	iverilog -Wall -DSIM=1 -o $@ $(ICE40_LIBS) $(CORE_ALL_SRCS) $<
+
+
+# Action targets
+sim: $(addprefix $(BUILD_TMP)/, $(TESTBENCHES_$(THIS_CORE)))
+
+clean:
+	@rm -Rf $(BUILD_TMP)
+
+
+.PHONY: all sim clean
