@@ -1,5 +1,5 @@
-# iCE40 Playground
-# ================
+iCE40 Playground
+================
 
 Collection of ip cores / modules and example projects for the
 Lattice iCE40 FPGA family.
