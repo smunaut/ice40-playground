@@ -1,0 +1,23 @@
+# nano-pmod
+set_io clk_lp 26       # 39A
+set_io clk_hs_p 38     # 50B
+set_io clk_hs_n 42     # 51A
+set_io dat_lp 25       # 36B
+set_io dat_hs_p 36     # 48B
+set_io dat_hs_n 28     # 41A Bodge wire !!!
+set_io lcd_reset_n 27  # 38B
+set_io bl_pwm 32       # 43A
+
+# SPI
+set_io spi_mosi 17
+set_io spi_miso 14
+set_io spi_cs_n 16
+set_io spi_clk 15
+
+# Leds
+set_io rgb[0] 39
+set_io rgb[1] 40
+set_io rgb[2] 41
+
+# Clock
+set_io clk_12m 35

@@ -1,0 +1,44 @@
+# nano-pmod
+	# PMOD 1A
+set_io clk_lp 46
+set_io clk_hs_p 4
+set_io clk_hs_n 2
+set_io dat_lp 44
+set_io dat_hs_p 47
+set_io dat_hs_n 45
+set_io lcd_reset_n 48
+set_io bl_pwm 3
+
+	# PMOD 1B
+#set_io clk_lp 32
+#set_io clk_hs_p 43
+#set_io clk_hs_n 38
+#set_io dat_lp 28
+#set_io dat_hs_p 34
+#set_io dat_hs_n 31
+#set_io lcd_reset_n 36
+#set_io bl_pwm 42
+
+	# PMOD 2
+#set_io clk_lp 20
+#set_io clk_hs_p 27
+#set_io clk_hs_n 25
+#set_io dat_lp 18
+#set_io dat_hs_p 21
+#set_io dat_hs_n 19
+#set_io lcd_reset_n 23
+#set_io bl_pwm 26
+
+# SPI
+set_io spi_mosi 14
+set_io spi_miso 17
+set_io spi_cs_n 11
+set_io spi_clk 15
+
+# Leds
+set_io rgb[0] 39
+set_io rgb[1] 40
+set_io rgb[2] 41
+
+# Clock
+set_io clk_12m 35
