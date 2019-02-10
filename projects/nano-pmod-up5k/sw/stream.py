@@ -138,6 +138,10 @@ class DSIControl(control.BoardControlBase):
 			(0x20 if self.transpose == DSIControl.TRANSPOSE_DCS else 0)
 		)
 
+		# Note. According to the DCS spec, mode.B3=0 should be RGB ... but
+		#       the nano display driver IC has an errata and it's actually
+		#       BGR order.
+
 		self.send_dsi_pkt(
 			dcs_short_write(0x11) +			# Exist sleep
 			dcs_short_write(0x29) +			# Display on
