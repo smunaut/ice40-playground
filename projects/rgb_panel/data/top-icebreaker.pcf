@@ -1,18 +1,31 @@
 # RGB panel pmod
-set_io -nowarn hub75_addr[4] 28	# B10
-set_io -nowarn hub75_addr[3] 31	# B4
-set_io -nowarn hub75_addr[2] 34	# B3
-set_io -nowarn hub75_addr[1] 38	# B2
-set_io -nowarn hub75_addr[0] 43	# B1
-set_io -nowarn hub75_data[5] 46	# A9
-set_io -nowarn hub75_data[4] 48	# A8
-set_io -nowarn hub75_data[3] 3	# A7
-set_io -nowarn hub75_data[2] 47	# A3
-set_io -nowarn hub75_data[1] 2	# A2
-set_io -nowarn hub75_data[0] 4	# A1
-set_io -nowarn hub75_clk 32	# B9
-set_io -nowarn hub75_le	36	# B8
-set_io -nowarn hub75_blank 42	# B7
+ # Data for panels with Red on pin 1/5 and Blue on pin 3/7
+set_io -nowarn hub75_data[5] 3  # A7 - Red   1
+set_io -nowarn hub75_data[4] 48 # A8 - Green 1
+set_io -nowarn hub75_data[3] 46 # A9 - Blue  1
+set_io -nowarn hub75_data[2] 4  # A1 - Red   0
+set_io -nowarn hub75_data[1] 2  # A2 - Green 0
+set_io -nowarn hub75_data[0] 47 # A3 - Blue  0
+
+ # Data for panels with Red on pin 3/7 and Blue on pin 1/5
+#set_io -nowarn hub75_data[5] 46 # A9 - Red   1
+#set_io -nowarn hub75_data[4] 48 # A8 - Green 1
+#set_io -nowarn hub75_data[3] 3  # A7 - Blue  1
+#set_io -nowarn hub75_data[2] 47 # A3 - Red   0
+#set_io -nowarn hub75_data[1] 2  # A2 - Green 0
+#set_io -nowarn hub75_data[0] 4  # A1 - Blue  0
+
+ # Row address
+set_io -nowarn hub75_addr[4] 28 # B10
+set_io -nowarn hub75_addr[3] 31 # B4
+set_io -nowarn hub75_addr[2] 34 # B3
+set_io -nowarn hub75_addr[1] 38 # B2
+set_io -nowarn hub75_addr[0] 43 # B1
+
+ # Control
+set_io -nowarn hub75_clk 32     # B9
+set_io -nowarn hub75_le 36      # B8
+set_io -nowarn hub75_blank 42   # B7
 
 # SPI Flash
 set_io -nowarn flash_mosi 14

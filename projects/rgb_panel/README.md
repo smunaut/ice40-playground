@@ -13,6 +13,28 @@ This example has 3 modes of operations explained below. Each
 mode is selected by uncommenting the appropriate `define` at the
 top of the `top.v` file.
 
+Pixel format
+------------
+
+The color mapping from the `BITDEPTH` wide word sent to the core and the
+data sent to the panels in the various channels is fully configurable by
+modifying the `hub75_colormap` module.
+
+The default however is to have the following pixel format for each bit depth:
+ * `BITDEPTH == 8` : `RGB332`
+ * `BITDEPTH == 16` : `RGB565`
+ * `BITDEPTH == 24` : `RGB888`
+(meaning with Red channel in the MSB of the word and sent as litte-endian).
+
+Then the channel mapping is to have :
+ * Channel 0 (`hub75_data[3*n+0]`) = Blue
+ * Channel 1 (`hub75_data[3*n+1]`) = Green
+ * Channel 2 (`hub75_data[3*n+2]`) = Red
+
+Check the file `data/top-icebreaker.pcf` to check that this data channel
+mapping matches your panels since several pinout have been seen in the
+wild.
+
 
 Pattern mode
 ------------
@@ -34,9 +56,9 @@ animation.
 
 To load your own animation in flash, checkout the `ADDR_BASE` and `N_FRAMES`
 parameters that tell the module where to look in flash for the image data.
-It needs to be raw frames, pixel format is either in `RGB332` or `RGB565`
-or `RGB888` depending on the `BITDEPTH` you selected. (Default is 16 bits and
-`RGB565`).
+
+Data needs to be raw frame in RGB565 format, independent of the `BITDEPTH`
+parameter. It will internally convert those to the appropriate bitdepth.
 
 
 Video streaming mode
