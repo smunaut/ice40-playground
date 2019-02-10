@@ -161,8 +161,8 @@ module pgen #(
 	generate
 		for (i=0; i<8; i=i+1)
 		begin
-			assign color[0][7-i] = cnt_col[LOG_N_COLS-1-(i%LOG_N_COLS)];
-			assign color[2][7-i] = cnt_row[LOG_N_ROWS-1-(i%LOG_N_ROWS)];
+			assign color[0][7-i] = cnt_row[LOG_N_ROWS-1-(i%LOG_N_ROWS)];
+			assign color[2][7-i] = cnt_col[LOG_N_COLS-1-(i%LOG_N_COLS)];
 		end
 	endgenerate
 
@@ -184,11 +184,11 @@ module pgen #(
 	// Map to color
 	generate
 		if (BITDEPTH == 8)
-			assign fbw_data = { color[0][7:5], color[1][7:5], color[2][7:6] };
+			assign fbw_data = { color[2][7:5], color[1][7:5], color[0][7:6] };
 		else if (BITDEPTH == 16)
-			assign fbw_data = { color[0][7:3], color[1][7:2], color[2][7:3] };
+			assign fbw_data = { color[2][7:3], color[1][7:2], color[0][7:3] };
 		else if (BITDEPTH == 24)
-			assign fbw_data = { color[0], color[1], color[2] };
+			assign fbw_data = { color[2], color[1], color[0] };
 	endgenerate
 
 

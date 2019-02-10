@@ -260,17 +260,17 @@ module vgen #(
 	assign fbw_col_addr = cnt_col[6:1];
 
 	// Map to color
-	assign color[0] = { sr_data16[15:11], sr_data16[15:13] };
+	assign color[2] = { sr_data16[15:11], sr_data16[15:13] };
 	assign color[1] = { sr_data16[10: 5], sr_data16[10: 9] };
-	assign color[2] = { sr_data16[ 4: 0], sr_data16[ 4: 2] };
+	assign color[0] = { sr_data16[ 4: 0], sr_data16[ 4: 2] };
 
 	generate
 		if (BITDEPTH == 8)
-			assign fbw_data = { color[0][7:5], color[1][7:5], color[2][7:6] };
+			assign fbw_data = { color[2][7:5], color[1][7:5], color[0][7:6] };
 		else if (BITDEPTH == 16)
-			assign fbw_data = { color[0][7:3], color[1][7:2], color[2][7:3] };
+			assign fbw_data = { color[2][7:3], color[1][7:2], color[0][7:3] };
 		else if (BITDEPTH == 24)
-			assign fbw_data = { color[0], color[1], color[2] };
+			assign fbw_data = { color[2], color[1], color[0] };
 	endgenerate
 
 
