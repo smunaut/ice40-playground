@@ -1,6 +1,7 @@
 CORE := misc
 
 RTL_SRCS_misc = $(addprefix rtl/, \
+	delay.v \
 	glitch_filter.v \
 	ram_sdp.v \
 	pwm.v \
