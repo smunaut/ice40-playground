@@ -123,8 +123,7 @@ module vid_shared_ram #(
 		else if (TYPE == "EBR")
 			SB_RAM40_4K #(
 				.WRITE_MODE(0),
-				.READ_MODE(0),
-				.INIT_FILE("test.hex")
+				.READ_MODE(0)
 			) ebr_I (
 				.RDATA(dout_2),
 				.RADDR({3'b000, addr_1}),
