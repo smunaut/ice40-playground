@@ -51,8 +51,14 @@ module delay_bit #(
 
 	reg [DELAY-1:0] dl;
 
-	always @(posedge clk)
-		dl <= { dl[DELAY-2:0], d };
+	generate
+		if (DELAY > 1)
+			always @(posedge clk)
+				dl <= { dl[DELAY-2:0], d };
+		else
+			always @(posedge clk)
+				dl <= d;
+	endgenerate
 
 	assign q = dl[DELAY-1];
 
