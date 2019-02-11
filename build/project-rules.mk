@@ -31,10 +31,11 @@ $(BUILD_TMP):
 $(foreach core_dir, $(wildcard $(ROOT)/cores/*), $(eval include $(core_dir)/core.mk))
 
 # Resolve dependency tree for project and collect sources
-$(BUILD_TMP)/proj-deps.mk: Makefile $(BUILD_TMP) $(addprefix deps-core-,$(PROJ_DEPS))
-	@echo "PROJ_ALL_DEPS := $(DEPS_SOLVE_TMP)" > $@
-	@echo "PROJ_ALL_SRCS := $(SRCS_SOLVE_TMP)" >> $@
-	@echo "PROJ_ALL_PREREQ := $(PREREQ_SOLVE_TMP)" >> $@
+$(BUILD_TMP)/proj-deps.mk: Makefile $(BUILD_TMP) $(addprefix $(BUILD_TMP)/deps-core-,$(PROJ_DEPS))
+	@echo "include $(BUILD_TMP)/deps-core-*" > $@
+	@echo "PROJ_ALL_DEPS := \$$(DEPS_SOLVE_TMP)" >> $@
+	@echo "PROJ_ALL_SRCS := \$$(SRCS_SOLVE_TMP)" >> $@
+	@echo "PROJ_ALL_PREREQ := \$$(PREREQ_SOLVE_TMP)" >> $@
 
 include $(BUILD_TMP)/proj-deps.mk
 

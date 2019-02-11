@@ -6,10 +6,8 @@ RTL_SRCS_$(CORE) := $(addprefix $(CORE_$(CORE)_DIR)/,$(RTL_SRCS_$(CORE)))
 TB_SRCS_$(CORE)  := $(addprefix $(CORE_$(CORE)_DIR)/,$(TB_SRCS_$(CORE)))
 
 # Dependency collection target
-deps-core-$(CORE): $(addprefix deps-core-,$(DEPS_$(CORE)))
-	$(eval CORE := $(subst deps-core-,,$@))
-	$(eval DEPS_SOLVE_TMP += $(CORE))
-	$(eval SRCS_SOLVE_TMP += $(RTL_SRCS_$(CORE)))
-	$(eval PREREQ_SOLVE_TMP += $(PREREQ_$(CORE)))
-
-.PHONY: deps-core-$(CORE)
+$(BUILD_TMP)/deps-core-$(CORE): $(CORE_$(CORE)_DIR)/core.mk $(addprefix $(BUILD_TMP)/deps-core-,$(DEPS_$(CORE)))
+	$(eval CORE := $(subst $(BUILD_TMP)/deps-core-,,$@))
+	@echo "DEPS_SOLVE_TMP += $(CORE)" > $@
+	@echo "SRCS_SOLVE_TMP += $(RTL_SRCS_$(CORE))" >> $@
+	@echo "PREREQ_SOLVE_TMP +=  $(PREREQ_$(CORE))" >> $@

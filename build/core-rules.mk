@@ -27,12 +27,14 @@ $(BUILD_TMP):
 $(foreach core_dir, $(wildcard $(ROOT)/cores/*), $(eval include $(core_dir)/core.mk))
 
 # Resolve dependency tree for project and collect sources
-$(BUILD_TMP)/proj-deps.mk: Makefile $(BUILD_TMP) deps-core-$(THIS_CORE)
-	@echo "CORE_ALL_DEPS := $(DEPS_SOLVE_TMP)" > $@
-	@echo "CORE_ALL_SRCS := $(SRCS_SOLVE_TMP)" >> $@
-	@echo "CORE_ALL_PREREQ := $(PREREQ_SOLVE_TMP)" >> $@
+$(BUILD_TMP)/core-deps.mk: Makefile $(BUILD_TMP) $(BUILD_TMP)/deps-core-$(THIS_CORE)
+	@echo "include $(BUILD_TMP)/deps-core-*" > $@
+	@echo "CORE_ALL_DEPS := \$$(DEPS_SOLVE_TMP)" >> $@
+	@echo "CORE_ALL_SRCS := \$$(SRCS_SOLVE_TMP)" >> $@
+	@echo "CORE_ALL_PREREQ := \$$(PREREQ_SOLVE_TMP)" >> $@
 
-include $(BUILD_TMP)/proj-deps.mk
+include $(BUILD_TMP)/core-deps.mk
+
 
 # Simulation
 $(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(CORE_ALL_PREREQ) $(CORE_ALL_SRCS)
