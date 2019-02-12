@@ -126,6 +126,15 @@ module hub75_top #(
 	assign scan_go = scan_rdy & ~frame_swap_pending;
 	assign frame_swap_fb = frame_swap_pending & scan_rdy;
 
+	// The signal direction usage legend to the right of the modules has the
+	// following structure:
+	// * Signal direction -> (output from the module)
+	// * Signal direction <- (input to the module)
+	// * top: signal is connected to top and exposed to the world
+	// * pad: signal is a gpio pad id the direction indicates if the pad is an
+	//        input (<-), output (->) or bidir (<->)
+	// * local: signal is conneted to some local module logic
+	// * hub75_*: signal is connected to the module hub75_*
 
 	// Frame Buffer
 	hub75_framebuffer #(
@@ -136,63 +145,63 @@ module hub75_top #(
 		.N_PLANES(N_PLANES),
 		.BITDEPTH(BITDEPTH)
 	) fb_I (
-		.wr_bank_addr(fbw_bank_addr),
-		.wr_row_addr(fbw_row_addr),
-		.wr_row_store(fbw_row_store),
-		.wr_row_rdy(fbw_row_rdy),
-		.wr_row_swap(fbw_row_swap),
-		.wr_data(fbw_data),
-		.wr_col_addr(fbw_col_addr),
-		.wr_en(fbw_wren),
-		.rd_row_addr(fbr_row_addr),
-		.rd_row_load(fbr_row_load),
-		.rd_row_rdy(fbr_row_rdy),
-		.rd_row_swap(fbr_row_swap),
-		.rd_data(fbr_data),
-		.rd_col_addr(fbr_col_addr),
-		.rd_en(fbr_rden),
-		.frame_swap(frame_swap_fb),
-		.clk(clk),
-		.rst(rst)
+		.wr_bank_addr(fbw_bank_addr),	// <- top
+		.wr_row_addr(fbw_row_addr),		// <- top
+		.wr_row_store(fbw_row_store),	// <- top
+		.wr_row_rdy(fbw_row_rdy),		// -> top
+		.wr_row_swap(fbw_row_swap),		// <- top
+		.wr_data(fbw_data),				// <- top
+		.wr_col_addr(fbw_col_addr),		// <- top
+		.wr_en(fbw_wren),				// <- top
+		.rd_row_addr(fbr_row_addr),		// <- hub75_scan
+		.rd_row_load(fbr_row_load),		// <- hub75_scan
+		.rd_row_rdy(fbr_row_rdy),		// -> hub75_scan
+		.rd_row_swap(fbr_row_swap),		// <- hub75_scan
+		.rd_data(fbr_data),				// -> hub75_shift
+		.rd_col_addr(fbr_col_addr),		// <- hub75_shift
+		.rd_en(fbr_rden),				// <- hub75_shift
+		.frame_swap(frame_swap_fb),		// <- local
+		.clk(clk),						// <- top
+		.rst(rst)						// <- top
 	);
 
 	// Scan
 	hub75_scan #(
 		.N_ROWS(N_ROWS)
 	) scan_I (
-		.bcm_row(bcm_row),
-		.bcm_go(bcm_go),
-		.bcm_rdy(bcm_rdy),
-		.fb_row_addr(fbr_row_addr),
-		.fb_row_load(fbr_row_load),
-		.fb_row_rdy(fbr_row_rdy),
-		.fb_row_swap(fbr_row_swap),
-		.ctrl_go(scan_go),
-		.ctrl_rdy(scan_rdy),
-		.clk(clk),
-		.rst(rst)
+		.bcm_row(bcm_row),				// -> hub75_bcm
+		.bcm_go(bcm_go),				// -> hub75_bcm
+		.bcm_rdy(bcm_rdy),				// <- hub75_bcm
+		.fb_row_addr(fbr_row_addr),		// -> hub75_framebuffer
+		.fb_row_load(fbr_row_load),		// -> hub75_framebuffer
+		.fb_row_rdy(fbr_row_rdy),		// <- hub75_framebuffer
+		.fb_row_swap(fbr_row_swap),		// -> hub75_framebuffer
+		.ctrl_go(scan_go),				// <- local
+		.ctrl_rdy(scan_rdy),			// -> local
+		.clk(clk),						// <- top
+		.rst(rst)						// <- top
 	);
 
 	// Binary Code Modulator control
 	hub75_bcm #(
 		.N_PLANES(N_PLANES)
 	) bcm_I (
-		.hub75_addr(hub75_addr),
-		.hub75_le(hub75_le),
-		.shift_plane(shift_plane),
-		.shift_go(shift_go),
-		.shift_rdy(shift_rdy),
-		.blank_plane(blank_plane),
-		.blank_go(blank_go),
-		.blank_rdy(blank_rdy),
-		.ctrl_row(bcm_row),
-		.ctrl_go(bcm_go),
-		.ctrl_rdy(bcm_rdy),
-		.cfg_pre_latch_len(cfg_pre_latch_len),
-		.cfg_latch_len(cfg_latch_len),
-		.cfg_post_latch_len(cfg_post_latch_len),
-		.clk(clk),
-		.rst(rst)
+		.hub75_addr(hub75_addr),		// -> pad
+		.hub75_le(hub75_le),			// -> pad
+		.shift_plane(shift_plane),		// -> hub75_shift
+		.shift_go(shift_go),			// -> hub75_shift
+		.shift_rdy(shift_rdy),			// <- hub75_shift
+		.blank_plane(blank_plane),		// -> hub75_blanking
+		.blank_go(blank_go),			// -> hub75_blanking
+		.blank_rdy(blank_rdy),			// <- hub75_blanking
+		.ctrl_row(bcm_row),				// <- hub75_scan
+		.ctrl_go(bcm_go),				// <- hub75_scan
+		.ctrl_rdy(bcm_rdy),				// -> hub75_scan
+		.cfg_pre_latch_len(cfg_pre_latch_len),		// <- top
+		.cfg_latch_len(cfg_latch_len),				// <- top
+		.cfg_post_latch_len(cfg_post_latch_len),	// <- top
+		.clk(clk),						// <- top
+		.rst(rst)						// <- top
 	);
 
 	// Shifter
@@ -202,29 +211,29 @@ module hub75_top #(
 		.N_CHANS(N_CHANS),
 		.N_PLANES(N_PLANES)
 	) shift_I (
-		.hub75_data(hub75_data),
-		.hub75_clk(hub75_clk),
-		.ram_data(fbr_data),
-		.ram_col_addr(fbr_col_addr),
-		.ram_rden(fbr_rden),
-		.ctrl_plane(shift_plane),
-		.ctrl_go(shift_go),
-		.ctrl_rdy(shift_rdy),
-		.clk(clk),
-		.rst(rst)
+		.hub75_data(hub75_data),		// -> pad
+		.hub75_clk(hub75_clk),			// -> pad
+		.ram_data(fbr_data),			// <- hub75_framebuffer
+		.ram_col_addr(fbr_col_addr),	// -> hub75_framebuffer
+		.ram_rden(fbr_rden),			// -> hub75_framebuffer
+		.ctrl_plane(shift_plane),		// <- hub75_bcm
+		.ctrl_go(shift_go),				// <- hub75_bcm
+		.ctrl_rdy(shift_rdy),			// -> hub75_bcm
+		.clk(clk),						// <- top
+		.rst(rst)						// <- top
 	);
 
 	// Blanking control
 	hub75_blanking #(
 		.N_PLANES(N_PLANES)
 	) blank_I (
-		.hub75_blank(hub75_blank),
-		.ctrl_plane(blank_plane),
-		.ctrl_go(blank_go),
-		.ctrl_rdy(blank_rdy),
-		.cfg_bcm_bit_len(cfg_bcm_bit_len),
-		.clk(clk),
-		.rst(rst)
+		.hub75_blank(hub75_blank),		// -> pad
+		.ctrl_plane(blank_plane),		// <- hub75_bcm
+		.ctrl_go(blank_go),				// <- hub75_bcm
+		.ctrl_rdy(blank_rdy),			// -> hub75_bcm
+		.cfg_bcm_bit_len(cfg_bcm_bit_len),	// <- top
+		.clk(clk),						// <- top
+		.rst(rst)						// <- top
 	);
 
 endmodule // hub75_top
