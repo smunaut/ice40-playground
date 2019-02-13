@@ -11,6 +11,7 @@ RTL_SRCS_hub75 := $(addprefix rtl/, \
 	hub75_framebuffer.v \
 	hub75_gamma.v \
 	hub75_linebuffer.v \
+	hub75_phy.v \
 	hub75_scan.v \
 	hub75_shift.v \
 	hub75_top.v \
