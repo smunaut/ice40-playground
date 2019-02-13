@@ -32,9 +32,9 @@ module hub75_bcm #(
 	// Auto-set
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS)
 )(
-	// Hub75 interface
-	output wire [LOG_N_ROWS-1:0] hub75_addr,
-	output wire hub75_le,
+	// PHY
+	output wire [LOG_N_ROWS-1:0] phy_addr,
+	output wire phy_le,
 
 	// Shifter interface
 	output wire [N_PLANES-1:0] shift_plane,
@@ -200,36 +200,10 @@ module hub75_bcm #(
 	assign ctrl_rdy = (fsm_state == ST_IDLE);
 
 
-	// IOBs
-	// ----
+	// PHY
+	// ---
 
-	// Address
-	generate
-		for (i=0; i<LOG_N_ROWS; i=i+1)
-			SB_IO #(
-				.PIN_TYPE(6'b010100),
-				.PULLUP(1'b0),
-				.NEG_TRIGGER(1'b0),
-				.IO_STANDARD("SB_LVCMOS")
-			) iob_addr_I (
-				.PACKAGE_PIN(hub75_addr[i]),
-				.CLOCK_ENABLE(1'b1),
-				.OUTPUT_CLK(clk),
-				.D_OUT_0(addr_out[i])
-			);
-	endgenerate
-
-	// Latch
-	SB_IO #(
-		.PIN_TYPE(6'b010100),
-		.PULLUP(1'b0),
-		.NEG_TRIGGER(1'b0),
-		.IO_STANDARD("SB_LVCMOS")
-	) iob_le_I (
-		.PACKAGE_PIN(hub75_le),
-		.CLOCK_ENABLE(1'b1),
-		.OUTPUT_CLK(clk),
-		.D_OUT_0(le)
-	);
+	assign phy_addr = addr_out;
+	assign phy_le = le;
 
 endmodule // hub75_bcm

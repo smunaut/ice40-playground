@@ -28,8 +28,8 @@
 module hub75_blanking #(
 	parameter integer N_PLANES = 8
 )(
-	// Hub75 interface
-	output wire hub75_blank,
+	// PHY
+	output wire phy_blank,
 
 	// Control
 	input  wire [N_PLANES-1:0] ctrl_plane,
@@ -82,20 +82,9 @@ module hub75_blanking #(
 	assign ctrl_rdy = ~active;
 
 
-	// IOBs
-	// ----
+	// PHY
+	// ---
 
-	// Blanking
-	SB_IO #(
-		.PIN_TYPE(6'b010100),
-		.PULLUP(1'b0),
-		.NEG_TRIGGER(1'b0),
-		.IO_STANDARD("SB_LVCMOS")
-	) iob_blank_I (
-		.PACKAGE_PIN(hub75_blank),
-		.CLOCK_ENABLE(1'b1),
-		.OUTPUT_CLK(clk),
-		.D_OUT_0(~active)
-	);
+	assign phy_blank = ~active;
 
 endmodule // hub75_blanking

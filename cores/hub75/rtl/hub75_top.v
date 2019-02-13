@@ -38,7 +38,7 @@ module hub75_top #(
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS),
 	parameter integer LOG_N_COLS  = $clog2(N_COLS)
 )(
-	// Hub75 interface
+	// Hub75 interface pads
 	output wire [LOG_N_ROWS-1:0] hub75_addr,
 	output wire [(N_BANKS*N_CHANS)-1:0] hub75_data,
 	output wire hub75_clk,
@@ -79,6 +79,13 @@ module hub75_top #(
 	// Frame swap logic
 	reg  frame_swap_pending;
 	wire frame_swap_fb;
+
+	// PHY interface
+	wire [LOG_N_ROWS-1:0] phy_addr;
+	wire [(N_BANKS*N_CHANS)-1:0] phy_data;
+	wire phy_clk;
+	wire phy_le;
+	wire phy_blank;
 
 	// Frame Buffer access
 		// Read - Back Buffer loading
@@ -186,8 +193,8 @@ module hub75_top #(
 	hub75_bcm #(
 		.N_PLANES(N_PLANES)
 	) bcm_I (
-		.hub75_addr(hub75_addr),		// -> pad
-		.hub75_le(hub75_le),			// -> pad
+		.phy_addr(phy_addr),			// -> hub75_phy
+		.phy_le(phy_le),				// -> hub75_phy
 		.shift_plane(shift_plane),		// -> hub75_shift
 		.shift_go(shift_go),			// -> hub75_shift
 		.shift_rdy(shift_rdy),			// <- hub75_shift
@@ -211,8 +218,8 @@ module hub75_top #(
 		.N_CHANS(N_CHANS),
 		.N_PLANES(N_PLANES)
 	) shift_I (
-		.hub75_data(hub75_data),		// -> pad
-		.hub75_clk(hub75_clk),			// -> pad
+		.phy_data(phy_data),			// -> hub75_phy
+		.phy_clk(phy_clk),				// -> hub75_phy
 		.ram_data(fbr_data),			// <- hub75_framebuffer
 		.ram_col_addr(fbr_col_addr),	// -> hub75_framebuffer
 		.ram_rden(fbr_rden),			// -> hub75_framebuffer
@@ -227,11 +234,31 @@ module hub75_top #(
 	hub75_blanking #(
 		.N_PLANES(N_PLANES)
 	) blank_I (
-		.hub75_blank(hub75_blank),		// -> pad
+		.phy_blank(phy_blank),			// -> hub75_phy
 		.ctrl_plane(blank_plane),		// <- hub75_bcm
 		.ctrl_go(blank_go),				// <- hub75_bcm
 		.ctrl_rdy(blank_rdy),			// -> hub75_bcm
 		.cfg_bcm_bit_len(cfg_bcm_bit_len),	// <- top
+		.clk(clk),						// <- top
+		.rst(rst)						// <- top
+	);
+
+	// Physical layer control
+	hub75_phy #(
+		.N_BANKS(N_BANKS),
+		.N_ROWS(N_ROWS),
+		.N_CHANS(N_CHANS)
+	) phy_I (
+		.hub75_addr(hub75_addr),		// -> pad
+		.hub75_data(hub75_data),		// -> pad
+		.hub75_clk(hub75_clk),			// -> pad
+		.hub75_le(hub75_le),			// -> pad
+		.hub75_blank(hub75_blank),		// -> pad
+		.phy_addr(phy_addr),			// <- hub75_bcm
+		.phy_data(phy_data),			// <- hub75_shift
+		.phy_clk(phy_clk),				// <- hub75_shift
+		.phy_le(phy_le),				// <- hub75_bcm
+		.phy_blank(phy_blank),			// <- hub75_blanking
 		.clk(clk),						// <- top
 		.rst(rst)						// <- top
 	);

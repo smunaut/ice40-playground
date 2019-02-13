@@ -34,9 +34,9 @@ module hub75_shift #(
 	// Auto-set
 	parameter integer LOG_N_COLS  = $clog2(N_COLS)
 )(
-	// Hub75 interface
-	output wire [(N_BANKS*N_CHANS)-1:0] hub75_data,
-	output wire hub75_clk,
+	// PHY
+	output wire [(N_BANKS*N_CHANS)-1:0] phy_data,
+	output wire phy_clk,
 
 	// RAM interface
 	input  wire [(N_BANKS*N_CHANS*N_PLANES)-1:0] ram_data,
@@ -61,7 +61,6 @@ module hub75_shift #(
 	reg active_0;
 	reg active_1;
 	reg active_2;
-	reg active_3;
 	reg [LOG_N_COLS:0] cnt_0;
 	reg cnt_last_0;
 
@@ -78,12 +77,10 @@ module hub75_shift #(
 			active_0 <= 1'b0;
 			active_1 <= 1'b0;
 			active_2 <= 1'b0;
-			active_3 <= 1'b0;
 		end else begin
 			active_0 <= (active_0 & ~cnt_last_0) | ctrl_go;
 			active_1 <= active_0;
 			active_2 <= active_1;
-			active_3 <= active_2;
 		end
 
 	// Counter
@@ -118,37 +115,10 @@ module hub75_shift #(
 		data_2 <= ram_data_bit;
 
 
-	// IOBs
-	// ----
+	// PHY
+	// ---
 
-	// Data lines
-	generate
-		for (i=0; i<(N_BANKS*N_CHANS); i=i+1)
-			SB_IO #(
-				.PIN_TYPE(6'b010100),
-				.PULLUP(1'b0),
-				.NEG_TRIGGER(1'b0),
-				.IO_STANDARD("SB_LVCMOS")
-			) iob_data_I (
-				.PACKAGE_PIN(hub75_data[i]),
-				.CLOCK_ENABLE(1'b1),
-				.OUTPUT_CLK(clk),
-				.D_OUT_0(data_2[i])
-			);
-	endgenerate
-
-	// Clock DDR register
-    SB_IO #(
-        .PIN_TYPE(6'b010000),
-        .PULLUP(1'b0),
-        .NEG_TRIGGER(1'b0),
-        .IO_STANDARD("SB_LVCMOS")
-    ) iob_clk_I (
-        .PACKAGE_PIN(hub75_clk),
-        .CLOCK_ENABLE(1'b1),
-        .OUTPUT_CLK(clk),
-        .D_OUT_0(1'b0),
-        .D_OUT_1(active_3)	// Falling edge, so need one more delay so it's not too early !
-    );
+	assign phy_data = data_2;
+	assign phy_clk = active_2;
 
 endmodule // hub75_shift
