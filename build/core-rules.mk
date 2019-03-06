@@ -30,15 +30,16 @@ $(foreach core_dir, $(wildcard $(ROOT)/cores/*), $(eval include $(core_dir)/core
 $(BUILD_TMP)/core-deps.mk: Makefile $(BUILD_TMP) $(BUILD_TMP)/deps-core-$(THIS_CORE)
 	@echo "include $(BUILD_TMP)/deps-core-*" > $@
 	@echo "CORE_ALL_DEPS := \$$(DEPS_SOLVE_TMP)" >> $@
-	@echo "CORE_ALL_SRCS := \$$(SRCS_SOLVE_TMP)" >> $@
+	@echo "CORE_ALL_RTL_SRCS := \$$(RTL_SRCS_SOLVE_TMP)" >> $@
+	@echo "CORE_ALL_SIM_SRCS := \$$(SIM_SRCS_SOLVE_TMP)" >> $@
 	@echo "CORE_ALL_PREREQ := \$$(PREREQ_SOLVE_TMP)" >> $@
 
 include $(BUILD_TMP)/core-deps.mk
 
 
 # Simulation
-$(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(CORE_ALL_PREREQ) $(CORE_ALL_SRCS)
-	iverilog -Wall -DSIM=1 -o $@ $(ICE40_LIBS) $(CORE_ALL_SRCS) $<
+$(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(CORE_ALL_PREREQ) $(CORE_ALL_RTL_SRCS) $(CORE_ALL_SIM_SRCS)
+	iverilog -Wall -DSIM=1 -o $@ $(ICE40_LIBS) $(CORE_ALL_RTL_SRCS) $(CORE_ALL_SIM_SRCS) $<
 
 
 # Action targets

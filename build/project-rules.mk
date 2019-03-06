@@ -34,7 +34,8 @@ $(foreach core_dir, $(wildcard $(ROOT)/cores/*), $(eval include $(core_dir)/core
 $(BUILD_TMP)/proj-deps.mk: Makefile $(BUILD_TMP) $(addprefix $(BUILD_TMP)/deps-core-,$(PROJ_DEPS))
 	@echo "include $(BUILD_TMP)/deps-core-*" > $@
 	@echo "PROJ_ALL_DEPS := \$$(DEPS_SOLVE_TMP)" >> $@
-	@echo "PROJ_ALL_SRCS := \$$(SRCS_SOLVE_TMP)" >> $@
+	@echo "PROJ_ALL_RTL_SRCS := \$$(RTL_SRCS_SOLVE_TMP)" >> $@
+	@echo "PROJ_ALL_SIM_SRCS := \$$(SIM_SRCS_SOLVE_TMP)" >> $@
 	@echo "PROJ_ALL_PREREQ := \$$(PREREQ_SOLVE_TMP)" >> $@
 
 include $(BUILD_TMP)/proj-deps.mk
@@ -46,17 +47,18 @@ PROJ_TOP_SRC  := $(abspath $(PROJ_TOP_SRC))
 PIN_DEF ?= $(abspath data/$(PROJ_TOP_MOD)-$(BOARD).pcf)
 
 # Add those to the list
-PROJ_ALL_SRCS += $(PROJ_RTL_SRCS)
+PROJ_ALL_RTL_SRCS += $(PROJ_RTL_SRCS)
+PROJ_ALL_SIM_SRCS += $(PROJ_SIM_SRCS)
 PROJ_ALL_PREREQ += $(PROJ_PREREQ)
 
 
 # Synthesis & Place-n-route rules
 
-$(BUILD_TMP)/$(PROJ).ys: $(PROJ_TOP_SRC) $(PROJ_ALL_SRCS)
-	@echo "read_verilog $(YOSYS_READ_ARGS) $(PROJ_TOP_SRC) $(PROJ_ALL_SRCS)" > $@
+$(BUILD_TMP)/$(PROJ).ys: $(PROJ_TOP_SRC) $(PROJ_ALL_RTL_SRCS)
+	@echo "read_verilog $(YOSYS_READ_ARGS) $(PROJ_TOP_SRC) $(PROJ_ALL_RTL_SRCS)" > $@
 	@echo "synth_ice40 $(YOSYS_SYNTH_ARGS) -top $(PROJ_TOP_MOD) -json $(PROJ).json" >> $@
 
-$(BUILD_TMP)/$(PROJ).synth.rpt $(BUILD_TMP)/$(PROJ).json: $(PROJ_ALL_PREREQ) $(BUILD_TMP)/$(PROJ).ys $(PROJ_ALL_SRCS)
+$(BUILD_TMP)/$(PROJ).synth.rpt $(BUILD_TMP)/$(PROJ).json: $(PROJ_ALL_PREREQ) $(BUILD_TMP)/$(PROJ).ys $(PROJ_ALL_RTL_SRCS)
 	cd $(BUILD_TMP) && \
 		$(YOSYS) -s $(BUILD_TMP)/$(PROJ).ys \
 			 -l $(BUILD_TMP)/$(PROJ).synth.rpt
@@ -74,8 +76,8 @@ $(BUILD_TMP)/$(PROJ).pnr.rpt $(BUILD_TMP)/$(PROJ).asc: $(BUILD_TMP)/$(PROJ).json
 
 
 # Simulation
-$(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(PROJ_ALL_PREREQ) $(PROJ_ALL_SRCS)
-	iverilog -Wall -DSIM=1 -o $@ $(ICE40_LIBS) $(PROJ_ALL_SRCS) $<
+$(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(PROJ_ALL_PREREQ) $(PROJ_ALL_RTL_SRCS) $(PROJ_ALL_SIM_SRCS)
+	iverilog -Wall -DSIM=1 -o $@ $(ICE40_LIBS) $(PROJ_ALL_RTL_SRCS) $(PROJ_ALL_SIM_SRCS) $<
 
 
 # Action targets
