@@ -39,7 +39,9 @@ include $(BUILD_TMP)/core-deps.mk
 
 # Simulation
 $(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(CORE_ALL_PREREQ) $(CORE_ALL_RTL_SRCS) $(CORE_ALL_SIM_SRCS)
-	iverilog -Wall -DSIM=1 -o $@ $(ICE40_LIBS) $(CORE_ALL_RTL_SRCS) $(CORE_ALL_SIM_SRCS) $<
+	iverilog -Wall -DSIM=1 -o $@ \
+		$(addprefix -l, $(ICE40_LIBS) $(CORE_ALL_RTL_SRCS) $(CORE_ALL_SIM_SRCS)) \
+		$<
 
 
 # Action targets

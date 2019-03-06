@@ -77,7 +77,9 @@ $(BUILD_TMP)/$(PROJ).pnr.rpt $(BUILD_TMP)/$(PROJ).asc: $(BUILD_TMP)/$(PROJ).json
 
 # Simulation
 $(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(PROJ_ALL_PREREQ) $(PROJ_ALL_RTL_SRCS) $(PROJ_ALL_SIM_SRCS)
-	iverilog -Wall -DSIM=1 -o $@ $(ICE40_LIBS) $(PROJ_ALL_RTL_SRCS) $(PROJ_ALL_SIM_SRCS) $<
+	iverilog -Wall -DSIM=1 -o $@ \
+		$(addprefix -l, $(ICE40_LIBS) $(PROJ_ALL_RTL_SRCS) $(PROJ_ALL_SIM_SRCS)) \
+		$<
 
 
 # Action targets
