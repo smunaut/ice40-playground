@@ -51,11 +51,15 @@ PROJ_ALL_RTL_SRCS += $(PROJ_RTL_SRCS)
 PROJ_ALL_SIM_SRCS += $(PROJ_SIM_SRCS)
 PROJ_ALL_PREREQ += $(PROJ_PREREQ)
 
+# Include path
+PROJ_SYNTH_INCLUDES := -I$(abspath rtl/) $(addsuffix /rtl/, $(addprefix -I$(ROOT)/cores/, $(PROJ_ALL_DEPS)))
+PROJ_SIM_INCLUDES   := -I$(abspath sim/) $(addsuffix /sim/, $(addprefix -I$(ROOT)/cores/, $(PROJ_ALL_DEPS)))
+
 
 # Synthesis & Place-n-route rules
 
 $(BUILD_TMP)/$(PROJ).ys: $(PROJ_TOP_SRC) $(PROJ_ALL_RTL_SRCS)
-	@echo "read_verilog $(YOSYS_READ_ARGS) $(PROJ_TOP_SRC) $(PROJ_ALL_RTL_SRCS)" > $@
+	@echo "read_verilog $(YOSYS_READ_ARGS) $(PROJ_SYNTH_INCLUDES) $(PROJ_TOP_SRC) $(PROJ_ALL_RTL_SRCS)" > $@
 	@echo "synth_ice40 $(YOSYS_SYNTH_ARGS) -top $(PROJ_TOP_MOD) -json $(PROJ).json" >> $@
 
 $(BUILD_TMP)/$(PROJ).synth.rpt $(BUILD_TMP)/$(PROJ).json: $(PROJ_ALL_PREREQ) $(BUILD_TMP)/$(PROJ).ys $(PROJ_ALL_RTL_SRCS)
@@ -78,6 +82,7 @@ $(BUILD_TMP)/$(PROJ).pnr.rpt $(BUILD_TMP)/$(PROJ).asc: $(BUILD_TMP)/$(PROJ).json
 # Simulation
 $(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(PROJ_ALL_PREREQ) $(PROJ_ALL_RTL_SRCS) $(PROJ_ALL_SIM_SRCS)
 	iverilog -Wall -DSIM=1 -o $@ \
+		$(PROJ_SYNTH_INCLUDES) $(PROJ_SIM_INCLUDES) \
 		$(addprefix -l, $(ICE40_LIBS) $(PROJ_ALL_RTL_SRCS) $(PROJ_ALL_SIM_SRCS)) \
 		$<
 

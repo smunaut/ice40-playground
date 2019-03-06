@@ -36,10 +36,15 @@ $(BUILD_TMP)/core-deps.mk: Makefile $(BUILD_TMP) $(BUILD_TMP)/deps-core-$(THIS_C
 
 include $(BUILD_TMP)/core-deps.mk
 
+# Include path
+CORE_SYNTH_INCLUDES := $(addsuffix /rtl/, $(addprefix -I$(ROOT)/cores/, $(CORE_ALL_DEPS)))
+CORE_SIM_INCLUDES   := $(addsuffix /sim/, $(addprefix -I$(ROOT)/cores/, $(CORE_ALL_DEPS)))
+
 
 # Simulation
 $(BUILD_TMP)/%_tb: sim/%_tb.v $(ICE40_LIBS) $(CORE_ALL_PREREQ) $(CORE_ALL_RTL_SRCS) $(CORE_ALL_SIM_SRCS)
 	iverilog -Wall -DSIM=1 -o $@ \
+		$(CORE_SYNTH_INCLUDES) $(CORE_SIM_INCLUDES) \
 		$(addprefix -l, $(ICE40_LIBS) $(CORE_ALL_RTL_SRCS) $(CORE_ALL_SIM_SRCS)) \
 		$<
 
