@@ -35,7 +35,7 @@
 
 module ram_sdp #(
 	parameter integer AWIDTH = 9,
-    parameter integer DWIDTH = 8
+	parameter integer DWIDTH = 8
 )(
 	input  wire [AWIDTH-1:0] wr_addr,
 	input  wire [DWIDTH-1:0] wr_data,
