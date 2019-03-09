@@ -60,7 +60,7 @@ module usb_rx_ll (
 	(* keep="true" *) wire dec_sym_se_0;	/* Symbol is SE0 or SE1 */
 	reg  [2:0] dec_eop_state_1;
 	reg  [3:0] dec_sync_state_1;
-	reg  [4:0] dec_rep_state_1;
+	reg  [3:0] dec_rep_state_1;
 
 	reg  [1:0] dec_sym_1;
 	reg        dec_bit_1;
@@ -68,7 +68,7 @@ module usb_rx_ll (
 	wire       dec_eop_1;
 	wire       dec_sync_1;
 	wire [2:0] dec_rep_1;
-	wire       dec_bs_skip_1;
+	reg        dec_bs_skip_1;
 	wire       dec_bs_err_1;
 
 
@@ -176,24 +176,27 @@ module usb_rx_ll (
 	always @(posedge clk)
 		if (samp_valid_0)
 			if (dec_sym_same_0 == 1'b0)
-				dec_rep_state_1 <= 5'b00000;
+				dec_rep_state_1 <= 4'b0000;
 			else
-				// This is basically a saturated increment with flags for (==5) & (>=6)
+				// This is basically a saturated increment with flag for >=6
 				case (dec_rep_state_1[2:0])
-					3'b000:  dec_rep_state_1 <= 5'b00001;
-					3'b001:  dec_rep_state_1 <= 5'b00010;
-					3'b010:  dec_rep_state_1 <= 5'b00011;
-					3'b011:  dec_rep_state_1 <= 5'b00100;
-					3'b100:  dec_rep_state_1 <= 5'b00101;
-					3'b101:  dec_rep_state_1 <= 5'b01110;
-					3'b110:  dec_rep_state_1 <= 5'b10111;
-					3'b111:  dec_rep_state_1 <= 5'b10111;
-					default: dec_rep_state_1 <= 5'bxxxxx;
+					3'b000:  dec_rep_state_1 <= 4'b0001;
+					3'b001:  dec_rep_state_1 <= 4'b0010;
+					3'b010:  dec_rep_state_1 <= 4'b0011;
+					3'b011:  dec_rep_state_1 <= 4'b0100;
+					3'b100:  dec_rep_state_1 <= 4'b0101;
+					3'b101:  dec_rep_state_1 <= 4'b0110;
+					3'b110:  dec_rep_state_1 <= 4'b1111;
+					3'b111:  dec_rep_state_1 <= 4'b1111;
+					default: dec_rep_state_1 <= 4'bxxxx;
 				endcase
 
-	assign dec_bs_err_1  = dec_rep_state_1[4];
-	assign dec_bs_skip_1 = dec_rep_state_1[3];
+	assign dec_bs_err_1  = dec_rep_state_1[3];
 	assign dec_rep_1     = dec_rep_state_1[2:0];
+
+	always @(posedge clk)
+		if (samp_valid_0)
+			dec_bs_skip_1 <= (dec_rep_state_1[2:0] == 3'b110);
 
 
 	// Output
