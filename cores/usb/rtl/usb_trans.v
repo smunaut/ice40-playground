@@ -133,7 +133,8 @@ module usb_trans (
 	reg        trans_dir;
 
 	reg  [2:0] ep_type;
-	reg        ep_dual_buf;
+	reg        ep_bd_dual;
+	reg        ep_bd_ctrl;
 	reg        ep_bd_idx_cur;
 	reg        ep_bd_idx_nxt;
 	reg        ep_data_toggle;
@@ -357,7 +358,7 @@ module usb_trans (
 
 	assign eps_wrdata_0 = epfw_state[1] ?
 		{ bd_state, trans_is_setup, 2'b00, xfer_length[9:0] } :
-		{ 10'h000, ep_data_toggle, ep_bd_idx_nxt, ep_dual_buf, ep_type };
+		{ 8'h00, ep_data_toggle, ep_bd_idx_nxt, ep_bd_ctrl, ep_bd_dual, 1'b0, ep_type };
 
 		// Delay line for what to expect on read data
 	always @(posedge clk or posedge rst)
@@ -376,13 +377,14 @@ module usb_trans (
 		// EP Status
 		if (epfw_cap_dl[1:0] == 2'b01) begin
 			ep_type        <= eps_rddata_3[2:0];
-			ep_dual_buf    <= eps_rddata_3[3];
-			ep_bd_idx_cur  <= eps_rddata_3[4];
-			ep_bd_idx_nxt  <= eps_rddata_3[4];
-			ep_data_toggle <= eps_rddata_3[5] & ~trans_is_setup; /* For SETUP, DT == 0 */
+			ep_bd_dual     <= eps_rddata_3[4];
+			ep_bd_ctrl     <= eps_rddata_3[5];
+			ep_bd_idx_cur  <= eps_rddata_3[5] ? trans_is_setup : eps_rddata_3[6];
+			ep_bd_idx_nxt  <= eps_rddata_3[6];
+			ep_data_toggle <= eps_rddata_3[7] & ~trans_is_setup; /* For SETUP, DT == 0 */
 		end else begin
 			ep_data_toggle <= ep_data_toggle ^ (mc_op_ep & mc_opcode[0]);
-			ep_bd_idx_nxt  <= ep_bd_idx_nxt  ^ (mc_op_ep & mc_opcode[1] & ep_dual_buf );
+			ep_bd_idx_nxt  <= ep_bd_idx_nxt  ^ (mc_op_ep & mc_opcode[1] & ep_bd_dual );
 		end
 
 		// BD Word 0

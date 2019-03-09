@@ -60,13 +60,16 @@ EP Status
 ,--------------------------------------------------------------,
 | f | e | d | c | b | a | 9 | 8| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
 |--------------------------------------------------------------|
-|                                      | d | b | m |  EP type  |
+|                              | t | b |  bdm  |   |  EP type  |
 '--------------------------------------------------------------'
 ```
 
-  * `d`: Data Toggle (if relevant for EP type)
+  * `t`: Data Toggle (if relevant for EP type)
   * `b`: Buffer Descriptor index
-  * `m`: Dual buffer endpoint
+  * 'bdm': Buffer descriptor mode
+    - `00` - Single Buffer (index 0 only)
+    - `01` - Double Buffer
+    - `10` - Special Control EP mode (index 0=data, 1=setup)
   * EP Type: (`h` indicates if this EP is halted)
     - `000`: Non-existant
     - `001`: Isochronous
