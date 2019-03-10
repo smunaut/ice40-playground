@@ -20,12 +20,13 @@ def LD(src):
 	}
 	return 0x1000 | srcs[src]
 
-def EP(bd_state=None, bdi_flip=False, dt_flip=False, wb=False):
+def EP(bd_state=None, bdi_flip=False, dt_flip=False, wb=False, cel_set=False):
 	return 0x2000 | \
 		((1 << 0) if dt_flip else 0) | \
 		((1 << 1) if bdi_flip else 0) | \
 		(((bd_state << 3) | (1 << 2)) if bd_state is not None else 0) | \
-		((1 << 7) if wb else 0)
+		((1 << 7) if wb else 0) | \
+		((1 << 8) if cel_set else 0)
 
 def ZL():
 	return 0x3000
@@ -106,14 +107,16 @@ PID_STALL = 0b1110
 PID_DATA_MSK = 0b0111
 PID_DATA_VAL = 0b0011
 
-EP_TYPE_NONE  = 0b000
-EP_TYPE_ISOC  = 0b001
-EP_TYPE_INT   = 0b010
-EP_TYPE_BULK  = 0b100
-EP_TYPE_CTRL  = 0b110
+EP_TYPE_NONE  = 0b0000
+EP_TYPE_ISOC  = 0b0001
+EP_TYPE_INT   = 0b0010
+EP_TYPE_BULK  = 0b0100
+EP_TYPE_CTRL  = 0b0110
 
-EP_TYPE_MSK   = 0b110
-EP_TYPE_HALT  = 0b001
+EP_TYPE_MSK1  = 0b0111
+EP_TYPE_MSK2  = 0b0110
+EP_TYPE_HALT  = 0b0001
+EP_TYPE_CEL   = 0b1000
 
 BD_NONE      = 0b000
 BD_RDY_DATA  = 0b010
@@ -160,8 +163,8 @@ mc = [
 	L('DO_IN'),
 		# Check endpoint type
 		LD('ep_type'),
-		JMP('DO_IN_ISOC', EP_TYPE_ISOC),	# isochronous is special
-		JMP('IDLE', EP_TYPE_NONE),			# endpoint doesn't exist, ignore packet
+		JMP('DO_IN_ISOC', EP_TYPE_ISOC, EP_TYPE_MSK1),	# isochronous is special
+		JMP('IDLE', EP_TYPE_NONE, EP_TYPE_MSK1),		# endpoint doesn't exist, ignore packet
 
 
 		# Bulk/Control/Interrupt
@@ -169,6 +172,9 @@ mc = [
 
 		# Is EP halted ?
 		JEQ('TX_STALL_HALT', EP_TYPE_HALT, EP_TYPE_HALT),
+
+		# If it's a Control endpoint and Lock is active, NAK
+		JEQ('TX_NAK', EP_TYPE_CEL | EP_TYPE_CTRL, EP_TYPE_CEL | EP_TYPE_MSK2),
 
 		# Anything valid in the active BD ?
 		LD('bd_state'),
@@ -234,9 +240,9 @@ mc = [
 	# ------------------
 
 	L('DO_SETUP'),
-		# Check the endpoint is 'control'
+		# Check the endpoint is 'control' and CEL is not asserted
 		LD('ep_type'),
-		JNE('IDLE', EP_TYPE_CTRL, EP_TYPE_MSK),
+		JNE('RX_DISCARD_NEXT', EP_TYPE_CTRL, EP_TYPE_MSK2 | EP_TYPE_CEL),
 
 		# For Setup, if no-space, don't NAK, just ignore
 		LD('bd_state'),
@@ -255,7 +261,7 @@ mc = [
 		JNE('_DO_SETUP_FAIL', PID_DATA0),
 
 		# Success !
-		EP(bd_state=BD_DONE_OK, bdi_flip=True, dt_flip=True, wb=True),
+		EP(bd_state=BD_DONE_OK, bdi_flip=True, dt_flip=True, wb=True, cel_set=True),
 		NOTIFY(NOTIFY_SUCCESS),
 		JMP('TX_ACK'),
 
@@ -272,8 +278,8 @@ mc = [
 	L('DO_OUT'),
 		# Check endpoint type
 		LD('ep_type'),
-		JEQ('DO_OUT_ISOC', EP_TYPE_ISOC),	# isochronous is special
-		JEQ('IDLE', EP_TYPE_NONE),			# endpoint doesn't exist, ignore packet
+		JEQ('DO_OUT_ISOC', EP_TYPE_ISOC, EP_TYPE_MSK1),	# isochronous is special
+		JEQ('IDLE', EP_TYPE_NONE, EP_TYPE_MSK1),		# endpoint doesn't exist, ignore packet
 
 
 		# Bulk/Control/Interrupt
@@ -281,6 +287,9 @@ mc = [
 
 		# If EP is halted, we drop the packet and respond with STALL
 		JEQ('_DO_OUT_BCI_DROP_DATA', EP_TYPE_HALT, EP_TYPE_HALT),
+
+		# If it's a Control endpoint and Lock is active, NAK
+		JEQ('_DO_OUT_BCI_DROP_DATA', EP_TYPE_CEL | EP_TYPE_CTRL, EP_TYPE_CEL | EP_TYPE_MSK2),
 
 		# Check we have space, if not prevent data writes
 		LD('bd_state'),
@@ -302,6 +311,9 @@ mc = [
 			# If EP is halted, TX STALL
 		LD('ep_type'),
 		JEQ('TX_STALL_HALT', EP_TYPE_HALT, EP_TYPE_HALT),
+
+			# If it's a Control endpoint and Lock is active, NAK
+		JEQ('TX_NAK', EP_TYPE_CEL | EP_TYPE_CTRL, EP_TYPE_CEL | EP_TYPE_MSK2),
 
 			# Wrong Data Toggle -> Ignore new data, just re-tx a ACK
 		LD('pkt_pid_chk'),

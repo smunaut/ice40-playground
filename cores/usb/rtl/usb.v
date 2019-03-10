@@ -143,11 +143,16 @@ module usb #(
 
 	// Config / Status registers
 	reg         cr_pu_ena;
+	reg         cr_cel_ena;
 	reg  [ 6:0] cr_addr;
 	wire [15:0] sr_notify;
+
 	wire irq_stb;
 	wire irq_state;
 	reg  irq_ack;
+
+	wire cel_state;
+	reg  cel_rel;
 
 	// Bus interface
 	reg  eps_bus_req;
@@ -310,6 +315,9 @@ module usb #(
 		.irq_stb(irq_stb),
 		.irq_state(irq_state),
 		.irq_ack(irq_ack),
+		.cel_state(cel_state),
+		.cel_rel(cel_rel),
+		.cel_ena(cr_cel_ena),
 		.debug(debug),
 		.clk(clk),
 		.rst(rst)
@@ -444,13 +452,17 @@ module usb #(
 	// Write regs
 	always @(posedge clk)
 		if (cr_bus_we) begin
-			cr_pu_ena <= bus_din[15];
-			cr_addr   <= bus_din[13:8];
+			cr_pu_ena  <= bus_din[15];
+			cr_cel_ena <= bus_din[14];
+			cr_addr    <= bus_din[13:8];
 		end
 
 	// Write strobe
 	always @(posedge clk)
 		irq_ack <= cr_bus_we & bus_din[0];
+
+	always @(posedge clk)
+		cel_rel <= cr_bus_we & bus_din[1];
 
 	// Read mux
 	assign csr_dout = sr_bus_re ? sr_notify : 16'h0000;

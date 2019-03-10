@@ -74,9 +74,14 @@ module usb_trans (
 	// Config
 	input  wire [ 6:0] cr_addr,
 	output wire [15:0] sr_notify,
+
 	output reg  irq_stb,
 	output wire irq_state,
 	input  wire irq_ack,
+
+	output wire cel_state,
+	input  wire cel_rel,
+	input  wire cel_ena,
 
 	// Debug
 	output wire [ 3:0] debug,
@@ -154,6 +159,9 @@ module usb_trans (
 	reg  [5:0] epfw_cap_dl;
 	reg  epfw_issue_wb;
 
+	// Control Endpoint Lockout
+	reg  cel_state_i;
+
 	// Packet TX
 	reg  txpkt_start_i;
 
@@ -228,7 +236,7 @@ module usb_trans (
 			casez (mc_opcode[2:1])
 				2'b00:   mc_a_reg <= evt;
 				2'b01:   mc_a_reg <= rxpkt_pid ^ { ep_data_toggle & mc_opcode[0], 3'b000 };
-				2'b10:   mc_a_reg <= { 1'b0, ep_type };
+				2'b10:   mc_a_reg <= { cel_state_i, ep_type };
 				2'b11:   mc_a_reg <= { 1'b0, bd_state };
 				default: mc_a_reg <= 4'hx;
 			endcase
@@ -398,6 +406,18 @@ module usb_trans (
 		// When do to write backs
 	always @(posedge clk)
 		epfw_issue_wb <= mc_op_ep & mc_opcode[7];
+
+
+	// Control Endpoint Lockout
+	// ------------------------
+
+	always @(posedge clk or posedge rst)
+		if (rst)
+			cel_state_i <= 1'b0;
+		else
+			cel_state_i <= cel_ena & ((cel_state_i & ~cel_rel) | (mc_op_ep & mc_opcode[8]));
+
+	assign cel_state = cel_state_i;
 
 
 	// Packet TX
