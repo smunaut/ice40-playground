@@ -12,6 +12,10 @@ ICEPACK ?= icepack
 ICEPROG ?= iceprog
 IVERILOG ?= iverilog
 
+ifeq ($(PLACER),heap)
+NEXTPNR_SYS_ARGS += --heap-placer
+endif
+
 ICE40_LIBS ?= $(shell yosys-config --datdir/ice40/cells_sim.v)
 
 
@@ -68,7 +72,7 @@ $(BUILD_TMP)/$(PROJ).synth.rpt $(BUILD_TMP)/$(PROJ).json: $(PROJ_ALL_PREREQ) $(B
 			 -l $(BUILD_TMP)/$(PROJ).synth.rpt
 
 $(BUILD_TMP)/$(PROJ).pnr.rpt $(BUILD_TMP)/$(PROJ).asc: $(BUILD_TMP)/$(PROJ).json $(PIN_DEF)
-	$(NEXTPNR) $(NEXTPNR_ARGS) \
+	$(NEXTPNR) $(NEXTPNR_ARGS) $(NEXTPNR_SYS_ARGS) \
 		--$(DEVICE) --package $(PACKAGE)  \
 		-l $(BUILD_TMP)/$(PROJ).pnr.rpt \
 		--json $(BUILD_TMP)/$(PROJ).json \
