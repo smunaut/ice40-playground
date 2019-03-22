@@ -40,14 +40,14 @@ module hub75_framebuffer #(
 )(
 	// Write interface - Row store/swap
 	input  wire [LOG_N_BANKS-1:0] wr_bank_addr,
-	input  wire [LOG_N_ROWS-1:0]  wr_row_addr,
+	input  wire [LOG_N_ROWS:0]  wr_row_addr,
 	input  wire wr_row_store,
 	output wire wr_row_rdy,
 	input  wire wr_row_swap,
 
 	// Write interface - Access
 	input  wire [BITDEPTH-1:0] wr_data,
-	input  wire [LOG_N_COLS-1:0] wr_col_addr,
+	input  wire [LOG_N_COLS-2:0] wr_col_addr,
 	input  wire wr_en,
 
 	// Read interface - Preload
@@ -311,8 +311,8 @@ module hub75_framebuffer #(
 
 	hub75_fb_writein #(
 		.N_BANKS(N_BANKS),
-		.N_ROWS(N_ROWS),
-		.N_COLS(N_COLS),
+		.N_ROWS(N_ROWS*2),
+		.N_COLS(N_COLS/2),
 		.BITDEPTH(BITDEPTH),
 		.FB_AW(FB_AW-1),
 		.FB_DW(FB_DW),

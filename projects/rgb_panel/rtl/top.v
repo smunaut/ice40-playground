@@ -33,8 +33,8 @@
 
 `default_nettype none
 
-//`define STREAM
-`define PATTERN
+`define STREAM
+//`define PATTERN
 //`define VIDEO
 
 module top (
@@ -70,10 +70,10 @@ module top (
 
 	// Params
 	localparam integer N_BANKS  = 2;
-	localparam integer N_ROWS   = 32;
-	localparam integer N_COLS   = 64;
+	localparam integer N_ROWS   = 16;
+	localparam integer N_COLS   = 64 * 16;
 	localparam integer N_CHANS  = 3;
-	localparam integer N_PLANES = 10;
+	localparam integer N_PLANES = 8;
 	localparam integer BITDEPTH = 16;
 
 	localparam integer LOG_N_BANKS = $clog2(N_BANKS);
@@ -95,13 +95,13 @@ module top (
 
 	// Frame buffer write port
 	wire [LOG_N_BANKS-1:0] fbw_bank_addr;
-	wire [LOG_N_ROWS-1:0]  fbw_row_addr;
+	wire [LOG_N_ROWS:0]  fbw_row_addr;
 	wire fbw_row_store;
 	wire fbw_row_rdy;
 	wire fbw_row_swap;
 
 	wire [BITDEPTH-1:0] fbw_data;
-	wire [LOG_N_COLS-1:0] fbw_col_addr;
+	wire [LOG_N_COLS-2:0] fbw_col_addr;
 	wire fbw_wren;
 
 	wire frame_swap;
@@ -137,7 +137,7 @@ module top (
 		.cfg_pre_latch_len(8'h80),
 		.cfg_latch_len(8'h80),
 		.cfg_post_latch_len(8'h80),
-		.cfg_bcm_bit_len(8'h06),
+		.cfg_bcm_bit_len(8'h08),
 		.clk(clk),
 		.rst(rst)
 	);
@@ -147,8 +147,8 @@ module top (
 	// --------------
 `ifdef STREAM
 	vstream #(
-		.N_ROWS(N_BANKS * N_ROWS),
-		.N_COLS(N_COLS),
+		.N_ROWS(N_BANKS * N_ROWS * 2),
+		.N_COLS(N_COLS / 2),
 		.BITDEPTH(BITDEPTH)
 	) stream_I (
 		.spi_mosi(slave_mosi),
