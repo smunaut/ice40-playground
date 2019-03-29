@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import types
 
 
@@ -434,4 +435,7 @@ if __name__ == '__main__':
 	code, labels = assemble(mc)
 	ilabel = dict([(v,k) for k,v in labels.items()])
 	for i, v in enumerate(code):
-		print("%04x" % (v,))
+		if (len(sys.argv) > 1) and (sys.argv[1] == 'debug'):
+			print("%02x %04x\t%s" % (i, v,ilabel.get(i,'')))
+		else:
+			print("%04x" % (v,))
