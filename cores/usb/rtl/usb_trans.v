@@ -83,9 +83,6 @@ module usb_trans (
 	input  wire cel_rel,
 	input  wire cel_ena,
 
-	// Debug
-	output wire [ 3:0] debug,
-
 	// Common
 	input  wire clk,
 	input  wire rst
@@ -177,7 +174,6 @@ module usb_trans (
 	wire len_bd_dec;
 	wire len_xf_inc;
 
-	assign debug = mc_pc[3:0];
 
 	// Micro-Code execution engine
 	// ---------------------------

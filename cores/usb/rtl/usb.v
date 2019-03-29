@@ -57,9 +57,6 @@ module usb #(
 	input  wire bus_we,
 	output wire bus_ack,
 
-	// Debug
-	output wire [3:0] debug,
-
 	// Common
 	input  wire clk,
 	input  wire rst
@@ -318,7 +315,6 @@ module usb #(
 		.cel_state(cel_state),
 		.cel_rel(cel_rel),
 		.cel_ena(cr_cel_ena),
-		.debug(debug),
 		.clk(clk),
 		.rst(rst)
 	);
