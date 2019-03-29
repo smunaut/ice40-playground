@@ -13,7 +13,7 @@ ICEPROG ?= iceprog
 IVERILOG ?= iverilog
 
 ifeq ($(PLACER),heap)
-NEXTPNR_SYS_ARGS += --heap-placer
+NEXTPNR_SYS_ARGS += --placer heap
 endif
 
 ICE40_LIBS ?= $(shell yosys-config --datdir/ice40/cells_sim.v)
