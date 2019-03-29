@@ -12,6 +12,7 @@ RTL_SRCS_misc = $(addprefix rtl/, \
 	uart_tx.v \
 	uart_wb.v \
 	xclk_strobe.v \
+	xclk_wb.v \
 )
 
 TESTBENCHES_misc := \
