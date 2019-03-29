@@ -10,6 +10,7 @@ RTL_SRCS_misc = $(addprefix rtl/, \
 	pwm.v \
 	uart_rx.v \
 	uart_tx.v \
+	uart_wb.v \
 )
 
 TESTBENCHES_misc := \
