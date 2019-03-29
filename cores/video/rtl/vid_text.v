@@ -1,6 +1,8 @@
 /*
  * vid_text.v
  *
+ * vim: ts=4 sw=4
+ *
  * Video Text Mode generator
  *
  * Copyright (C) 2019  Sylvain Munaut <tnt@246tNt.com>
@@ -29,8 +31,6 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * vim: ts=4 sw=4
  */
 
 `default_nettype none

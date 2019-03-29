@@ -1,6 +1,8 @@
 /*
  * hdmi_phy_2x.v
  *
+ * vim: ts=4 sw=4
+ *
  * HDMI PHY using DDR output to push 2 pixels at once allowing FPGA code
  * to run at half the pixel clock.
  *
@@ -30,8 +32,6 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * vim: ts=4 sw=4
  */
 
 `default_nettype none

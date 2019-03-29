@@ -1,6 +1,8 @@
 /*
  * hub75_gamma.v
  *
+ * vim: ts=4 sw=4
+ *
  * Copyright (C) 2019  Sylvain Munaut <tnt@246tNt.com>
  * All rights reserved.
  *
@@ -19,8 +21,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * vim: ts=4 sw=4
  */
 
 `default_nettype none
