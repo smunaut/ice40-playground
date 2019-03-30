@@ -414,8 +414,8 @@ module vid_color_map (
 	always @(*)
 	begin
 		if (attrs[1]) begin
-			if (glyph[3:1] == 3'b000)
-				color <= { 4'b0000, glyph[0], glyph[0] ? attrs[7:5] : attrs[4:2] };
+			if (glyph[3:2] == 2'b00)
+				color <= { 4'b0000, glyph[1], glyph[0] ? attrs[7:5] : attrs[4:2] };
 			else
 				color <= { 4'b0001, glyph };
 		end else begin

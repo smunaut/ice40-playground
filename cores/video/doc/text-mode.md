@@ -198,14 +198,15 @@ in the attributes.
 
 Assuming `px` is the value from the glyph, color lookup is done like this :
 
- * `0000`: Perform lookup in palette `0` for color index `bg`
- * `0001`: Perform lookup in palette `0` for color index `8+fg`
+ * `00x0`: Perform lookup in palette `0` for color index `{ x, bg }`
+ * `00y1`: Perform lookup in palette `0` for color index `{ y, fg }`
  * Other value: Perform lookup in palette `1` for color index `px`
 
-This allows to have color `0` and `1` of the glyphs be mapped to 8 possible
-background and 8 possible foreground colors. Those can be freely chosen and
-defined in palette `0`, the first 8 entries being background colors and the
-last 8 entries being foreground colors.
+This allows the first 4 colors to be customized directly per character and
+remapped. For instance to change text color without need for different glyphs.
+The default for a monochrome font would be to have `x = 0` and `y = 1` so
+that in palette `0`, the first 8 entries are background colors and the last
+8 entries are foreground ones.
 
 If the glyph uses other colors, then those are looked up directly in palette
 `1`. This way the glyph can also use static colors that don't depend on the
