@@ -60,7 +60,7 @@ module top (
 	input  wire clk_in
 );
 
-	localparam WB_N  =  6;
+	localparam WB_N  =  8;
 	localparam WB_DW = 32;
 	localparam WB_AW = 16;
 	localparam WB_AI =  2;
@@ -107,8 +107,6 @@ module top (
 	wire wb_we;
 	wire [WB_N-1:0] wb_ack;
 
-	// UART
-
 	// USB Core
 		// EP Buffer
 	wire [ 8:0] ep_tx_addr_0;
@@ -126,6 +124,25 @@ module top (
 	wire ub_cyc;
 	wire ub_we;
 	wire ub_ack;
+
+	// E1
+		// Data interface
+	wire [ 7:0] e1rx_data;
+	wire [ 4:0] e1rx_ts;
+	wire [ 3:0] e1rx_frame;
+	wire [ 6:0] e1rx_mf;
+	wire e1rx_we;
+	wire e1rx_rdy;
+
+	wire [ 7:0] e1tx_data;
+	wire [ 4:0] e1tx_ts;
+	wire [ 3:0] e1tx_frame;
+	wire [ 6:0] e1tx_mf;
+	wire e1tx_re;
+	wire e1tx_rdy;
+
+	// IObuf
+	wire [31:0] iobuf_rdata;
 
 	// SPI
 	wire [7:0] sb_addr;
@@ -467,22 +484,55 @@ module top (
 
 	assign wb_rdata[4][31:16] = 16'h0000;
 
-	// EP buffer interface
-	reg wb_ack_ep;
 
-	always @(posedge clk_24m)
-		wb_ack_ep <= wb_cyc[5] & ~wb_ack_ep;
+	// IO buffers / DMA
+	// ----------------
 
-	assign wb_ack[5] = wb_ack_ep;
+	iobuf iobuf_I (
+		.wb_addr(wb_addr[15:0]),
+		.wb_rdata(iobuf_rdata),
+		.wb_wdata(wb_wdata),
+		.wb_wmsk(wb_wmsk),
+		.wb_cyc(wb_cyc[7:5]),
+		.wb_we(wb_we),
+		.wb_ack(wb_ack[7:5]),
+		.ep_tx_addr_0(ep_tx_addr_0),
+		.ep_tx_data_0(ep_tx_data_0),
+		.ep_tx_we_0(ep_tx_we_0),
+		.ep_rx_addr_0(ep_rx_addr_0),
+		.ep_rx_data_1(ep_rx_data_1),
+		.ep_rx_re_0(ep_rx_re_0),
+		.e1rx_data(e1rx_data),
+		.e1rx_ts(e1rx_ts),
+		.e1rx_frame(e1rx_frame),
+		.e1rx_mf(e1rx_mf),
+		.e1rx_we(e1rx_we),
+		.e1rx_rdy(e1rx_rdy),
+		.e1tx_data(e1tx_data),
+		.e1tx_ts(e1tx_ts),
+		.e1tx_frame(e1tx_frame),
+		.e1tx_mf(e1tx_mf),
+		.e1tx_re(e1tx_re),
+		.e1tx_rdy(e1tx_rdy),
+		.clk(clk_24m),
+		.rst(rst)
+	);
 
-	assign ep_tx_addr_0 = wb_addr[8:0];
-	assign ep_tx_data_0 = wb_wdata;
-	assign ep_tx_we_0   = wb_cyc[5] & ~wb_ack[5] & wb_we;
+	assign wb_rdata[5] = iobuf_rdata;
+	assign wb_rdata[6] = 32'h00000000;
+	assign wb_rdata[7] = 32'h00000000;
 
-	assign ep_rx_addr_0 = wb_addr[8:0];
-	assign ep_rx_re_0   = 1'b1;
+	// Dummy E1
+	assign e1rx_data = 8'h00;
+	assign e1rx_ts = 5'd0;
+	assign e1rx_frame = 4'd0;
+	assign e1rx_mf = 7'd0;
+	assign e1rx_we = 1'b0;
 
-	assign wb_rdata[5] = wb_cyc[5] ? ep_rx_data_1 : 32'h00000000;
+	assign e1tx_ts = 5'd0;
+	assign e1tx_frame = 4'd0;
+	assign e1tx_mf = 7'd0;
+	assign e1tx_re = 1'b0;
 
 
 	// Warm Boot
