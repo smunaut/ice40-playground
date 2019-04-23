@@ -27,7 +27,6 @@
 
 module usb #(
 	parameter         TARGET = "ICE40",
-	parameter [3:0]   ADDR_MSB = 4'h3,
 	parameter integer EPDW = 16,
 
 	/* Auto-set */
@@ -50,7 +49,7 @@ module usb #(
 	input  wire ep_clk,
 
 	// Bus interface
-	input  wire [15:0] bus_addr,
+	input  wire [11:0] bus_addr,
 	input  wire [15:0] bus_din,
 	output wire [15:0] bus_dout,
 	input  wire bus_cyc,
@@ -379,16 +378,11 @@ module usb #(
 	// Bus Interface
 	// -------------
 
-	(* keep="true" *) wire bus_msb_match;
-
 	wire [15:0] csr_dout;
 	wire csr_bus_clear;
 	reg  csr_req;
 	reg  cr_bus_we;
 	reg  sr_bus_re;
-
-	// Match the MSB
-	assign bus_msb_match = bus_addr[15:12] == ADDR_MSB;
 
 	// Request lines for registers
 	always @(posedge clk)
@@ -397,9 +391,9 @@ module usb #(
 			cr_bus_we <= 1'b0;
 			sr_bus_re <= 1'b0;
 		end else begin
-			csr_req   <= bus_msb_match & ~bus_addr[11];
-			cr_bus_we <= bus_msb_match & ~bus_addr[11] &  bus_we;
-			sr_bus_re <= bus_msb_match & ~bus_addr[11] & ~bus_we;
+			csr_req   <= ~bus_addr[11];
+			cr_bus_we <= ~bus_addr[11] &  bus_we;
+			sr_bus_re <= ~bus_addr[11] & ~bus_we;
 		end
 
 	// Request lines for EP Status access
@@ -410,10 +404,10 @@ module usb #(
 			eps_bus_write <= 1'b0;
 			eps_bus_req   <= 1'b0;
 		end else begin
-			eps_bus_read  <=  bus_msb_match &  bus_addr[11] & ~bus_we;
-			eps_bus_zero  <= ~bus_msb_match | ~bus_addr[11];
-			eps_bus_write <=  bus_msb_match &  bus_addr[11] &  bus_we;
-			eps_bus_req   <=  bus_msb_match &  bus_addr[11];
+			eps_bus_read  <=  bus_addr[11] & ~bus_we;
+			eps_bus_zero  <= ~bus_addr[11];
+			eps_bus_write <=  bus_addr[11] &  bus_we;
+			eps_bus_req   <=  bus_addr[11];
 		end
 
 	// Condition to force the requests to zero :

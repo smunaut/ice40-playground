@@ -48,7 +48,7 @@ module usb_tb;
 	wire [31:0] ep_rx_data_1;
 	wire ep_rx_re_0;
 
-	wire [15:0] bus_addr;
+	wire [11:0] bus_addr;
 	wire [15:0] bus_din;
 	wire [15:0] bus_dout;
 	wire bus_cyc;
@@ -104,7 +104,7 @@ module usb_tb;
 		else if (~cnt[7])
 			cnt <= cnt + 1;
 
-	assign bus_addr = 16'h3000;
+	assign bus_addr = 12'h000;
 	assign bus_din = 16'h8001;
 	assign bus_cyc = cnt[7];
 	assign bus_we = 1'b1;
