@@ -411,8 +411,7 @@ module top (
 
 	// Core
 	usb #(
-		.EPDW(32),
-		.ADDR_MSB(4'h0)
+		.EPDW(32)
 	) usb_I (
 		.pad_dp(usb_dp),
 		.pad_dn(usb_dn),
@@ -424,7 +423,7 @@ module top (
 		.ep_rx_data_1(ep_rx_data_1),
 		.ep_rx_re_0(ep_rx_re_0),
 		.ep_clk(clk_24m),
-		.bus_addr({4'h0, ub_addr}),
+		.bus_addr(ub_addr),
 		.bus_din(ub_wdata),
 		.bus_dout(ub_rdata),
 		.bus_cyc(ub_cyc),
