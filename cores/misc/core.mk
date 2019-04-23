@@ -7,6 +7,7 @@ RTL_SRCS_misc = $(addprefix rtl/, \
 	glitch_filter.v \
 	ram_sdp.v \
 	prims.v \
+	pdm.v \
 	pwm.v \
 	uart_rx.v \
 	uart_tx.v \
@@ -17,6 +18,7 @@ RTL_SRCS_misc = $(addprefix rtl/, \
 
 TESTBENCHES_misc := \
 	fifo_tb \
+	pdm_tb \
 	uart_tb \
 
 include $(ROOT)/build/core-magic.mk
