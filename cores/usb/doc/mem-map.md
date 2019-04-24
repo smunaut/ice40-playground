@@ -1,43 +1,91 @@
 iCE40 USB Core Memory Map
 =========================
 
-Global CSR
-----------
+Global CSRs
+-----------
 
-### Control (Write addr `0x000`)
+### Control (Read / Write addr `0x000`)
 
 ```
 ,--------------------------------------------------------------,
 | f | e | d | c | b | a | 9 | 8| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
 |--------------------------------------------------------------|
-| p | / |       addr           |      (rsvd)               | a |
+| p | / | cs| ce|   (rsvd)             |        addr           |
 '--------------------------------------------------------------'
 ```
 
   * `p`: Enables DP pull-up
-  * `a`: Ack interrupt
+  * `cs`: Control Endpoint Lockout - State [Read Only]
+  * `ce`: Control Endpoint Lockout - Enable
+  * `addr`: Configure address matching
 
 
-### Status (Read addr `0x000`)
+### Action ( Write addr `0x01` )
 
 ```
 ,--------------------------------------------------------------,
 | f | e | d | c | b | a | 9 | 8| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
 |--------------------------------------------------------------|
-|      cnt      |     ucnc     |      endp     | d | s | b | i |
+|  rsvd | cr|                  (rsvd)                          |
 '--------------------------------------------------------------'
 ```
 
-This contains info about the last generated notification from
-the transaction microcode
+  * `cr`: Control Endpoint Lockout - Release
 
-  * `cnt`: Counter (incremented by 1 at each notify to detect misses)
+
+### Events (Read addr `0x02`)
+
+This contains info about the generated events from the transaction
+microcode.
+
+It can either contain info about the last event only along with a
+count of events since last read, or it can be a FIFO depending on
+the core configuration.
+
+Count mode (`EVENT_DEPTH = 0/1`) :
+
+```
+,--------------------------------------------------------------,
+| f | e | d | c | b | a | 9 | 8| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+|--------------------------------------------------------------|
+|      cnt      |                 event                        |
+'--------------------------------------------------------------'
+```
+
+  * `cnt`: Counter of events since last read
+  * `event`: Last recorded event data (see below)
+
+
+FIFO mode (`EVENT_DEPTH > 1`) :
+
+```
+,--------------------------------------------------------------,
+| f | e | d | c | b | a | 9 | 8| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+|--------------------------------------------------------------|
+| v | o |  rsvd |                 event                        |
+'--------------------------------------------------------------'
+```
+
+  * `v`: Valid (i.e. FIFO is not empty and `event` is valid)
+  * `o`: FIFO Overflow
+  * `event`: event data (see below)
+
+
+Event format:
+
+```
+,----------------------------------------------,
+| b | a | 9 | 8| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+|----------------------------------------------|
+|     ucnc     |      endp     | d | s | b | / |
+'----------------------------------------------'
+```
+
   * `ucnc`: Notification code
   * `endp`: Endpoint #
   * `d`: Direction (1=IN, 0=OUT/SETUP)
   * `s`: Is SETUP ?
   * `b`: Buffer Descriptor index
-  * `i`: Interrupt flag
 
 
 EP Status

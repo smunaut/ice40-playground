@@ -71,13 +71,11 @@ module usb_trans (
 	output wire [15:0] eps_wrdata_0,
 	input  wire [15:0] eps_rddata_3,
 
-	// Config
+	// Config / Status
 	input  wire [ 6:0] cr_addr,
-	output wire [15:0] sr_notify,
 
-	output reg  irq_stb,
-	output wire irq_state,
-	input  wire irq_ack,
+	output wire [11:0] evt_data,
+	output wire evt_stb,
 
 	output wire cel_state,
 	input  wire cel_rel,
@@ -120,11 +118,6 @@ module usb_trans (
 
 	wire rto_now;
 	reg  [9:0] rto_cnt;
-
-	// Host notify
-	reg        irq_state_i;
-	reg  [3:0] irq_cnt;
-	reg [10:0] sr_notify_i;
 
 	// Transaction / EndPoint / Buffer infos
 	reg  [3:0] trans_pid;
@@ -270,30 +263,15 @@ module usb_trans (
 	// Host NOTIFY
 	// -----------
 
-	always @(posedge clk)
-		if (mc_op_notify)
-			sr_notify_i <= {
-				mc_opcode[3:0],				// Micro-code return value
-				trans_endp,					// Endpoint #
-				trans_dir,					// Direction
-				trans_is_setup,
-				ep_bd_idx_cur				// BD where it happenned
-			};
-
-	assign sr_notify = {
-		irq_cnt,
-		sr_notify_i,
-		irq_state
+	assign evt_stb = mc_op_notify;
+	assign evt_data = {
+		mc_opcode[3:0], // [11:8] Micro-code return value
+		trans_endp,     // [ 7:4] Endpoint
+		trans_dir,      //    [3] Direction
+		trans_is_setup, //    [2] SETUP transaction
+		ep_bd_idx_cur,  //    [1] BD where it happenned
+		1'b0
 	};
-
-	always @(posedge clk)
-	begin
-		irq_stb <= mc_op_notify;
-		irq_cnt <= irq_cnt + mc_op_notify;
-		irq_state_i <= (irq_state_i & ~irq_ack) | mc_op_notify;
-	end
-
-	assign irq_state = irq_state_i;
 
 
 	// EP infos
