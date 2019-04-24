@@ -73,9 +73,9 @@ EP Status
   * EP Type: (`h` indicates if this EP is halted)
     - `000`: Non-existant
     - `001`: Isochronous
-    - `01s`: Interrupt
-    - `10s`: Bulk
-    - `11s`: Control
+    - `01h`: Interrupt
+    - `10h`: Bulk
+    - `11h`: Control
 
 
 Buffer Descriptor
@@ -105,7 +105,7 @@ Buffer Descriptor
 '--------------------------------------------------------------'
 ```
 
-  * 's': Transactions was setup
+  * `s`: Transactions was setup
   * BD State:
     - `000`: Empty / Unused
     - `010`: Valid, ready for Tx/RX data
