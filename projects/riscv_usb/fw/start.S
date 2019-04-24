@@ -19,9 +19,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-	.section .text
-
-start:
+	.section .text.start
+	.global _start
+_start:
 
 	// zero-initialize register file
 	addi x1, zero, 0

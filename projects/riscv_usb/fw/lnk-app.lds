@@ -4,10 +4,12 @@ MEMORY
     SPRAM (xrw) : ORIGIN = 0x0001c000, LENGTH = 0x4000
     BRAM  (xrw) : ORIGIN = 0x00000010, LENGTH = 0x03f0
 }
+ENTRY(_start)
 SECTIONS {
     .text :
     {
         . = ALIGN(4);
+        *(.text.start)
         *(.text)
         *(.text*)
         *(.rodata)
