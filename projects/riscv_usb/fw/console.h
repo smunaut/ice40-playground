@@ -1,5 +1,5 @@
 /*
- * usb_desc.h
+ * console.h
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -23,6 +23,10 @@
 
 #pragma once
 
-const void *usb_get_device_desc(int *len);
-const void *usb_get_config_desc(int *len, int idx);
-const void *usb_get_string_desc(int *len, int idx);
+void console_init(void);
+
+char getchar(void);
+int  getchar_nowait(void);
+void putchar(char c);
+void puts(const char *p);
+int  printf(const char *fmt, ...);

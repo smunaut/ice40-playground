@@ -1,5 +1,5 @@
 /*
- * firmware.c
+ * config.h
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -21,50 +21,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
+#pragma once
 
-#include "console.h"
-#include "usb.h"
-
-
-void main()
-{
-	bool usb_active = false;
-
-	/* Init console IO */
-	console_init();
-	puts("Booting..\n");
-	puts("Command> ");
-
-	while (1)
-	{
-		/* Poll for command */
-		int cmd = getchar_nowait();
-
-		if (cmd >= 0) {
-			if (cmd > 32 && cmd < 127)
-				putchar(cmd);
-
-			switch (cmd)
-			{
-			case 'd':
-				usb_debug_print();
-				break;
-			case 'u':
-				usb_active = true;
-				usb_init();
-				break;
-			default:
-				break;
-			}
-
-			puts("\nCommand> ");
-		}
-
-		/* USB poll */
-		if (usb_active)
-			usb_poll();
-	}
-}
+#define UART_BASE	0x81000000
+#define USB_CORE_BASE	0x84000000
+#define USB_DATA_BASE	0x85000000

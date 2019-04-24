@@ -6,16 +6,19 @@ ICEPROG = iceprog
 CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section
 
 HEADERS=\
+	config.h \
+	console.h \
 	mini-printf.h \
-	io.h \
-	usb_desc.h \
+	usb_priv.h \
 	usb_desc_data.h
 
 SOURCES=\
 	start.S \
+	console.c \
 	firmware.c \
-	io.c \
 	mini-printf.c  \
+	usb.c \
+	usb_ep0.c \
 	usb_desc.c
 
 firmware.elf: lnk-app.lds $(HEADERS) $(SOURCES)

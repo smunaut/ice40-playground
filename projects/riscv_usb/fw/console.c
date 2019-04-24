@@ -1,5 +1,5 @@
 /*
- * io.c
+ * console.c
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -23,25 +23,30 @@
 
 #include <stdint.h>
 
+#include "config.h"
 #include "mini-printf.h"
 
-#define NULL ((void*)0)
 
-#define reg_uart_clkdiv (*(volatile uint32_t*)0x81000004)
-#define reg_uart_data   (*(volatile uint32_t*)0x81000000)
+struct wb_uart {
+	uint32_t data;
+	uint32_t clkdiv;
+} __attribute__((packed,aligned(4)));
+
+static volatile struct wb_uart * const uart_regs = (void*)UART_BASE;
+
 
 static char _printf_buf[128];
 
-void io_init(void)
+void console_init(void)
 {
-	reg_uart_clkdiv = 23;	/* 1 Mbaud with clk=24MHz */
+	uart_regs->clkdiv = 22;	/* 1 Mbaud with clk=24MHz */
 }
 
 char getchar(void)
 {
 	int32_t c;
 	do {
-		c = reg_uart_data;
+		c = uart_regs->data;
 	} while (c & 0x80000000);
 	return c;
 }
@@ -49,21 +54,23 @@ char getchar(void)
 int getchar_nowait(void)
 {
 	int32_t c;
-	c = reg_uart_data;
+	c = uart_regs->data;
 	return c & 0x80000000 ? -1 : (c & 0xff);
 }
 
 void putchar(char c)
 {
-	if (c == '\n')
-		putchar('\r');
-	reg_uart_data = c;
+	uart_regs->data = c;
 }
 
 void puts(const char *p)
 {
-	while (*p)
-		putchar(*(p++));
+	char c;
+	while ((c = *(p++)) != 0x00) {
+		if (c == '\n')
+			uart_regs->data = '\r';
+		uart_regs->data = c;
+	}
 }
 
 int printf(const char *fmt, ...)

@@ -1,5 +1,5 @@
 /*
- * io.h
+ * usb.h
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -23,9 +23,10 @@
 
 #pragma once
 
-void io_init(void);
-char getchar(void);
-int  getchar_nowait(void);
-void putchar(char c);
-void puts(const char *p);
-int  printf(const char *fmt, ...);
+void usb_init(void);
+void usb_poll(void);
+
+/* Debug */
+void usb_debug_print_ep(int ep, int dir);
+void usb_debug_print_data(int ofs, int len);
+void usb_debug_print(void);
