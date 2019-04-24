@@ -178,7 +178,7 @@ module uart_wb #(
 			ub_wr_div  <= 1'b0;
 		end else begin
 			ub_rd_data <= ~bus_we & bus_cyc & (bus_addr == 2'b00);
-			ub_wr_data <=  bus_we & bus_cyc & (bus_addr == 2'b00);
+			ub_wr_data <=  bus_we & bus_cyc & (bus_addr == 2'b00) & ~utf_full;
 			ub_wr_div  <=  bus_we & bus_cyc & (bus_addr == 2'b01);
 		end
 
@@ -193,7 +193,7 @@ module uart_wb #(
 			uart_div <= bus_wdata[DIV_WIDTH-1:0];
 
 	assign utf_wdata = bus_wdata[7:0];
-	assign utf_wren  = ub_wr_data & ~utf_full;
+	assign utf_wren  = ub_wr_data;
 
 	assign urf_rden  = ub_rd_data & ~urf_empty;
 
