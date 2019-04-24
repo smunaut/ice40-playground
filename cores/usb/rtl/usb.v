@@ -60,6 +60,9 @@ module usb #(
 	// IRQ
 	output wire irq,
 
+	// SOF indication
+	output wire sof,
+
 	// Common
 	input  wire clk,
 	input  wire rst
@@ -157,13 +160,16 @@ module usb #(
 
 	// Out-of-band conditions
 	wire oob_se0;
-	wire oob_sop;
+	wire oob_sof;
 
 	reg  [19:0] timeout_suspend;	//  3 ms with no activity
 	reg  [19:0] timeout_reset;		// 10 ms SE0
 
 	reg  rst_usb_l;
 	reg  suspend;
+
+	// Start-Of-Frame indication
+	reg  sof_ind;
 
 	// USB core logic reset
 	wire rst_usb;
@@ -553,14 +559,14 @@ module usb #(
 
 	// Detect some conditions for triggers
 	assign oob_se0 = !phy_rx_dp && !phy_rx_dn;
-	assign oob_sop = rxpkt_start & rxpkt_is_sof;
+	assign oob_sof = rxpkt_start & rxpkt_is_sof;
 
 	// Suspend timeout counter
 	always @(posedge clk)
 		if (rst_usb)
 			timeout_suspend <= 20'ha3280;
 		else
-			timeout_suspend <= oob_sop ? 20'ha3280 : (timeout_suspend - timeout_suspend[19]);
+			timeout_suspend <= oob_sof ? 20'ha3280 : (timeout_suspend - timeout_suspend[19]);
 
 	always @(posedge clk)
 		if (rst_usb)
@@ -598,5 +604,14 @@ module usb #(
 			pad_pu <= 1'b0;
 		else
 			pad_pu <= cr_pu_ena;
+
+
+	// Misc
+	// ----
+
+	always @(posedge clk)
+		sof_ind <= rxpkt_start & rxpkt_is_sof;
+
+	assign sof = sof_ind;
 
 endmodule // usb
