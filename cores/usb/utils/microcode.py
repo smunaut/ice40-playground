@@ -199,9 +199,9 @@ mc = [
 		JEQ('_DO_IN_BCI_WAIT_ACK', 0, EVT_TIMEOUT | EVT_RX_ERR | EVT_RX_OK),
 
 		# If it's not a good packet and a ACK, we failed
-		JEQ('_DO_IN_BCI_WAIT_ACK', 0, EVT_RX_OK),
+		JEQ('_DO_IN_BCI_FAIL', 0, EVT_RX_OK),
 		LD('pkt_pid'),
-		JNE('_DO_IN_BCI_WAIT_ACK', PID_ACK),
+		JNE('_DO_IN_BCI_FAIL', PID_ACK),
 
 		# Success !
 		EP(bd_state=BD_DONE_OK, bdi_flip=True, dt_flip=True, wb=True),
