@@ -76,7 +76,7 @@ module top (
 	input  wire clk_30m72_in
 );
 
-	localparam WB_N  =  8;
+	localparam WB_N  =  9;
 	localparam WB_DW = 32;
 	localparam WB_AW = 16;
 	localparam WB_AI =  2;
@@ -542,17 +542,42 @@ module top (
 	assign wb_rdata[6] = 32'h00000000;
 	assign wb_rdata[7] = 32'h00000000;
 
-	// Dummy E1
-	assign e1rx_data = 8'h00;
-	assign e1rx_ts = 5'd0;
-	assign e1rx_frame = 4'd0;
-	assign e1rx_mf = 7'd0;
-	assign e1rx_we = 1'b0;
 
-	assign e1tx_ts = 5'd0;
-	assign e1tx_frame = 4'd0;
-	assign e1tx_mf = 7'd0;
-	assign e1tx_re = 1'b0;
+	// E1
+	// --
+
+	e1_wb #(
+		.MFW(7)
+	) e1_I (
+		.pad_rx_hi_p(e1_rx_hi_p),
+		.pad_rx_hi_n(1'b0), // e1_rx_hi_n
+		.pad_rx_lo_p(e1_rx_lo_p),
+		.pad_rx_lo_n(1'b0), // e1_rx_lo_n
+		.pad_tx_hi(e1_tx_hi),
+		.pad_tx_lo(e1_tx_lo),
+		.buf_rx_data(e1rx_data),
+		.buf_rx_ts(e1rx_ts),
+		.buf_rx_frame(e1rx_frame),
+		.buf_rx_mf(e1rx_mf),
+		.buf_rx_we(e1rx_we),
+		.buf_rx_rdy(e1rx_rdy),
+		.buf_tx_data(e1tx_data),
+		.buf_tx_ts(e1tx_ts),
+		.buf_tx_frame(e1tx_frame),
+		.buf_tx_mf(e1tx_mf),
+		.buf_tx_re(e1tx_re),
+		.buf_tx_rdy(e1tx_rdy),
+		.bus_addr(wb_addr[3:0]),
+		.bus_wdata(wb_wdata[15:0]),
+		.bus_rdata(wb_rdata[8][15:0]),
+		.bus_cyc(wb_cyc[8]),
+		.bus_we(wb_we),
+		.bus_ack(wb_ack[8]),
+		.clk(clk_30m72),
+		.rst(rst)
+	);
+
+	assign wb_rdata[8][31:16] = 16'h0000;
 
 
 	// Warm Boot
