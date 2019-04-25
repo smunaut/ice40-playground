@@ -183,6 +183,14 @@ module top (
 	reg boot_now;
 	reg [1:0] boot_sel;
 
+	// PDM
+	reg [ 8:0] pdm_vref_ct;
+	reg [ 8:0] pdm_vref_p;
+	reg [ 8:0] pdm_vref_n;
+
+	reg [12:0] pdm_clk_hi;
+	reg [12:0] pdm_clk_lo;
+
 	// Clock / Reset logic
 	wire clk_30m72;
 	wire clk_48m;
@@ -579,6 +587,51 @@ module top (
 		.btn_pad(btn),
 		.btn_val(),
 		.rst_req(),
+		.clk(clk_30m72),
+		.rst(rst)
+	);
+
+
+	// PDM
+	// ---
+
+	// Config registers
+	always @(posedge clk_30m72 or posedge rst)
+		if (rst) begin
+			pdm_vref_ct <= 0;
+			pdm_vref_p  <= 0;
+			pdm_vref_n  <= 0;
+			pdm_clk_hi  <= 0;
+			pdm_clk_lo  <= 0;
+		end else if (wb_cyc[0] & wb_we) begin
+			if (wb_addr[2:0] == 3'b010) pdm_clk_hi  <= wb_wdata[12:0];
+			if (wb_addr[2:0] == 3'b011) pdm_clk_lo  <= wb_wdata[12:0];
+			if (wb_addr[2:0] == 3'b100) pdm_vref_ct <= wb_wdata[ 8:0];
+			if (wb_addr[2:0] == 3'b110) pdm_vref_p  <= wb_wdata[ 8:0];
+			if (wb_addr[2:0] == 3'b111) pdm_vref_n  <= wb_wdata[ 8:0];
+		end
+
+	// PDM cores
+	pdm #(
+		.WIDTH(8),
+		.PHY("ICE40"),
+		.DITHER("NO")
+	) pdm_e1_I[2:0] (
+		.in ({ pdm_vref_ct[7:0], pdm_vref_p[7:0], pdm_vref_n[7:0] }),
+		.pdm({  e1_vref_ct_pdm,   e1_vref_p_pdm,   e1_vref_n_pdm  }),
+		.oe ({ pdm_vref_ct[8],   pdm_vref_p[8],   pdm_vref_n[8]   }),
+		.clk(clk_30m72),
+		.rst(rst)
+	);
+
+	pdm #(
+		.WIDTH(12),
+		.PHY("ICE40"),
+		.DITHER("YES")
+	) pdm_clk_I[1:0] (
+		.in ({ pdm_clk_hi[11:0], pdm_clk_lo[11:0] }),
+		.pdm({ clk_tune_pdm_hi, clk_tune_pdm_lo   }),
+		.oe ({ pdm_clk_hi[12],   pdm_clk_lo[12]   }),
 		.clk(clk_30m72),
 		.rst(rst)
 	);
