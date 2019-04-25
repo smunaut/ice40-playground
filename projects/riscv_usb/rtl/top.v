@@ -46,6 +46,19 @@ module top (
 	inout  wire usb_dn,
 	output wire usb_pu,
 
+	// E1
+	input  wire e1_rx_hi_p,
+//	input  wire e1_rx_hi_n,
+	input  wire e1_rx_lo_p,
+//	input  wire e1_rx_lo_n,
+
+	output wire e1_tx_hi,
+	output wire e1_tx_lo,
+
+	output wire e1_vref_ct_pdm,
+	output wire e1_vref_p_pdm,
+	output wire e1_vref_n_pdm,
+
 	// Debug UART
 	input  wire uart_rx,
 	output wire uart_tx,
@@ -57,7 +70,11 @@ module top (
 	output wire [2:0] rgb,
 
 	// Clock
-	input  wire clk_in
+	output wire clk_tune_pdm_hi,
+	output wire clk_tune_pdm_lo,
+
+	input  wire clk_12m_in,
+	input  wire clk_30m72_in
 );
 
 	localparam WB_N  =  8;
@@ -588,7 +605,7 @@ module top (
 	assign rst = rst_s;
 `else
 	sysmgr sys_mgr_I (
-		.clk_in(clk_in),
+		.clk_in(clk_12m_in),
 		.rst_in(1'b0),
 		.clk_48m(clk_48m),
 		.clk_24m(clk_24m),
