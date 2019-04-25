@@ -64,6 +64,7 @@ module bridge #(
 	/* Wishbone buses */
 	output wire [WB_AW-1:0] wb_addr,
 	output wire [WB_DW-1:0] wb_wdata,
+	output wire [(WB_DW/8)-1:0] wb_wmsk,
 	input  wire [(WB_DW*WB_N)-1:0] wb_rdata,
 	output wire [WB_N-1:0] wb_cyc,
 	output wire wb_we,
@@ -118,6 +119,7 @@ module bridge #(
 
 	assign wb_addr  = pb_addr[WB_AW+WB_AI-1:WB_AI];
 	assign wb_wdata = pb_wdata[WB_DW-1:0];
+	assign wb_wmsk  = pb_wstrb[(WB_DW/8)-1:0];
 	assign wb_we    = |pb_wstrb;
 
 	for (i=0; i<WB_N; i=i+1)

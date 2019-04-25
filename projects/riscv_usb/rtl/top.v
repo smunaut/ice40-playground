@@ -95,6 +95,7 @@ module top (
 	// Wishbone
 	wire [WB_AW-1:0] wb_addr;
 	wire [WB_DW-1:0] wb_wdata;
+	wire [(WB_DW/8)-1:0] wb_wmsk;
 	wire [WB_DW-1:0] wb_rdata [0:WB_N-1];
 	wire [(WB_DW*WB_N)-1:0] wb_rdata_flat;
 	wire [WB_N-1:0] wb_cyc;
@@ -202,6 +203,7 @@ module top (
 		.spram_we(spram_we),
 		.wb_addr(wb_addr),
 		.wb_wdata(wb_wdata),
+		.wb_wmsk(wb_wmsk),
 		.wb_rdata(wb_rdata_flat),
 		.wb_cyc(wb_cyc),
 		.wb_we(wb_we),
