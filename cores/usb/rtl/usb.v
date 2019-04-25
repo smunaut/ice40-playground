@@ -411,15 +411,15 @@ module usb #(
 		end
 
 	// Read mux for CSR
-	always @(posedge clk)
-		if (csr_bus_clear)
-			csr_bus_dout <= 16'h0000;
-		else
+	always @(*)
+		if (csr_bus_ack)
 			case (bus_addr[1:0])
-				2'b00:   csr_bus_dout <= { cr_pu_ena, 1'b0, cel_state, cr_cel_ena, 5'b00000, cr_addr } ;
-				2'b10:   csr_bus_dout <= evt_rd_data;
-				default: csr_bus_dout <= 16'h0000;
+				2'b00:   csr_bus_dout = { cr_pu_ena, 1'b0, cel_state, cr_cel_ena, 5'b00000, cr_addr } ;
+				2'b10:   csr_bus_dout = evt_rd_data;
+				default: csr_bus_dout = 16'h0000;
 			endcase
+		else
+			csr_bus_dout = 16'h0000;
 
 	// CSR Clear/Ack
 	assign csr_bus_ack   = csr_bus_req;
