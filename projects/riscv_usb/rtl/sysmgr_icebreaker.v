@@ -1,5 +1,5 @@
 /*
- * sysmgr.v
+ * sysmgr_icebreaker.v
  *
  * vim: ts=4 sw=4
  *
@@ -33,10 +33,10 @@
 
 `default_nettype none
 
-module sysmgr (
+module sysmgr_icebreaker (
 	input  wire clk_in,
 	input  wire rst_in,
-	output wire clk_24m,
+	output wire clk_30m72,
 	output wire clk_48m,
 	output wire rst_out
 );
@@ -45,31 +45,35 @@ module sysmgr (
 	wire pll_lock;
 	wire pll_reset_n;
 
-	wire clk_24m_i;
+	wire clk_30m72_i;
 	wire clk_48m_i;
 	wire rst_i;
 	reg [3:0] rst_cnt;
 
+	// Global input buffer for 30.72 MHz clock
+	SB_GB_IO #(
+		.PIN_TYPE(6'b000001),
+	) gb_in (
+		.PACKAGE_PIN(clk_in),
+		.GLOBAL_BUFFER_OUTPUT(clk_30m72_i),
+	);
+
 	// PLL instance
-	SB_PLL40_2F_PAD #(
+	SB_PLL40_CORE #(
 		.DIVR(4'b0000),
-		.DIVF(7'b0111111),
+		.DIVF(7'b0011000),
 		.DIVQ(3'b100),
-		.FILTER_RANGE(3'b001),
+		.FILTER_RANGE(3'b011),
 		.FEEDBACK_PATH("SIMPLE"),
 		.DELAY_ADJUSTMENT_MODE_FEEDBACK("FIXED"),
 		.FDA_FEEDBACK(4'b0000),
 		.SHIFTREG_DIV_MODE(2'b00),
-		.PLLOUT_SELECT_PORTA("GENCLK"),
-		.PLLOUT_SELECT_PORTB("GENCLK_HALF"),
-		.ENABLE_ICEGATE_PORTA(1'b0),
-		.ENABLE_ICEGATE_PORTB(1'b0)
+		.PLLOUT_SELECT("GENCLK"),
+		.ENABLE_ICEGATE(1'b0),
 	) pll_I (
-		.PACKAGEPIN(clk_in),
-		.PLLOUTCOREA(),
-		.PLLOUTGLOBALA(clk_48m_i),
-		.PLLOUTCOREB(),
-		.PLLOUTGLOBALB(clk_24m_i),
+		.REFERENCECLK(clk_30m72_i),
+		.PLLOUTCORE(),
+		.PLLOUTGLOBAL(clk_48m_i),
 		.EXTFEEDBACK(1'b0),
 		.DYNAMICDELAY(8'h00),
 		.RESETB(pll_reset_n),
@@ -81,14 +85,14 @@ module sysmgr (
 		.SCLK(1'b0)
 	);
 
-	assign clk_24m = clk_24m_i;
+	assign clk_30m72 = clk_30m72_i;
 	assign clk_48m = clk_48m_i;
 
 	// PLL reset generation
 	assign pll_reset_n = ~rst_in;
 
 	// Logic reset generation
-	always @(posedge clk_24m_i or negedge pll_lock)
+	always @(posedge clk_30m72_i or negedge pll_lock)
 		if (!pll_lock)
 			rst_cnt <= 4'h0;
 		else if (~rst_cnt[3])

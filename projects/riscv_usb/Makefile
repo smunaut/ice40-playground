@@ -9,7 +9,7 @@ PROJ_RTL_SRCS := $(addprefix rtl/, \
 	picorv32.v \
 	soc_bram.v \
 	soc_spram.v \
-	sysmgr.v \
+	sysmgr_icebreaker.v \
 	wb_arbiter.v \
 	wb_dma.v \
 	wb_e1data.v \
