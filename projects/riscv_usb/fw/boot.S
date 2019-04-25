@@ -29,7 +29,7 @@ _start:
 #ifdef BOOT_DEBUG
 	// Set UART divisor
 	li	a0, 0x81000004
-	li	a1, 22
+	li	a1, 29
 	sw	a1, 0(a0)
 
 	// Output 'a'

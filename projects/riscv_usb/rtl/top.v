@@ -73,7 +73,6 @@ module top (
 	output wire clk_tune_pdm_hi,
 	output wire clk_tune_pdm_lo,
 
-	input  wire clk_12m_in,
 	input  wire clk_30m72_in
 );
 
@@ -183,7 +182,7 @@ module top (
 	reg [1:0] boot_sel;
 
 	// Clock / Reset logic
-	wire clk_24m;
+	wire clk_30m72;
 	wire clk_48m;
 	wire rst;
 
@@ -205,7 +204,7 @@ module top (
 		.CATCH_MISALIGN(0),
 		.CATCH_ILLINSN(0)
 	) cpu_I (
-		.clk       (clk_24m),
+		.clk       (clk_30m72),
 		.resetn    (~rst),
 		.mem_valid (mem_valid),
 		.mem_instr (mem_instr),
@@ -246,7 +245,7 @@ module top (
 		.wb_cyc(wb_cyc),
 		.wb_we(wb_we),
 		.wb_ack(wb_ack),
-		.clk(clk_24m),
+		.clk(clk_30m72),
 		.rst(rst)
 	);
 
@@ -265,7 +264,7 @@ module top (
 		.wdata(bram_wdata),
 		.wmsk(bram_wmsk),
 		.we(bram_we),
-		.clk(clk_24m)
+		.clk(clk_30m72)
 	);
 
 	// Main memory
@@ -275,7 +274,7 @@ module top (
 		.wdata(spram_wdata),
 		.wmsk(spram_wmsk),
 		.we(spram_we),
-		.clk(clk_24m)
+		.clk(clk_30m72)
 	);
 
 
@@ -294,7 +293,7 @@ module top (
 		.bus_cyc(wb_cyc[1]),
 		.bus_ack(wb_ack[1]),
 		.bus_we(wb_we),
-		.clk(clk_24m),
+		.clk(clk_30m72),
 		.rst(rst)
 	);
 
@@ -307,7 +306,7 @@ module top (
 	SB_SPI #(
 		.BUS_ADDR74("0b0000")
 	) spi_I (
-		.SBCLKI(clk_24m),
+		.SBCLKI(clk_30m72),
 		.SBRWI(sb_rw),
 		.SBSTBI(sb_stb),
 		.SBADRI7(sb_addr[7]),
@@ -362,7 +361,7 @@ module top (
 	assign sb_ack = sb_stb;
 	assign sb_do = { sim, 4'h8 };
 
-	always @(posedge clk_24m)
+	always @(posedge clk_30m72)
 		if (rst)
 			sim <= 0;
 		else if (sb_ack & sb_rw)
@@ -399,7 +398,7 @@ module top (
 
 	SB_LEDDA_IP led_I (
 		.LEDDCS(wb_addr[4] & wb_we),
-		.LEDDCLK(clk_24m),
+		.LEDDCLK(clk_30m72),
 		.LEDDDAT7(wb_wdata[7]),
 		.LEDDDAT6(wb_wdata[6]),
 		.LEDDDAT5(wb_wdata[5]),
@@ -436,7 +435,7 @@ module top (
 		.RGB2(rgb[2])
 	);
 
-	always @(posedge clk_24m or posedge rst)
+	always @(posedge clk_30m72 or posedge rst)
 		if (rst)
 			led_ctrl <= 0;
 		else if (wb_cyc[3] & ~wb_addr[4] & wb_we)
@@ -462,7 +461,7 @@ module top (
 		.ep_rx_addr_0(ep_rx_addr_0),
 		.ep_rx_data_1(ep_rx_data_1),
 		.ep_rx_re_0(ep_rx_re_0),
-		.ep_clk(clk_24m),
+		.ep_clk(clk_30m72),
 		.bus_addr(ub_addr),
 		.bus_din(ub_wdata),
 		.bus_dout(ub_rdata),
@@ -484,7 +483,7 @@ module top (
 		.s_cyc(wb_cyc[4]),
 		.s_ack(wb_ack[4]),
 		.s_we(wb_we),
-		.s_clk(clk_24m),
+		.s_clk(clk_30m72),
 		.m_addr(ub_addr),
 		.m_wdata(ub_wdata),
 		.m_rdata(ub_rdata),
@@ -527,7 +526,7 @@ module top (
 		.e1tx_mf(e1tx_mf),
 		.e1tx_re(e1tx_re),
 		.e1tx_rdy(e1tx_rdy),
-		.clk(clk_24m),
+		.clk(clk_30m72),
 		.rst(rst)
 	);
 
@@ -552,7 +551,7 @@ module top (
 	// ---------
 
 	// Bus interface
-	always @(posedge clk_24m or posedge rst)
+	always @(posedge clk_30m72 or posedge rst)
 		if (rst) begin
 			boot_now <= 1'b0;
 			boot_sel <= 2'b00;
@@ -585,26 +584,26 @@ module top (
 	// -------------
 
 `ifdef SIM
+	reg clk_30m72_s = 1'b0;
 	reg clk_48m_s = 1'b0;
-	reg clk_24m_s = 1'b0;
 	reg rst_s = 1'b1;
 
+	always #16.27 clk_30m72_s <= !clk_30m72_s;
 	always #10.42 clk_48m_s <= !clk_48m_s;
-	always #20.84 clk_24m_s <= !clk_24m_s;
 
 	initial begin
 		#200 rst_s = 0;
 	end
 
+	assign clk_30m72 = clk_30m72_s;
 	assign clk_48m = clk_48m_s;
-	assign clk_24m = clk_24m_s;
 	assign rst = rst_s;
 `else
-	sysmgr sys_mgr_I (
-		.clk_in(clk_12m_in),
+	sysmgr_icebreaker sys_mgr_I (
+		.clk_in(clk_30m72_in),
 		.rst_in(1'b0),
+		.clk_30m72(clk_30m72),
 		.clk_48m(clk_48m),
-		.clk_24m(clk_24m),
 		.rst_out(rst)
 	);
 `endif
