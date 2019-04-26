@@ -32,16 +32,21 @@
 void main()
 {
 	bool usb_active = false;
+	int cmd = 0;
 
 	/* Init console IO */
 	console_init();
 	puts("Booting..\n");
-	puts("Command> ");
 
+	/* Main loop */
 	while (1)
 	{
+		/* Prompt ? */
+		if (cmd >= 0)
+			puts("\nCommand> ");
+
 		/* Poll for command */
-		int cmd = getchar_nowait();
+		cmd = getchar_nowait();
 
 		if (cmd >= 0) {
 			if (cmd > 32 && cmd < 127)
@@ -59,8 +64,6 @@ void main()
 			default:
 				break;
 			}
-
-			puts("\nCommand> ");
 		}
 
 		/* USB poll */
