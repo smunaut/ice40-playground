@@ -32,7 +32,7 @@ struct wb_uart {
 	uint32_t clkdiv;
 } __attribute__((packed,aligned(4)));
 
-static volatile struct wb_uart * const uart_regs = (void*)UART_BASE;
+static volatile struct wb_uart * const uart_regs = (void*)(UART_BASE);
 
 
 static char _printf_buf[128];
