@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "console.h"
+#include "led.h"
 #include "usb.h"
 
 
@@ -37,6 +38,13 @@ void main()
 	/* Init console IO */
 	console_init();
 	puts("Booting..\n");
+
+	/* LED */
+	led_init();
+	led_color(48, 96, 5);
+	led_blink(true, 200, 1000);
+	led_breathe(true, 100, 200);
+	led_state(true);
 
 	/* Main loop */
 	while (1)

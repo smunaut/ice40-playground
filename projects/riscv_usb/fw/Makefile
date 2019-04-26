@@ -8,6 +8,7 @@ CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fo
 HEADERS=\
 	config.h \
 	console.h \
+	led.h \
 	mini-printf.h \
 	usb_priv.h \
 	usb_desc_data.h
@@ -16,6 +17,7 @@ SOURCES=\
 	start.S \
 	console.c \
 	firmware.c \
+	led.c \
 	mini-printf.c  \
 	usb.c \
 	usb_ep0.c \
