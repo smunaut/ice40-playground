@@ -46,6 +46,10 @@ void main()
 	led_breathe(true, 100, 200);
 	led_state(true);
 
+	/* SPI */
+	spi_init();
+	printf("Flash ID: %08x\n", flash_id());
+
 	/* Main loop */
 	while (1)
 	{

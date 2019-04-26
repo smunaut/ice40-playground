@@ -10,6 +10,7 @@ HEADERS=\
 	console.h \
 	led.h \
 	mini-printf.h \
+	spi.h \
 	usb_priv.h \
 	usb_desc_data.h
 
@@ -19,6 +20,7 @@ SOURCES=\
 	firmware.c \
 	led.c \
 	mini-printf.c  \
+	spi.c \
 	usb.c \
 	usb_ep0.c \
 	usb_desc.c
