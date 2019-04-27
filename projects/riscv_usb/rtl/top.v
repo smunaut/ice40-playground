@@ -144,6 +144,10 @@ module top (
 	reg  [4:0] led_ctrl;
 	wire [2:0] rgb_pwm;
 
+	// WarmBoot
+	reg boot_now;
+	reg [1:0] boot_sel;
+
 	// Clock / Reset logic
 	wire clk_24m;
 	wire clk_48m;
@@ -471,6 +475,27 @@ module top (
 	assign ep_rx_re_0   = 1'b1;
 
 	assign wb_rdata[5] = wb_cyc[5] ? ep_rx_data_1 : 32'h00000000;
+
+
+	// Warm Boot
+	// ---------
+
+	// Bus interface
+	always @(posedge clk_24m or posedge rst)
+		if (rst) begin
+			boot_now <= 1'b0;
+			boot_sel <= 2'b00;
+		end else if (wb_cyc[0] & (wb_addr[2:0] == 3'b000)) begin
+			boot_now <= wb_wdata[2];
+			boot_sel <= wb_wdata[1:0];
+		end
+
+	// IP core
+	SB_WARMBOOT warmboot (
+		.BOOT(boot_now),
+		.S0(boot_sel[0]),
+		.S1(boot_sel[1])
+	);
 
 
 	// Clock / Reset
