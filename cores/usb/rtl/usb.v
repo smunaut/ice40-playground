@@ -147,6 +147,7 @@ module usb #(
 	// Config / Status registers
 	reg  cr_pu_ena;
 	reg  cr_cel_ena;
+	reg  cr_addr_chk;
 	reg  [ 6:0] cr_addr;
 
 	wire cel_state;
@@ -327,6 +328,7 @@ module usb #(
 		.eps_addr_0(eps_addr_0),
 		.eps_wrdata_0(eps_wrdata_0),
 		.eps_rddata_3(eps_rddata_3),
+		.cr_addr_chk(cr_addr_chk),
 		.cr_addr(cr_addr),
 		.evt_data(evt_data),
 		.evt_stb(evt_stb),
@@ -425,7 +427,7 @@ module usb #(
 		usb_reset,
 		rst_pending,
 		sof_pending,
-		1'b0,
+		cr_addr_chk,
 		cr_addr
 	};
 
@@ -448,7 +450,8 @@ module usb #(
 		if (cr_bus_we) begin
 			cr_pu_ena  <= bus_din[15];
 			cr_cel_ena <= bus_din[12];
-			cr_addr    <= bus_din[5:0];
+			cr_addr_chk<= bus_din[7];
+			cr_addr    <= bus_din[6:0];
 		end
 
 	// Request lines for EP Status access

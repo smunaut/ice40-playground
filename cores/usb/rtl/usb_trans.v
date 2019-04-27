@@ -25,7 +25,9 @@
 
 `default_nettype none
 
-module usb_trans (
+module usb_trans #(
+	parameter integer ADDR_MATCH = 1
+)(
 	// TX Packet interface
 	output wire txpkt_start,
 	input  wire txpkt_done,
@@ -72,6 +74,7 @@ module usb_trans (
 	input  wire [15:0] eps_rddata_3,
 
 	// Config / Status
+	input  wire cr_addr_chk,
 	input  wire [ 6:0] cr_addr,
 
 	output wire [11:0] evt_data,
@@ -116,14 +119,13 @@ module usb_trans (
 	wire [3:0] evt_set;
 	reg  [3:0] evt;
 
+	reg  [3:0] pkt_pid;
+
 	wire rto_now;
 	reg  [9:0] rto_cnt;
 
 	// Transaction / EndPoint / Buffer infos
-	reg  [3:0] trans_pid;
 	reg        trans_is_setup;
-	reg        trans_addr_zero;
-	reg        trans_addr_match;
 	reg  [3:0] trans_endp;
 	reg        trans_dir;
 
@@ -224,7 +226,7 @@ module usb_trans (
 		if (mc_op_ld)
 			casez (mc_opcode[2:1])
 				2'b00:   mc_a_reg <= evt;
-				2'b01:   mc_a_reg <= rxpkt_pid ^ { ep_data_toggle & mc_opcode[0], 3'b000 };
+				2'b01:   mc_a_reg <= pkt_pid ^ { ep_data_toggle & mc_opcode[0], 3'b000 };
 				2'b10:   mc_a_reg <= { cel_state_i, ep_type };
 				2'b11:   mc_a_reg <= { 1'b0, bd_state };
 				default: mc_a_reg <= 4'hx;
@@ -243,6 +245,20 @@ module usb_trans (
 
 	assign evt_rst = {4{mc_op_evt_clr}} & mc_opcode[3:0];
 	assign evt_set = { rto_now, txpkt_done, rxpkt_done_err, rxpkt_done_ok };
+
+	// Capture Packet PID
+	if (ADDR_MATCH) begin
+		always @(posedge clk)
+			if (rxpkt_done_ok) begin
+				if (rxpkt_is_token & cr_addr_chk)
+					pkt_pid <= (rxpkt_addr == cr_addr) ? rxpkt_pid : PID_INVAL;
+				else
+					pkt_pid <= rxpkt_pid;
+			end
+	end else begin
+		always @(*)
+			pkt_pid = rxpkt_pid;
+	end
 
 	// RX Timeout counter
 	always @(posedge clk or posedge rst)
@@ -280,10 +296,7 @@ module usb_trans (
 	// Capture EP# and direction when we get a TOKEN packet
 	always @(posedge clk)
 		if (rxpkt_done_ok & rxpkt_is_token) begin
-			trans_pid        <= rxpkt_pid;
 			trans_is_setup   <= rxpkt_pid == PID_SETUP;
-			trans_addr_zero  <= rxpkt_addr == 6'h00;
-			trans_addr_match <= rxpkt_addr == cr_addr;
 			trans_endp       <= rxpkt_endp;
 			trans_dir        <= rxpkt_pid == PID_IN;
 		end

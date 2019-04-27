@@ -10,7 +10,7 @@ Global CSRs
 ,---------------------------------------------------------------,
 | f | e | d | c | b | a | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
 |---------------------------------------------------------------|
-| p |evt| cs| ce|bsa|bra|brp|sfp| / |          addr             |
+| p |evt| cs| ce|bsa|bra|brp|sfp| m |          addr             |
 '---------------------------------------------------------------'
 ```
 
@@ -22,6 +22,7 @@ Global CSRs
   * `bra` : Bus Reset Asserted
   * `brp` : Bus Reset Pending
   * `sfp` : Start-of-Frame Pending
+  * 'm'   : Enable address matching
   * `addr`: Configure address matching
 
 

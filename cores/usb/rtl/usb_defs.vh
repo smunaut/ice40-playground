@@ -40,3 +40,5 @@ localparam PID_DATA1	= 4'b1011;
 localparam PID_ACK		= 4'b0010;
 localparam PID_NAK		= 4'b1010;
 localparam PID_STALL	= 4'b1110;
+
+localparam PID_INVAL	= 4'b0000;
