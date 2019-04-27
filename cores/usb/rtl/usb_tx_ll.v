@@ -64,6 +64,7 @@ module usb_tx_ll (
 
 	// Output
 	reg  out_active;
+	wire [1:0] out_sym_nxt;
 	reg  [1:0] out_sym;
 
 
@@ -76,7 +77,7 @@ module usb_tx_ll (
 		else begin
 			if (ll_start)
 				state <= 3'b100;
-			else if (br_now) begin
+			else if (br_now & ~bs_now) begin
 				if (ll_last)
 					state <= 3'b101;
 				else
@@ -127,14 +128,16 @@ module usb_tx_ll (
 
 	// Output symbol. Must be forced to 'J' outside of active area to
 	// be ready for the next packet start
+	assign out_sym_nxt = (bs_bit ^ lvl_prev) ? SYM_K : SYM_J;
+
 	always @(posedge clk or posedge rst)
 	begin
 		if (rst)
 			out_sym <= SYM_J;
 		else if (br_now) begin
 			case (state[1:0])
-				2'b00:   out_sym <= (bs_bit ^ lvl_prev) ? SYM_K : SYM_J;
-				2'b01:   out_sym <= SYM_SE0;
+				2'b00:   out_sym <= out_sym_nxt;
+				2'b01:   out_sym <= bs_now ? out_sym_nxt : SYM_SE0;
 				2'b10:   out_sym <= SYM_SE0;
 				2'b11:   out_sym <= SYM_J;
 				default: out_sym <= 2'bxx;
