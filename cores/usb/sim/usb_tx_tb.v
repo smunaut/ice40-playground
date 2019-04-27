@@ -45,6 +45,7 @@ module usb_tx_tb;
 	wire pkt_done;
 	wire [3:0] pkt_pid;
 	wire [9:0] pkt_len;
+	reg  [11:0] pkt_data_addr;
 	reg  [7:0] pkt_data;
 	wire pkt_data_ack;
 
@@ -57,7 +58,7 @@ module usb_tx_tb;
 	// Reset pulse
 	initial begin
 		# 200 rst = 0;
-		# 1000000 $finish;
+		# 400000 $finish;
 	end
 
 	// Clocks
@@ -76,6 +77,7 @@ module usb_tx_tb;
 		.rst(rst)
 	);
 
+`ifndef NO_PKT
 	usb_tx_pkt tx_pkt_I (
 		.ll_start(ll_start),
 		.ll_bit(ll_bit),
@@ -113,16 +115,31 @@ module usb_tx_tb;
 	assign pkt_start = (cnt == 8'hff) & ready;
 
 	// Packet
-	assign pkt_len = 10'h000;	// 16 bytes payload
-//	assign pkt_pid = 4'b0011;	// DATA0
-	assign pkt_pid = 4'b0010;	// ACK
+	assign pkt_len = 10'h100;	// 256 bytes payload
+	assign pkt_pid = 4'b0011;	// DATA0
+//	assign pkt_pid = 4'b0010;	// ACK
 
 	// Fake data source
 	always @(posedge clk_48m)
 		if (rst)
-			pkt_data <= 8'h5a;
+			pkt_data_addr <= 8'h00;
 		else
-			pkt_data <= pkt_data + pkt_data_ack;
+			pkt_data_addr <= pkt_data_addr + pkt_data_ack;
+
+	always @(*)
+		case (pkt_data_addr)
+			12'h000: pkt_data = 8'h8c;
+			12'h001: pkt_data = 8'h1a;
+			12'h002: pkt_data = 8'hf2;
+			12'h003: pkt_data = 8'hf0;
+
+			12'h100: pkt_data = 8'ha0;
+			12'h101: pkt_data = 8'h28;
+			12'h102: pkt_data = 8'hf2;
+			12'h103: pkt_data = 8'hf0;
+			default: pkt_data = 8'h00;
+		endcase
+`endif
 
 `ifdef NO_PKT
 	wire [31:0] bit_seq = 32'b00000001_10100101_11111111_11100000;
@@ -148,5 +165,7 @@ module usb_tx_tb;
 	assign ll_bit   = bit_seq[31 - cnt[4:0]];
 	assign ll_last  = cnt[4:0] == 31;
 `endif
+
+	wire trig = tx_ll_I.ll_last & tx_ll_I.br_now & tx_ll_I.bs_now;
 
 endmodule // usb_tx_tb
