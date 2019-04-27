@@ -4,33 +4,40 @@ iCE40 USB Core Memory Map
 Global CSRs
 -----------
 
-### Control (Read / Write addr `0x000`)
+### Control / Status (Read / Write addr `0x000`)
 
 ```
-,--------------------------------------------------------------,
-| f | e | d | c | b | a | 9 | 8| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
-|--------------------------------------------------------------|
-| p | / | cs| ce|   (rsvd)             |        addr           |
-'--------------------------------------------------------------'
+,---------------------------------------------------------------,
+| f | e | d | c | b | a | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+|---------------------------------------------------------------|
+| p |evt| cs| ce|bsa|bra|brp|sfp| / |          addr             |
+'---------------------------------------------------------------'
 ```
 
-  * `p`: Enables DP pull-up
-  * `cs`: Control Endpoint Lockout - State [Read Only]
-  * `ce`: Control Endpoint Lockout - Enable
+  * `p`   : Enables DP pull-up
+  * `evt` : Event pending
+  * `cs`  : Control Endpoint Lockout - State [Read Only]
+  * `ce`  : Control Endpoint Lockout - Enable
+  * `bsa` : Bus Suspend Asserted
+  * `bra` : Bus Reset Asserted
+  * `brp` : Bus Reset Pending
+  * `sfp` : Start-of-Frame Pending
   * `addr`: Configure address matching
 
 
 ### Action ( Write addr `0x01` )
 
 ```
-,--------------------------------------------------------------,
-| f | e | d | c | b | a | 9 | 8| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
-|--------------------------------------------------------------|
-|  rsvd | cr|                  (rsvd)                          |
-'--------------------------------------------------------------'
+,---------------------------------------------------------------,
+| f | e | d | c | b | a | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+|---------------------------------------------------------------|
+|  rsvd | cr|     /     |brc|sfc|               /               |
+'---------------------------------------------------------------'
 ```
 
-  * `cr`: Control Endpoint Lockout - Release
+  * `cr` : Control Endpoint Lockout - Release
+  * `brc`: Bus Reset Clear
+  * `sfc`: Start-of-Frame Clear
 
 
 ### Events (Read addr `0x02`)

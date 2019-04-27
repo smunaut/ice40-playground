@@ -153,6 +153,23 @@ module usb #(
 	reg  cel_rel;
 
 	// Bus interface
+	reg  csr_bus_req;
+	wire csr_bus_clear;
+	wire csr_bus_ack;
+	reg  [15:0] csr_bus_dout;
+	wire [15:0] csr_readout;
+
+	reg  cr_bus_we;
+
+	reg  eps_bus_req;
+	wire eps_bus_clear;
+	reg  eps_bus_ack_wait;
+	wire eps_bus_req_ok;
+	reg  [2:0] eps_bus_req_ok_dly;
+
+	wire [15:0] evt_rd_data;
+	wire evt_rd_rdy;
+	reg  evt_rd_ack;
 
 	// Events
 	wire [11:0] evt_data;
@@ -165,14 +182,15 @@ module usb #(
 	reg  [19:0] timeout_suspend;	//  3 ms with no activity
 	reg  [19:0] timeout_reset;		// 10 ms SE0
 
-	reg  rst_usb_l;
-	reg  suspend;
+	wire usb_suspend;
+	wire usb_reset;
+	reg  rst_pending;
+	reg  rst_clear;
 
 	// Start-Of-Frame indication
 	reg  sof_ind;
-
-	// USB core logic reset
-	wire rst_usb;
+	reg  sof_pending;
+	reg  sof_clear;
 
 
 	// PHY
@@ -379,42 +397,42 @@ module usb #(
 	// CSR & Bus Interface
 	// -------------------
 
-	reg  csr_bus_req;
-	wire csr_bus_clear;
-	wire csr_bus_ack;
-	reg  [15:0] csr_bus_dout;
-
-	reg  cr_bus_we;
-
-	reg  eps_bus_req;
-	wire eps_bus_clear;
-	reg  eps_bus_ack_wait;
-	wire eps_bus_req_ok;
-	reg  [2:0] eps_bus_req_ok_dly;
-
-	wire [15:0] evt_rd_data;
-	wire evt_rd_rdy;
-	reg  evt_rd_ack;
-
 	// Request lines for registers and strobes for actions
 	always @(posedge clk)
 		if (csr_bus_clear) begin
 			csr_bus_req <= 1'b0;
 			cr_bus_we   <= 1'b0;
 			cel_rel     <= 1'b0;
+			rst_clear   <= 1'b0;
+			sof_clear   <= 1'b0;
 			evt_rd_ack  <= 1'b0;
 		end else begin
 			csr_bus_req <= 1'b1;
 			cr_bus_we   <= (bus_addr[1:0] == 2'b00) &  bus_we;
 			cel_rel     <= (bus_addr[1:0] == 2'b01) &  bus_we & bus_din[13];
+			rst_clear   <= (bus_addr[1:0] == 2'b01) &  bus_we & bus_din[ 9];
+			sof_clear   <= (bus_addr[1:0] == 2'b01) &  bus_we & bus_din[ 8];
 			evt_rd_ack  <= (bus_addr[1:0] == 2'b10) & ~bus_we & evt_rd_rdy;
 		end
 
 	// Read mux for CSR
+	assign csr_readout = {
+		cr_pu_ena,
+		irq,
+		cel_state,
+		cr_cel_ena,
+		usb_suspend,
+		usb_reset,
+		rst_pending,
+		sof_pending,
+		1'b0,
+		cr_addr
+	};
+
 	always @(*)
 		if (csr_bus_ack)
 			case (bus_addr[1:0])
-				2'b00:   csr_bus_dout = { cr_pu_ena, 1'b0, cel_state, cr_cel_ena, 5'b00000, cr_addr } ;
+				2'b00:   csr_bus_dout = csr_readout;
 				2'b10:   csr_bus_dout = evt_rd_data;
 				default: csr_bus_dout = 16'h0000;
 			endcase
@@ -558,45 +576,32 @@ module usb #(
 	// -----------------
 
 	// Detect some conditions for triggers
-	assign oob_se0 = !phy_rx_dp && !phy_rx_dn;
+	assign oob_se0 = ~phy_rx_dp & ~phy_rx_dn;
 	assign oob_sof = rxpkt_start & rxpkt_is_sof;
 
 	// Suspend timeout counter
 	always @(posedge clk)
-		if (rst_usb)
-			timeout_suspend <= 20'ha3280;
+		if (oob_sof | usb_reset)
+			timeout_suspend <= 20'hdcd80;	// 3 ms
 		else
-			timeout_suspend <= oob_sof ? 20'ha3280 : (timeout_suspend - timeout_suspend[19]);
+			timeout_suspend <= timeout_suspend + timeout_suspend[19];
 
-	always @(posedge clk)
-		if (rst_usb)
-			suspend <= 1'b0;
-		else
-			suspend <= ~timeout_suspend[19];
+	assign usb_suspend = ~timeout_suspend[19];
 
 	// Reset timeout counter
 	always @(posedge clk)
-		if (rst)
-			timeout_reset <= 20'hf5300;
+		if (~oob_se0)
+			timeout_reset <= 20'h8ad00;
 		else
-			timeout_reset <= oob_se0 ? (timeout_reset - timeout_reset[19]) : 20'hf5300;
+			timeout_reset <= timeout_reset + timeout_reset[19];
 
-	always @(posedge clk)
+	assign usb_reset = ~timeout_reset[19];
+
+	always @(posedge clk or posedge rst)
 		if (rst)
-			rst_usb_l <= 1'b1;
+			rst_pending <= 1'b1;
 		else
-			rst_usb_l <= ~timeout_reset[19];
-
-	// Global reset driver
-	generate
-		if (TARGET == "GENERIC")
-			assign rst_usb = rst_usb_l;
-		else if (TARGET == "ICE40")
-			SB_GB usb_rst_gb_I (
-				.USER_SIGNAL_TO_GLOBAL_BUFFER(rst_usb_l),
-				.GLOBAL_BUFFER_OUTPUT(rst_usb)
-			);
-	endgenerate
+			rst_pending <= (rst_pending & ~rst_clear) | usb_reset;
 
 	// Detection pin
 	always @(posedge clk)
@@ -611,6 +616,9 @@ module usb #(
 
 	always @(posedge clk)
 		sof_ind <= rxpkt_start & rxpkt_is_sof;
+
+	always @(posedge clk)
+		sof_pending <= (sof_pending & ~sof_clear) | (rxpkt_start & rxpkt_is_sof);
 
 	assign sof = sof_ind;
 
