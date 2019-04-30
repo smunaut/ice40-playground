@@ -150,7 +150,7 @@ mc = [
 		EVT_CLR(EVT_ALL),
 		JEQ('IDLE', 0, EVT_RX_OK),
 
-		# Dispatch do handler
+		# Dispatch to handler
 		LD('pkt_pid'),
 		JEQ('DO_IN', PID_IN),
 		JEQ('DO_OUT', PID_OUT),

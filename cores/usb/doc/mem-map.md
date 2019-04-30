@@ -4,7 +4,7 @@ iCE40 USB Core Memory Map
 Global CSRs
 -----------
 
-### Control / Status (Read / Write addr `0x000`)
+### Control / Status (Read / Write addr `0x00`)
 
 ```
 ,---------------------------------------------------------------,
