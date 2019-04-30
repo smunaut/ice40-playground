@@ -139,6 +139,10 @@ module top (
 	wire ub_we;
 	wire ub_ack;
 
+		// SoF
+	wire sof_usb;
+	wire sof_sys;
+
 	// E1
 		// Data interface
 	wire [ 7:0] e1rx_data;
@@ -154,6 +158,10 @@ module top (
 	wire [ 6:0] e1tx_mf;
 	wire e1tx_re;
 	wire e1tx_rdy;
+
+		// Tick
+	wire e1_tick_tx;
+	wire e1_tick_rx;
 
 	// IObuf
 	wire [31:0] iobuf_rdata;
@@ -180,6 +188,10 @@ module top (
 	// WarmBoot
 	reg boot_now;
 	reg [1:0] boot_sel;
+
+	// Tick counter
+	reg [15:0] tick_cnt;
+	reg [15:0] tick_cap;
 
 	// PDM
 	reg [ 8:0] pdm_vref_ct;
@@ -259,9 +271,6 @@ module top (
 
 	for (i=0; i<WB_N; i=i+1)
 		assign wb_rdata_flat[i*WB_DW+:WB_DW] = wb_rdata[i];
-
-	assign wb_rdata[0] = 0;
-	assign wb_ack[0] = wb_cyc[0];
 
 	// Boot memory
 	soc_bram #(
@@ -476,6 +485,7 @@ module top (
 		.bus_cyc(ub_cyc),
 		.bus_we(ub_we),
 		.bus_ack(ub_ack),
+		.sof(sof_usb),
 		.clk(clk_48m),
 		.rst(rst)
 	);
@@ -499,6 +509,15 @@ module top (
 		.m_ack(ub_ack),
 		.m_we(ub_we),
 		.m_clk(clk_48m),
+		.rst(rst)
+	);
+
+	// Cross clock SoF
+	xclk_strobe sof_xclk_I (
+		.in_stb(sof_usb),
+		.in_clk(clk_48m),
+		.out_stb(sof_sys),
+		.out_clk(clk_30m72),
 		.rst(rst)
 	);
 
@@ -573,11 +592,34 @@ module top (
 		.bus_cyc(wb_cyc[8]),
 		.bus_we(wb_we),
 		.bus_ack(wb_ack[8]),
+		.tick_tx(e1_tick_tx),
+		.tick_rx(e1_tick_rx),
 		.clk(clk_30m72),
 		.rst(rst)
 	);
 
 	assign wb_rdata[8][31:16] = 16'h0000;
+
+
+	// Bus IF for "Misc"
+	// -----------------
+
+	assign wb_rdata[0] = wb_cyc[0] ? { 16'h0000, tick_cap } : 32'h00000000;
+	assign wb_ack[0] = wb_cyc[0];
+
+
+	// E1 Tick counter
+	// ---------------
+
+	always @(posedge clk_30m72 or posedge rst)
+		if (rst)
+			tick_cnt <= 16'h0000;
+		else if (e1_tick_rx)
+			tick_cnt <= tick_cnt + 1;
+
+	always @(posedge clk_30m72)
+		if (sof_sys)
+			tick_cap <= tick_cnt;
 
 
 	// Warm Boot
