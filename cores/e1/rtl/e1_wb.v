@@ -66,8 +66,10 @@ module e1_wb #(
 	input  wire bus_we,
 	output wire bus_ack,
 
-	// Interrupt
+	// External strobes
 	output reg  irq,
+	output wire tick_tx,
+	output wire tick_rx,
 
 	// Common
 	input  wire clk,
@@ -459,13 +461,16 @@ module e1_wb #(
 			tx_underflow <= (tx_underflow & ~ctx_clear) | bdtx_miss;
 
 
-	// IRQ
-	// ---
+	// External strobes
+	// ----------------
 
 	always @(posedge clk or posedge rst)
 		if (rst)
 			irq <= 1'b0;
 		else
 			irq <= ~bro_empty | rx_overflow | ~bto_empty | tx_underflow;
+
+	assign tick_tx = int_tick;	/* tick used for TX */
+	assign tick_rx = ext_tick;	/* tick recovered from RX */
 
 endmodule // e1_wb
