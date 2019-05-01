@@ -1,0 +1,7 @@
+0000000000000000
+osmocom
+iCE40 USB Demo
+Main
+Console (control)
+Console (data)
+DFU runtime

@@ -1,5 +1,5 @@
 /*
- * usb_desc.c
+ * utils.c
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -22,42 +22,26 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "usb_desc_data.h"
-
-#define NULL ((void*)0)
-#define num_elem(a) (sizeof(a) / sizeof(a[0]))
-
-const void *
-usb_get_device_desc(int *len)
+char *
+hexstr(void *d, int n, bool space)
 {
-	*len = Devices[0][0];
-	return Devices[0];
-}
+	static const char * const hex = "0123456789abcdef";
+	static char buf[96];
+	uint8_t *p = d;
+	char *s = buf;
+	char c;
 
-const void *
-usb_get_config_desc(int *len, int idx)
-{
-	if (idx < num_elem(Configurations)) {
-		*len = Configurations[idx][2] + (Configurations[idx][3] << 8);
-		return Configurations[idx];
-	} else {
-		*len = 0;
-		return NULL;
+	while (n--) {
+		c = *p++;
+		*s++ = hex[c >> 4];
+		*s++ = hex[c & 0xf];
+		if (space)
+			*s++ = ' ';
 	}
-}
 
-const void *
-usb_get_string_desc(int *len, int idx)
-{
-	if (idx <= 0) {
-		*len = StringZeros[0][0];
-		return StringZeros[0];
-	} else if ((idx-1) < num_elem(Strings)) {
-		*len = Strings[idx-1][0];
-		return Strings[idx-1];
-	} else {
-		*len = 0;
-		return NULL;
-	}
+	s[space?-1:0] = '\0';
+
+	return buf;
 }

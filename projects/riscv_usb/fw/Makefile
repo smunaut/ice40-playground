@@ -6,31 +6,46 @@ ICEPROG = iceprog
 
 CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section -DBOARD_$(BOARD)
 
-HEADERS=\
+
+HEADERS_common=\
 	config.h \
 	console.h \
 	led.h \
 	mini-printf.h \
 	spi.h \
+	usb_hw.h \
 	usb_priv.h \
-	usb_desc_data.h
+	usb_proto.h \
+	utils.h
 
-SOURCES=\
+SOURCES_common=\
 	start.S \
 	console.c \
-	firmware.c \
 	led.c \
 	mini-printf.c  \
 	spi.c \
 	usb.c \
-	usb_ep0.c \
-	usb_desc.c
+	usb_ctrl_ep0.c \
+	usb_ctrl_std.c \
+	utils.c
 
-firmware.elf: lnk-app.lds $(HEADERS) $(SOURCES)
-	$(CC) $(CFLAGS) -Wl,-Bstatic,-T,lnk-app.lds,--strip-debug -o $@ $(SOURCES)
+HEADERS_app=\
+	usb_str_app.gen.h
 
-boot.elf: lnk-boot.lds boot.S
-	$(CC) $(CFLAGS) -Wl,-Bstatic,-T,lnk-boot.lds,--strip-debug -o $@ boot.S
+SOURCES_app=\
+	fw_app.c \
+	usb_desc_app.c
+
+
+all: boot_app.hex fw_app.bin
+
+
+boot_app.elf: lnk-boot.lds boot.S
+	$(CC) $(CFLAGS) -Wl,-Bstatic,-T,lnk-boot.lds,--strip-debug -DFLASH_APP_ADDR=0x000a0000 -o $@ boot.S
+
+fw_app.elf: lnk-app.lds $(HEADERS_app) $(SOURCES_app) $(SOURCES_common)
+	$(CC) $(CFLAGS) -Wl,-Bstatic,-T,lnk-app.lds,--strip-debug -o $@ $(SOURCES_common) $(SOURCES_app)
+
 
 %.hex: %.bin
 	./bin2hex.py $< $@
@@ -38,8 +53,15 @@ boot.elf: lnk-boot.lds boot.S
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
 
-prog_fw: firmware.bin
-	$(ICEPROG) -o 1M $<
+usb_str_%.gen.h: usb_str_%.txt
+	./usb_gen_strings.py $< $@ $(BOARD)
+
+
+prog_app: fw_app.bin
+	$(ICEPROG) -o 640k $<
+
 
 clean:
-	rm -f *.bin *.hex *.elf
+	rm -f *.bin *.hex *.elf *.o *.gen.h
+
+.PHONY: prog_app clean
