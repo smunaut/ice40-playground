@@ -1,5 +1,5 @@
 /*
- * firmware.c
+ * fw_app.c
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -30,38 +30,39 @@
 #include "mini-printf.h"
 #include "spi.h"
 #include "usb.h"
+#include "utils.h"
 
 
-static char *
-hexstr(void *d, int n)
+extern const struct usb_stack_descriptors app_stack_desc;
+
+static void
+serial_no_init()
 {
-	static const char * const hex = "0123456789abcdef";
-	static char buf[96];
-	uint8_t *p = d;
-	char *s = buf;
-	char c;
+	uint8_t buf[8];
+	char *id, *desc;
+	int i;
 
-	while (n--) {
-		c = *p++;
-		*s++ = hex[c >> 4];
-		*s++ = hex[c & 0xf];
-		*s++ = ' ';
-	}
+	flash_manuf_id(buf);
+	printf("Flash Manufacturer : %s\n", hexstr(buf, 3, true));
 
-	s[-1] = '\0';
+	flash_unique_id(buf);
+	printf("Flash Unique ID    : %s\n", hexstr(buf, 8, true));
 
-	return buf;
+	/* Overwrite descriptor string */
+		/* In theory in rodata ... but nothing is ro here */
+	id = hexstr(buf, 8, false);
+	desc = (char*)app_stack_desc.str[1];
+	for (i=0; i<16; i++)
+		desc[2 + (i << 1)] = id[i];
 }
 
 void main()
 {
-	bool usb_active = false;
-	uint8_t buf[8];
 	int cmd = 0;
 
 	/* Init console IO */
 	console_init();
-	puts("Booting..\n");
+	puts("Booting App image..\n");
 
 	/* LED */
 	led_init();
@@ -73,34 +74,37 @@ void main()
 	/* SPI */
 	spi_init();
 
-	flash_manuf_id(buf);
-	puts("Flash Manuf ID  : "); puts(hexstr(buf, 3)); puts("\n");
-
-	flash_unique_id(buf);
-	puts("Flash Unique ID : "); puts(hexstr(buf, 8)); puts("\n");
+	/* Enable USB directly */
+	serial_no_init();
+	usb_init(&app_stack_desc);
 
 	/* Main loop */
 	while (1)
 	{
 		/* Prompt ? */
 		if (cmd >= 0)
-			puts("\nCommand> ");
+			printf("Command> ");
 
 		/* Poll for command */
 		cmd = getchar_nowait();
 
 		if (cmd >= 0) {
-			if (cmd > 32 && cmd < 127)
+			if (cmd > 32 && cmd < 127) {
 				putchar(cmd);
+				putchar('\r');
+				putchar('\n');
+			}
 
 			switch (cmd)
 			{
-			case 'd':
+			case 'p':
 				usb_debug_print();
 				break;
-			case 'u':
-				usb_active = true;
-				usb_init();
+			case 'c':
+				usb_connect();
+				break;
+			case 'd':
+				usb_disconnect();
 				break;
 			default:
 				break;
@@ -108,7 +112,6 @@ void main()
 		}
 
 		/* USB poll */
-		if (usb_active)
-			usb_poll();
+		usb_poll();
 	}
 }
