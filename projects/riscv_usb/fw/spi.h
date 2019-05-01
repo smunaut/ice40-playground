@@ -39,7 +39,8 @@ void spi_init(void);
 void spi_xfer(unsigned cs, struct spi_xfer_chunk *xfer, unsigned n);
 
 void flash_cmd(uint8_t cmd);
-uint32_t flash_id(void);
+void flash_manuf_id(void *manuf);
+void flash_unique_id(void *id);
 void flash_read(void *dst, uint32_t addr, unsigned len);
 
 static inline void flash_power_up(void)   { flash_cmd(0xab); };

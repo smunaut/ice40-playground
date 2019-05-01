@@ -104,7 +104,8 @@ spi_xfer(unsigned cs, struct spi_xfer_chunk *xfer, unsigned n)
 }
 
 
-void flash_cmd(uint8_t cmd)
+void
+flash_cmd(uint8_t cmd)
 {
 	struct spi_xfer_chunk xfer[1] = {
 		{ .data = (void*)&cmd, .len = 1, .read = false, .write = true,  },
@@ -112,18 +113,31 @@ void flash_cmd(uint8_t cmd)
 	spi_xfer(SPI_CS_FLASH, xfer, 1);
 }
 
-uint32_t flash_id(void)
+void
+flash_manuf_id(void *manuf)
 {
-	uint32_t buf = 0x9f;
+	uint8_t cmd = 0x9f;
 	struct spi_xfer_chunk xfer[2] = {
-		{ .data = (void*)&buf, .len = 1, .read = false, .write = true,  },
-		{ .data = (void*)&buf, .len = 3, .read = true,  .write = false, },
+		{ .data = (void*)&cmd,  .len = 1, .read = false, .write = true,  },
+		{ .data = (void*)manuf, .len = 3, .read = true,  .write = false, },
 	};
 	spi_xfer(SPI_CS_FLASH, xfer, 2);
-	return buf;
 }
 
-void flash_read(void *dst, uint32_t addr, unsigned len)
+void
+flash_unique_id(void *id)
+{
+	uint8_t cmd = 0x4b;
+	struct spi_xfer_chunk xfer[3] = {
+		{ .data = (void*)&cmd, .len = 1, .read = false, .write = true,  },
+		{ .data = (void*)0,    .len = 4, .read = false, .write = false, },
+		{ .data = (void*)id,   .len = 8, .read = true,  .write = false, },
+	};
+	spi_xfer(SPI_CS_FLASH, xfer, 3);
+}
+
+void
+flash_read(void *dst, uint32_t addr, unsigned len)
 {
 	uint8_t cmd[4] = { 0x03, ((addr >> 16) & 0xff), ((addr >> 8) & 0xff), (addr & 0xff)  };
 	struct spi_xfer_chunk xfer[2] = {
