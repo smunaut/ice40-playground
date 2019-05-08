@@ -1,5 +1,5 @@
 /*
- * fw_app.c
+ * fw_dfu.c
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -30,11 +30,11 @@
 #include "mini-printf.h"
 #include "spi.h"
 #include "usb.h"
-#include "usb_dfu_rt.h"
+#include "usb_dfu.h"
 #include "utils.h"
 
 
-extern const struct usb_stack_descriptors app_stack_desc;
+extern const struct usb_stack_descriptors dfu_stack_desc;
 
 static void
 serial_no_init()
@@ -52,26 +52,26 @@ serial_no_init()
 	/* Overwrite descriptor string */
 		/* In theory in rodata ... but nothing is ro here */
 	id = hexstr(buf, 8, false);
-	desc = (char*)app_stack_desc.str[1];
+	desc = (char*)dfu_stack_desc.str[1];
 	for (i=0; i<16; i++)
 		desc[2 + (i << 1)] = id[i];
 }
 
 static void
-boot_dfu(void)
+boot_app(void)
 {
 	/* Force re-enumeration */
 	usb_disconnect();
 
 	/* Boot firmware */
 	volatile uint32_t *boot = (void*)0x80000000;
-	*boot = (1 << 2) | (1 << 0);
+	*boot = (1 << 2) | (2 << 0);
 }
 
 void
-usb_dfu_rt_cb_reboot(void)
+usb_dfu_cb_reboot(void)
 {
-        boot_dfu();
+	boot_app();
 }
 
 void main()
@@ -80,13 +80,13 @@ void main()
 
 	/* Init console IO */
 	console_init();
-	puts("Booting App image..\n");
+	puts("Booting DFU image..\n");
 
 	/* LED */
 	led_init();
-	led_color(48, 96, 5);
-	led_blink(true, 200, 1000);
-	led_breathe(true, 100, 200);
+	led_color(72, 64, 0);
+	led_blink(true, 150, 150);
+	led_breathe(true, 50, 100);
 	led_state(true);
 
 	/* SPI */
@@ -94,8 +94,9 @@ void main()
 
 	/* Enable USB directly */
 	serial_no_init();
-	usb_init(&app_stack_desc);
-	usb_dfu_rt_init();
+	usb_init(&dfu_stack_desc);
+	usb_dfu_init();
+	usb_connect();
 
 	/* Main loop */
 	while (1)
@@ -119,14 +120,14 @@ void main()
 			case 'p':
 				usb_debug_print();
 				break;
-			case 'b':
-				boot_dfu();
-				break;
 			case 'c':
 				usb_connect();
 				break;
 			case 'd':
 				usb_disconnect();
+				break;
+			case 'b':
+				boot_app();
 				break;
 			default:
 				break;
