@@ -294,7 +294,7 @@ mc = [
 
 		# Check we have space, if not prevent data writes
 		LD('bd_state'),
-		JEQ('_DO_OUT_BCI_DROP_DATA', BD_RDY_DATA),
+		JNE('_DO_OUT_BCI_DROP_DATA', BD_RDY_DATA),
 
 		# Wait for packet
 		EVT_RTO(TIMEOUT),
