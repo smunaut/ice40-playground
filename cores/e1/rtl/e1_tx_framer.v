@@ -179,22 +179,18 @@ module e1_tx_framer (
 	assign odd_bit0 = { fetch_crc_e[1:0], 6'b110100 };
 
 	always @(posedge clk)
-		if (fetch_valid) begin
-			if (fetch_ts_is0 & ctrl_do_framing) begin
-				// TS0 with auto-framing
-				if (fetch_frame[0])
-					// Odd frame number
-					shift_data_nxt <= { odd_bit0[fetch_frame[3:1]], 1'b1, alarm, 5'b11111 };
-				else
-					// Even frame number
-					shift_data_nxt <= 8'h1b;	// CRC bits are set later
-			end else begin
-				// Either auto-frame is disabled, or this is not TS0
-				shift_data_nxt <= fetch_data;
-			end
+		if (fetch_ts_is0 & ctrl_do_framing) begin
+			// TS0 with auto-framing
+			if (fetch_frame[0])
+				// Odd frame number
+				shift_data_nxt <= { odd_bit0[fetch_frame[3:1]], 1'b1, alarm, 5'b11111 };
+			else
+				// Even frame number
+				shift_data_nxt <= 8'h1b;	// CRC bits are set later
 		end else begin
-			// No data from fetch unit, fill with 0xff
-			shift_data_nxt <= 8'hff;
+			// Either auto-frame is disabled, or this is not TS0
+			// If there is no valid data available, fill with 0xff
+			shift_data_nxt <= fetch_valid ? fetch_data : 8'hff;
 		end
 
 
