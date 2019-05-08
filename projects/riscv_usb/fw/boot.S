@@ -104,7 +104,7 @@ spi_init:
 //  a0 - destination pointer
 //  a1 - length (bytes)
 //  a2 - flash offset
-//       
+//
 
 spi_flash_read:
 	// Save params
@@ -136,7 +136,7 @@ spi_flash_read:
 _spi_loop:
 	li	a0, 0x00
 	jal	_spi_do_one
-	sb	a0, 0(s0)	
+	sb	a0, 0(s0)
 	addi	s0, s0,  1
 	addi	s1, s1, -1
 	bne	s1, zero, _spi_loop
