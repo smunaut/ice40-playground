@@ -29,7 +29,7 @@ struct spi_xfer_chunk {
 	uint8_t *data;
 	unsigned len;
 	bool write;
-	bool read; 
+	bool read;
 };
 
 #define SPI_CS_FLASH	0
@@ -39,9 +39,14 @@ void spi_init(void);
 void spi_xfer(unsigned cs, struct spi_xfer_chunk *xfer, unsigned n);
 
 void flash_cmd(uint8_t cmd);
+void flash_deep_power_down(void);
+void flash_wake_up(void);
+void flash_write_enable(void);
+void flash_write_disable(void);
 void flash_manuf_id(void *manuf);
 void flash_unique_id(void *id);
+uint8_t flash_read_sr(void);
+void flash_write_sr(uint8_t sr);
 void flash_read(void *dst, uint32_t addr, unsigned len);
-
-static inline void flash_power_up(void)   { flash_cmd(0xab); };
-static inline void flash_power_down(void) { flash_cmd(0xb9); };
+void flash_page_program(void *src, uint32_t addr, unsigned len);
+void flash_sector_erase(uint32_t addr);

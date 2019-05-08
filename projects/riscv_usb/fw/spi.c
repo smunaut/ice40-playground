@@ -104,6 +104,23 @@ spi_xfer(unsigned cs, struct spi_xfer_chunk *xfer, unsigned n)
 }
 
 
+#define FLASH_CMD_DEEP_POWER_DOWN	0xb9
+#define FLASH_CMD_WAKE_UP		0xab
+#define FLASH_CMD_WRITE_ENABLE		0x06
+#define FLASH_CMD_WRITE_ENABLE_VOLATILE	0x50
+#define FLASH_CMD_WRITE_DISABLE		0x04
+
+#define FLASH_CMD_READ_MANUF_ID		0x9f
+#define FLASH_CMD_READ_UNIQUE_ID	0x4b
+
+#define FLASH_CMD_READ_SR1		0x05
+#define FLASH_CMD_WRITE_SR1		0x01
+
+#define FLASH_CMD_READ_DATA		0x03
+#define FLASH_CMD_PAGE_PROGRAM		0x02
+#define FLASH_CMD_CHIP_ERASE		0x60
+#define FLASH_CMD_SECTOR_ERASE		0x20
+
 void
 flash_cmd(uint8_t cmd)
 {
@@ -114,9 +131,39 @@ flash_cmd(uint8_t cmd)
 }
 
 void
+flash_deep_power_down(void)
+{
+	flash_cmd(FLASH_CMD_DEEP_POWER_DOWN);
+}
+
+void
+flash_wake_up(void)
+{
+	flash_cmd(FLASH_CMD_WAKE_UP);
+}
+
+void
+flash_write_enable(void)
+{
+	flash_cmd(FLASH_CMD_WRITE_ENABLE);
+}
+
+void
+flash_write_enable_volatile(void)
+{
+	flash_cmd(FLASH_CMD_WRITE_ENABLE_VOLATILE);
+}
+
+void
+flash_write_disable(void)
+{
+	flash_cmd(FLASH_CMD_WRITE_DISABLE);
+}
+
+void
 flash_manuf_id(void *manuf)
 {
-	uint8_t cmd = 0x9f;
+	uint8_t cmd = FLASH_CMD_READ_MANUF_ID;
 	struct spi_xfer_chunk xfer[2] = {
 		{ .data = (void*)&cmd,  .len = 1, .read = false, .write = true,  },
 		{ .data = (void*)manuf, .len = 3, .read = true,  .write = false, },
@@ -127,7 +174,7 @@ flash_manuf_id(void *manuf)
 void
 flash_unique_id(void *id)
 {
-	uint8_t cmd = 0x4b;
+	uint8_t cmd = FLASH_CMD_READ_UNIQUE_ID;
 	struct spi_xfer_chunk xfer[3] = {
 		{ .data = (void*)&cmd, .len = 1, .read = false, .write = true,  },
 		{ .data = (void*)0,    .len = 4, .read = false, .write = false, },
@@ -136,13 +183,57 @@ flash_unique_id(void *id)
 	spi_xfer(SPI_CS_FLASH, xfer, 3);
 }
 
+uint8_t
+flash_read_sr(void)
+{
+	uint8_t cmd = FLASH_CMD_READ_SR1;
+	uint8_t rv;
+	struct spi_xfer_chunk xfer[2] = {
+		{ .data = (void*)&cmd, .len = 1, .read = false, .write = true,  },
+		{ .data = (void*)&rv,  .len = 1, .read = true,  .write = false, },
+	};
+	spi_xfer(SPI_CS_FLASH, xfer, 2);
+	return rv;
+}
+
+void
+flash_write_sr(uint8_t sr)
+{
+	uint8_t cmd[2] = { FLASH_CMD_WRITE_SR1, sr };
+	struct spi_xfer_chunk xfer[1] = {
+		{ .data = (void*)cmd, .len = 2, .read = false, .write = true,  },
+	};
+	spi_xfer(SPI_CS_FLASH, xfer, 1);
+}
+
 void
 flash_read(void *dst, uint32_t addr, unsigned len)
 {
-	uint8_t cmd[4] = { 0x03, ((addr >> 16) & 0xff), ((addr >> 8) & 0xff), (addr & 0xff)  };
+	uint8_t cmd[4] = { FLASH_CMD_READ_DATA, ((addr >> 16) & 0xff), ((addr >> 8) & 0xff), (addr & 0xff)  };
 	struct spi_xfer_chunk xfer[2] = {
 		{ .data = (void*)cmd, .len = 4,   .read = false, .write = true,  },
 		{ .data = (void*)dst, .len = len, .read = true,  .write = false, },
 	};
 	spi_xfer(SPI_CS_FLASH, xfer, 2);
+}
+
+void
+flash_page_program(void *src, uint32_t addr, unsigned len)
+{
+	uint8_t cmd[4] = { FLASH_CMD_PAGE_PROGRAM, ((addr >> 16) & 0xff), ((addr >> 8) & 0xff), (addr & 0xff)  };
+	struct spi_xfer_chunk xfer[2] = {
+		{ .data = (void*)cmd, .len = 4,   .read = false, .write = true, },
+		{ .data = (void*)src, .len = len, .read = false, .write = true, },
+	};
+	spi_xfer(SPI_CS_FLASH, xfer, 2);
+}
+
+void
+flash_sector_erase(uint32_t addr)
+{
+	uint8_t cmd[4] = { FLASH_CMD_SECTOR_ERASE, ((addr >> 16) & 0xff), ((addr >> 8) & 0xff), (addr & 0xff)  };
+	struct spi_xfer_chunk xfer[1] = {
+		{ .data = (void*)cmd, .len = 4,   .read = false, .write = true,  },
+	};
+	spi_xfer(SPI_CS_FLASH, xfer, 1);
 }
