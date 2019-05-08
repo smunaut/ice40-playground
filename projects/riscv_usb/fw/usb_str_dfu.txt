@@ -1,0 +1,6 @@
+0000000000000000
+osmocom
+!{"bitsy": "iCEBreaker-bitsy (DFU)", "": "iCE40 USB Device (DFU)"}
+DFU
+iCE40 bitstream
+RISC-V firmware
