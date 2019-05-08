@@ -1,9 +1,10 @@
+BOARD ?= icebreaker
 CROSS = riscv-none-embed-
 CC = $(CROSS)gcc
 OBJCOPY = $(CROSS)objcopy
 ICEPROG = iceprog
 
-CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section
+CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section -DBOARD_$(BOARD)
 
 HEADERS=\
 	config.h \
