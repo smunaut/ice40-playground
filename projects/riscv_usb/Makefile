@@ -33,7 +33,7 @@ BOARD ?= icebreaker
 DEVICE = up5k
 PACKAGE = sg48
 
-NEXTPNR_ARGS = --pre-pack data/clocks.py --seed 2
+NEXTPNR_ARGS = --pre-pack data/clocks.py --seed 12
 
 # Include default rules
 include ../../build/project-rules.mk

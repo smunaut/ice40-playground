@@ -1,5 +1,5 @@
 /*
- * config.h
+ * e1.h
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -23,12 +23,9 @@
 
 #pragma once
 
-#define MISC_BASE	0x80000000
-#define UART_BASE	0x81000000
-#define SPI_BASE	0x82000000
-#define LED_BASE	0x83000000
-#define USB_CORE_BASE	0x84000000
-#define USB_DATA_BASE	0x85000000
-#define E1_DATA_BASE	0x86000000
-#define DMA_BASE	0x87000000
-#define E1_CORE_BASE	0x88000000
+void e1_init(bool clk_mode);
+void e1_poll(void);
+void e1_debug_print(bool data);
+
+volatile uint8_t *e1_data_ptr(int mf, int frame, int ts);
+unsigned int e1_data_ofs(int mf, int frame, int ts);

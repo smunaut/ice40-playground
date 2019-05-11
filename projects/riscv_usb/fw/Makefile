@@ -1,5 +1,5 @@
 BOARD ?= icebreaker
-CROSS = riscv-none-embed-
+CROSS = riscv64-unknown-elf-
 CC = $(CROSS)gcc
 OBJCOPY = $(CROSS)objcopy
 ICEPROG = iceprog
@@ -39,10 +39,17 @@ SOURCES_dfu=\
 	usb_desc_dfu.c
 
 HEADERS_app=\
+	dma.h \
+	e1.h \
+	misc.h \
 	usb_str_app.gen.h
 
 SOURCES_app=\
+	dma.c \
+	e1.c \
 	fw_app.c \
+	misc.c \
+	usb_e1.c \
 	usb_desc_app.c
 
 

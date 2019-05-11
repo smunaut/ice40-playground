@@ -238,7 +238,7 @@ usb_debug_print_ep(int ep, int dir)
 {
 	volatile struct usb_ep *ep_regs = dir ? &usb_ep_regs[ep].in : &usb_ep_regs[ep].out;
 
-	printf("EP%d %s", ep, dir ? "IN" : "OUT");
+	printf("EP%d %s\n", ep, dir ? "IN" : "OUT");
 	printf("\tS     %04x\n", ep_regs->status);
 	printf("\tBD0.0 %04x\n", ep_regs->bd[0].csr);
 	printf("\tBD0.1 %04x\n", ep_regs->bd[0].ptr);
@@ -272,6 +272,10 @@ usb_debug_print(void)
 
 	usb_debug_print_ep(0, 0);
 	usb_debug_print_ep(0, 1);
+
+	usb_debug_print_ep(1, 0);
+	usb_debug_print_ep(1, 1);
+	usb_debug_print_ep(2, 1);
 
 	printf("Data:\n");
 	usb_debug_print_data(0, 4);

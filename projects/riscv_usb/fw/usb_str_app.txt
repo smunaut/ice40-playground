@@ -1,7 +1,8 @@
 0000000000000000
 osmocom
-iCE40 USB Demo
+E1 adapter
 Main
+E1
 Console (control)
 Console (data)
 DFU runtime

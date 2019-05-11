@@ -1,5 +1,5 @@
 /*
- * config.h
+ * dma.h
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -23,12 +23,17 @@
 
 #pragma once
 
-#define MISC_BASE	0x80000000
-#define UART_BASE	0x81000000
-#define SPI_BASE	0x82000000
-#define LED_BASE	0x83000000
-#define USB_CORE_BASE	0x84000000
-#define USB_DATA_BASE	0x85000000
-#define E1_DATA_BASE	0x86000000
-#define DMA_BASE	0x87000000
-#define E1_CORE_BASE	0x88000000
+#include <stdbool.h>
+
+typedef void (*dma_cb)(void *);
+
+/* Direction
+ *  0 is E1  to USB
+ *  1 is USB to E1
+ */
+
+bool dma_ready(void);
+void dma_exec(unsigned addr_e1, unsigned addr_usb, unsigned len, bool dir,
+              dma_cb cb_fn, void *cb_data);
+
+bool dma_poll(void);

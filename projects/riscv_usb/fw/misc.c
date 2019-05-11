@@ -1,5 +1,5 @@
 /*
- * config.h
+ * misc.c
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -21,14 +21,38 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#pragma once
+#include <stdbool.h>
+#include <stdint.h>
 
-#define MISC_BASE	0x80000000
-#define UART_BASE	0x81000000
-#define SPI_BASE	0x82000000
-#define LED_BASE	0x83000000
-#define USB_CORE_BASE	0x84000000
-#define USB_DATA_BASE	0x85000000
-#define E1_DATA_BASE	0x86000000
-#define DMA_BASE	0x87000000
-#define E1_CORE_BASE	0x88000000
+#include "config.h"
+#include "misc.h"
+
+
+struct misc {
+	uint32_t warmboot;
+	uint32_t e1_tick;
+	uint32_t pdm[6];
+} __attribute__((packed,aligned(4)));
+
+static volatile struct misc * const misc_regs = (void*)(MISC_BASE);
+
+
+static const int pdm_bits[6] = { 12, 12, 8, 0, 8, 8 };
+
+
+void
+pdm_set(int chan, bool enable, unsigned value, bool normalize)
+{
+	if (normalize)
+		value >>= (16 - pdm_bits[chan]);
+	if (enable)
+		value |= (1 << pdm_bits[chan]);
+	misc_regs->pdm[chan] = value;
+}
+
+
+uint16_t
+e1_tick_read(void)
+{
+	return misc_regs->e1_tick;
+}
