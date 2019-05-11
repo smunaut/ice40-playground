@@ -1,0 +1,18 @@
+# USB
+set_io -nowarn usb_dp 43
+set_io -nowarn usb_dn 42
+set_io -nowarn usb_pu 38
+
+# Clock
+set_io -nowarn clk_in 35
+
+# Button
+set_io -nowarn btn 10
+
+# Leds
+set_io -nowarn rgb[0] 39
+set_io -nowarn rgb[1] 40
+set_io -nowarn rgb[2] 41
+
+set_io -nowarn ledr 11
+set_io -nowarn ledg 37
