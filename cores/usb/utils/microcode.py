@@ -225,6 +225,12 @@ mc = [
 		# Transmit packet (with DATA0, always)
 		TX(PID_DATA0),
 
+		# Wait for TX to complete
+	L('_DO_IN_ISOC_WAIT_TX'),
+		LD('evt'),
+		JEQ('_DO_IN_ISOC_WAIT_TX', 0, EVT_TX_DONE),
+		EVT_CLR(EVT_TX_DONE),
+
 		# "Assume" success
 		EP(bd_state=BD_DONE_OK, bdi_flip=True, dt_flip=False, wb=True),
 		NOTIFY(NOTIFY_SUCCESS),
