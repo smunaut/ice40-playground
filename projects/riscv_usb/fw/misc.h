@@ -1,5 +1,5 @@
 /*
- * config.h
+ * misc.h
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -23,12 +23,17 @@
 
 #pragma once
 
-#define MISC_BASE	0x80000000
-#define UART_BASE	0x81000000
-#define SPI_BASE	0x82000000
-#define LED_BASE	0x83000000
-#define USB_CORE_BASE	0x84000000
-#define USB_DATA_BASE	0x85000000
-#define E1_DATA_BASE	0x86000000
-#define DMA_BASE	0x87000000
-#define E1_CORE_BASE	0x88000000
+#include <stdbool.h>
+#include <stdint.h>
+
+enum pdm_chan {
+	PDM_CLK_HI	= 0,
+	PDM_CLK_LO	= 1,
+	PDM_E1_CT	= 2,
+	PDM_E1_P	= 4,
+	PDM_E1_N	= 5,
+};
+
+void pdm_set(int chan, bool enable, unsigned value, bool normalize);
+
+uint16_t e1_tick_read(void);

@@ -43,13 +43,20 @@ SOURCES_dfu=\
 	usb_desc_dfu.c
 
 HEADERS_app=\
+	dma.h \
+	e1.h \
+	misc.h \
 	usb_dfu_rt.h \
 	usb_dfu_proto.h \
 	usb_str_app.gen.h
 
 SOURCES_app=\
+	dma.c \
+	e1.c \
 	fw_app.c \
+	misc.c \
 	usb_dfu_rt.c \
+	usb_e1.c \
 	usb_desc_app.c
 
 

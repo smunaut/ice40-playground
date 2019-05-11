@@ -25,8 +25,12 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "config.h"
+
 #include "console.h"
+#include "e1.h"
 #include "led.h"
+#include "misc.h"
 #include "mini-printf.h"
 #include "spi.h"
 #include "usb.h"
@@ -74,8 +78,12 @@ usb_dfu_rt_cb_reboot(void)
         boot_dfu();
 }
 
+
+static volatile uint32_t * const misc_regs = (void*)(MISC_BASE);
+
 void main()
 {
+	bool e1_active = false;
 	int cmd = 0;
 
 	/* Init console IO */
@@ -84,18 +92,25 @@ void main()
 
 	/* LED */
 	led_init();
-	led_color(48, 96, 5);
-	led_blink(true, 200, 1000);
-	led_breathe(true, 100, 200);
-	led_state(true);
 
 	/* SPI */
 	spi_init();
+
+	/* Setup E1 Vref */
+	int d = 25;
+	pdm_set(PDM_E1_CT, true, 128, false);
+	pdm_set(PDM_E1_P,  true, 128 - d, false);
+	pdm_set(PDM_E1_N,  true, 128 + d, false);
+
+	/* Setup clock tuning */
+	pdm_set(PDM_CLK_HI, true, 2048, false);
+	pdm_set(PDM_CLK_LO, false,   0, false);
 
 	/* Enable USB directly */
 	serial_no_init();
 	usb_init(&app_stack_desc);
 	usb_dfu_rt_init();
+	usb_e1_init();
 
 	/* Main loop */
 	while (1)
@@ -122,6 +137,24 @@ void main()
 			case 'b':
 				boot_dfu();
 				break;
+			case 'o':
+				e1_debug_print(false);
+				break;
+			case 'O':
+				e1_debug_print(true);
+				break;
+			case 't':
+				printf("%08x\n", misc_regs[0]);
+			case 'e':
+				e1_init(true);
+				e1_active = true;
+				led_state(true);
+				break;
+			case 'E':
+				e1_init(false);
+				e1_active = true;
+				led_state(true);
+				break;
 			case 'c':
 				usb_connect();
 				break;
@@ -135,5 +168,11 @@ void main()
 
 		/* USB poll */
 		usb_poll();
+
+		/* E1 poll */
+		if (e1_active) {
+			e1_poll();
+			usb_e1_run();
+		}
 	}
 }
