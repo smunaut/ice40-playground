@@ -485,7 +485,7 @@ module top (
 		if (rst) begin
 			boot_now <= 1'b0;
 			boot_sel <= 2'b00;
-		end else if (wb_cyc[0] & (wb_addr[2:0] == 3'b000)) begin
+		end else if (wb_cyc[0] & wb_we & (wb_addr[2:0] == 3'b000)) begin
 			boot_now <= wb_wdata[2];
 			boot_sel <= wb_wdata[1:0];
 		end
