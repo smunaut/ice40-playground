@@ -78,6 +78,11 @@ And example usage would be :
 
 See the `--help` for other options available.
 
+A C implementation, `icestream`, is in the `sw/` directory.  It has fewer
+features than `stream.py` but is faster on slow computers such as the
+Raspberry Pi.
+It requires [libftdi](http://www.intra2net.com/en/developer/libftdi/).
+
 To prepare content, you can use ffmpeg :
 
 ```
