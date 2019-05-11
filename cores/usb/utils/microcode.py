@@ -164,8 +164,8 @@ mc = [
 	L('DO_IN'),
 		# Check endpoint type
 		LD('ep_type'),
-		JMP('DO_IN_ISOC', EP_TYPE_ISOC, EP_TYPE_MSK1),	# isochronous is special
-		JMP('IDLE', EP_TYPE_NONE, EP_TYPE_MSK1),		# endpoint doesn't exist, ignore packet
+		JEQ('DO_IN_ISOC', EP_TYPE_ISOC, EP_TYPE_MSK1),	# isochronous is special
+		JEQ('IDLE', EP_TYPE_NONE, EP_TYPE_MSK1),		# endpoint doesn't exist, ignore packet
 
 
 		# Bulk/Control/Interrupt
