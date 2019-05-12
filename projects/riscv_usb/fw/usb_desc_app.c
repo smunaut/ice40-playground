@@ -49,6 +49,7 @@ static const struct {
 	} __attribute__ ((packed)) e1;
 
 	/* CDC */
+#if 0
 	struct {
 		struct usb_intf_desc intf_ctl;
 		struct usb_cs_intf_hdr_desc cs_intf_hdr;
@@ -60,6 +61,7 @@ static const struct {
 		struct usb_ep_desc ep_data_out;
 		struct usb_ep_desc ep_data_in;
 	} __attribute__ ((packed)) cdc;
+#endif
 
 	/* DFU Runtime */
 	struct {
@@ -71,7 +73,11 @@ static const struct {
 		.bLength                = sizeof(struct usb_conf_desc),
 		.bDescriptorType        = USB_DT_CONF,
 		.wTotalLength           = sizeof(_app_conf_desc),
+#if 0
 		.bNumInterfaces         = 4,
+#else
+		.bNumInterfaces         = 2,
+#endif
 		.bConfigurationValue    = 1,
 		.iConfiguration         = 4,
 		.bmAttributes           = 0x80,
@@ -153,6 +159,7 @@ static const struct {
 			},
 		},
 	},
+#if 0
 	.cdc = {
 		.intf_ctl = {
 			.bLength		= sizeof(struct usb_intf_desc),
@@ -220,11 +227,16 @@ static const struct {
 			.bInterval		= 0x00,
 		},
 	},
+#endif
 	.dfu = {
 		.intf = {
 			.bLength		= sizeof(struct usb_intf_desc),
 			.bDescriptorType	= USB_DT_INTF,
+#if 0
 			.bInterfaceNumber	= 3,
+#else
+			.bInterfaceNumber	= 1,
+#endif
 			.bAlternateSetting	= 0,
 			.bNumEndpoints		= 0,
 			.bInterfaceClass	= 0xfe,
