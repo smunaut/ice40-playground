@@ -25,7 +25,7 @@ End Point 0 and Control endpoint in general are almost treated like any
 other endpoint, and you can use control transfer on any endpoint if you
 wish.
 
-However the hardwar does offer a couple of special features to make the
+However the hardware does offer a couple of special features to make the
 software implementation of control transfer easier.
 
 The first one is called the "Control Endpoint Lockout" or _CEL_ for short.
