@@ -22,7 +22,7 @@ Global CSRs
   * `bra` : Bus Reset Asserted
   * `brp` : Bus Reset Pending
   * `sfp` : Start-of-Frame Pending
-  * 'm'   : Enable address matching
+  * `m`   : Enable address matching
   * `addr`: Configure address matching
 
 
