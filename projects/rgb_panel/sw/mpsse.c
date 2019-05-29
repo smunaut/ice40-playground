@@ -347,6 +347,11 @@ void mpsse_init(int ifnum, const char *devstr, bool slow_clock)
 		mpsse_error(2);
 	}
 
+	if (ftdi_write_data_set_chunksize(&mpsse_ftdic, 65536)) {
+		fprintf(stderr, "Failed to set write chunk size.\n");
+		mpsse_error(2);
+	}
+
 	// disable clock divide by 5
 	mpsse_send_byte(MC_TCK_X5);
 
@@ -356,9 +361,9 @@ void mpsse_init(int ifnum, const char *devstr, bool slow_clock)
 		mpsse_send_byte(119);
 		mpsse_send_byte(0x00);
 	} else {
-		// set 6 MHz clock
+		// set 30 MHz clock
 		mpsse_send_byte(MC_SET_CLK_DIV);
-		mpsse_send_byte(0x01);
+		mpsse_send_byte(0x00);
 		mpsse_send_byte(0x00);
 	}
 }

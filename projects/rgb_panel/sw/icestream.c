@@ -18,6 +18,7 @@
 
 #define _GNU_SOURCE
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -25,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/time.h>
 
 #include "mpsse.h"
 
@@ -38,7 +40,7 @@ static void set_cs(int cs_b)
 	uint8_t gpio = 0;
 	uint8_t direction = 0x0b;
 
-	/* 
+	/*
 	 * XXX
 	 * The chip select here is the dedicated SPI chip select.
 	 * I am not sure how it is being toggled by hand yet.
@@ -56,7 +58,7 @@ static void set_reset(int reset)
 	uint8_t gpio = 0;
 	uint8_t direction = 0x8b;
 
-	/* 
+	/*
 	 * XXX
 	 * The chip select here is the dedicated SPI chip select.
 	 * I am not sure how it is being toggled by hand yet.
@@ -102,6 +104,35 @@ static void help(const char *progname)
 	fprintf(stderr, "    iCE FTDI USB device),\n");
 	fprintf(stderr, "  3 if verification of the data failed.\n");
 	fprintf(stderr, "\n");
+}
+
+static void print_stats(bool verbose)
+{
+	if (!verbose)
+		return;
+
+	static double before, next;
+	static int frame_count;
+
+	if (before == 0) {
+		struct timeval tv0;
+		gettimeofday(&tv0, NULL);
+		before = tv0.tv_sec + tv0.tv_usec / 1000000.0;
+		next = before + 1.0;
+		return;
+	}
+
+	frame_count++;
+
+	struct timeval tv1;
+	gettimeofday(&tv1, NULL);
+	double now = tv1.tv_sec + tv1.tv_usec / 1000000.0;
+	if (now < next)
+		return;
+
+	double fps = frame_count / (now - before);
+	fprintf(stderr, "%d: %g FPS\n", (int)(now - before), fps);
+	next += 1.0;
 }
 
 int main(int argc, char **argv)
@@ -177,7 +208,7 @@ int main(int argc, char **argv)
 	// ---------------------------------------------------------
 	// Open File
 	// ---------------------------------------------------------
-	
+
 	FILE *f = NULL;
 	long file_size = -1;
 
@@ -199,13 +230,18 @@ int main(int argc, char **argv)
 //	sleep(1);
 //	set_reset(1);
 
+#define LINE_AT_A_TIME 0
+
 	int llen = 64*6*2;
 	int flen = 64*llen;
 	uint8_t *buf = malloc(flen);
 
 	while (1) {
-		char cmd_buf[llen+128];
-
+		int cblen = 64 * (llen + 21);
+		char cmd_buf[cblen + 256];
+#if !LINE_AT_A_TIME
+		size_t i = 0;
+#endif
 		/* Read frame */
 		if (fread(buf, flen, 1, f) != 1) {
 			fseek(f, 0L, SEEK_SET);
@@ -230,7 +266,9 @@ int main(int argc, char **argv)
 			mpsse_send_spi(cmd_buf, 2);
 			set_cs(1);
 #else
+#if LINE_AT_A_TIME
 			int i=0;
+#endif
 
 			/* Set CS low */
 			cmd_buf[i++] = 0x80; /* MC_SETB_LOW */
@@ -271,10 +309,17 @@ int main(int argc, char **argv)
 			cmd_buf[i++] = 0x08; /* gpio */
 			cmd_buf[i++] = 0x0b; /* dir  */
 
+#if LINE_AT_A_TIME
 			mpsse_send_raw(cmd_buf, i);
+#endif
 #endif
 
 		}
+
+#if !LINE_AT_A_TIME
+		assert(i <= cblen);
+		mpsse_send_raw(cmd_buf, i);
+#endif
 
 		/* Swap */
 		cmd_buf[0] = 0x04;
@@ -292,8 +337,9 @@ int main(int argc, char **argv)
 			mpsse_xfer_spi(cmd_buf, 2);
 			set_cs(1);
 			//printf("%d\n", cmd_buf[0] | cmd_buf[1]);
-		} while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02); 
+		} while (((cmd_buf[0] | cmd_buf[1]) & 0x02) != 0x02);
 #endif
+		print_stats(verbose);
 	}
 
 
