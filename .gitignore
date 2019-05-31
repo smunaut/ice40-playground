@@ -2,3 +2,4 @@ build-tmp
 __pycache__
 .*.swp
 *.o
+icestream
