@@ -33,6 +33,8 @@ module hub75_top #(
 	parameter integer N_PLANES = 8,		// # bitplanes
 	parameter integer BITDEPTH = 24,	// # bits per color
 
+	parameter SCAN_MODE = "ZIGZAG",		// 'LINEAR' or 'ZIGZAG'
+
 	// Auto-set
 	parameter integer LOG_N_BANKS = $clog2(N_BANKS),
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS),
@@ -174,7 +176,8 @@ module hub75_top #(
 
 	// Scan
 	hub75_scan #(
-		.N_ROWS(N_ROWS)
+		.N_ROWS(N_ROWS),
+		.SCAN_MODE(SCAN_MODE)
 	) scan_I (
 		.bcm_row(bcm_row),				// -> hub75_bcm
 		.bcm_go(bcm_go),				// -> hub75_bcm

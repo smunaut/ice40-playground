@@ -28,6 +28,8 @@
 module hub75_scan #(
 	parameter integer N_ROWS   = 32,
 
+	parameter SCAN_MODE = "ZIGZAG",		// 'LINEAR' or 'ZIGZAG'
+
 	// Auto-set
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS)
 )(
@@ -112,8 +114,13 @@ module hub75_scan #(
 			row <= 0;
 			row_last <= 1'b0;
 		end else if (fsm_state == ST_PAINT) begin
-			row <= row + 1;
-			row_last <= (row == {{(LOG_N_ROWS-1){1'b1}}, 1'b0});
+			if (SCAN_MODE == "ZIGZAG") begin
+				row <= ~(row + {LOG_N_ROWS{row[LOG_N_ROWS-1]}});
+				row_last <= (row == {1'b0, {(LOG_N_ROWS-1){1'b1}}});
+			end else begin
+				row <= row + 1;
+				row_last <= (row == {{(LOG_N_ROWS-1){1'b1}}, 1'b0});
+			end
 		end
 
 
