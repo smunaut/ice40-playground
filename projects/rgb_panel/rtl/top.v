@@ -107,6 +107,9 @@ module top (
 	wire frame_swap;
 	wire frame_rdy;
 
+	// Control
+	reg  ctrl_run;
+
 
 	// Hub75 driver
 	// ------------
@@ -134,6 +137,7 @@ module top (
 		.fbw_wren(fbw_wren),
 		.frame_swap(frame_swap),
 		.frame_rdy(frame_rdy),
+		.ctrl_run(ctrl_run),
 		.cfg_pre_latch_len(8'h80),
 		.cfg_latch_len(8'h80),
 		.cfg_post_latch_len(8'h80),
@@ -141,6 +145,13 @@ module top (
 		.clk(clk),
 		.rst(rst)
 	);
+
+	// Only start the scan when we have our first frame
+	always @(posedge clk or posedge rst)
+		if (rst)
+			ctrl_run <= 1'b0;
+		else
+			ctrl_run <= ctrl_run | frame_swap;
 
 
 	// Host Streaming
