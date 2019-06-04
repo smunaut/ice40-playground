@@ -208,7 +208,7 @@ module spi_flash_reader (
 	// MOSI output
 		// Use DDR output to be half a cycle in advance
 	SB_IO #(
-		.PIN_TYPE(6'b010000),
+		.PIN_TYPE(6'b010001),
 		.PULLUP(1'b0),
 		.NEG_TRIGGER(1'b0),
 		.IO_STANDARD("SB_LVCMOS")
@@ -238,7 +238,7 @@ module spi_flash_reader (
 	// Chip Select
 		// Use DDR output to be half a cycle in advance
 	SB_IO #(
-		.PIN_TYPE(6'b010000),
+		.PIN_TYPE(6'b010001),
 		.PULLUP(1'b0),
 		.NEG_TRIGGER(1'b0),
 		.IO_STANDARD("SB_LVCMOS")
@@ -254,7 +254,7 @@ module spi_flash_reader (
 		// Use DDR output to have rising edge of SPI_CLK with
 		// the rising edge of our internal clock
 	SB_IO #(
-		.PIN_TYPE(6'b010000),
+		.PIN_TYPE(6'b010001),
 		.PULLUP(1'b0),
 		.NEG_TRIGGER(1'b0),
 		.IO_STANDARD("SB_LVCMOS")
