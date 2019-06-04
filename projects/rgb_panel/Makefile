@@ -31,6 +31,12 @@ ifeq ($(SPI),fast)
 YOSYS_READ_ARGS += -DSPI_FAST=1
 endif
 
+	# Panel frequency
+PANEL ?= fast
+ifeq ($(PANEL),fast)
+YOSYS_READ_ARGS += -DPANEL_FAST=1
+endif
+
 	# Custom data program
 $(BUILD_TMP)/$(PROJ)-video.bin: $(BUILD_TMP)/$(PROJ).bin data/nyan_glitch_64x64x16.raw
 	cp $< $@

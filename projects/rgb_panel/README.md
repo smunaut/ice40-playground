@@ -36,6 +36,14 @@ mapping matches your panels since several pinout have been seen in the
 wild.
 
 
+Panel frequency
+---------------
+
+The build default is to run the panel at 30 MHz. This can be too fast for some
+panel. During build you can use `make PANEL=slow` to select PLL settings that
+will run the panel at 24 MHz instead.
+
+
 Pattern mode
 ------------
 

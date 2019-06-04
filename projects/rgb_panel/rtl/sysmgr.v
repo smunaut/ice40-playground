@@ -55,7 +55,11 @@ module sysmgr (
 `else
 	SB_PLL40_PAD #(
 		.DIVR(4'b0000),
+`ifdef PANEL_FAST
 		.DIVF(7'b1001111),
+`else
+		.DIVF(7'b0111111),
+`endif
 		.DIVQ(3'b101),
 		.FILTER_RANGE(3'b001),
 		.FEEDBACK_PATH("SIMPLE"),
