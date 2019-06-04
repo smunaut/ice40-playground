@@ -107,5 +107,5 @@ modulation of the RGB leds.
 
 This step can be modified to the user to suit their need (for instance, doing
 a palette lookup), but by default it does a bit expansion to 24 bits RGB
-(assuming a RGB332 or RGB556 or RGB888 depending on `BITDEPTH`) and then
+(assuming a RGB332 or RGB565 or RGB888 depending on `BITDEPTH`) and then
 performs a gamma correction using a built-in LUT.
