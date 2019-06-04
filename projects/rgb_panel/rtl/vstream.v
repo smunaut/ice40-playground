@@ -54,7 +54,7 @@ module vstream #(
 	input  wire fbw_row_rdy,
 	output wire fbw_row_swap,
 
-	output wire [23:0] fbw_data,
+	output wire [BITDEPTH-1:0] fbw_data,
 	output wire [LOG_N_COLS-1:0] fbw_col_addr,
 	output wire fbw_wren,
 
