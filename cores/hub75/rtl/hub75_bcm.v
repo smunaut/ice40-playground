@@ -33,6 +33,8 @@ module hub75_bcm #(
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS)
 )(
 	// PHY
+	output wire phy_addr_inc,
+	output wire phy_addr_rst,
 	output wire [LOG_N_ROWS-1:0] phy_addr,
 	output wire phy_le,
 
@@ -48,6 +50,7 @@ module hub75_bcm #(
 
 	// Control
 	input  wire [LOG_N_ROWS-1:0] ctrl_row,
+	input  wire ctrl_row_first,
 	input  wire ctrl_go,
 	output wire ctrl_rdy,
 
@@ -87,7 +90,8 @@ module hub75_bcm #(
 
 	reg  [LOG_N_ROWS-1:0] addr;
 	reg  [LOG_N_ROWS-1:0] addr_out;
-	wire addr_ce;
+	reg  addr_do_inc;
+	reg  addr_do_rst;
 	wire le;
 
 
@@ -190,6 +194,12 @@ module hub75_bcm #(
 			addr <= ctrl_row;
 
 	always @(posedge clk)
+	begin
+		addr_do_inc <= (addr_do_inc | (ctrl_go & ~ctrl_row_first)) & ~(fsm_state == ST_POST_LATCH);
+		addr_do_rst <= (addr_do_rst | (ctrl_go &  ctrl_row_first)) & ~(fsm_state == ST_POST_LATCH);
+	end
+
+	always @(posedge clk)
 		if (fsm_state == ST_DO_LATCH)
 			addr_out <= addr;
 
@@ -205,5 +215,8 @@ module hub75_bcm #(
 
 	assign phy_addr = addr_out;
 	assign phy_le = le;
+
+	assign phy_addr_inc = (fsm_state == ST_DO_LATCH) ? addr_do_inc : 1'b0;
+	assign phy_addr_rst = (fsm_state == ST_DO_LATCH) ? addr_do_rst : 1'b0;
 
 endmodule // hub75_bcm

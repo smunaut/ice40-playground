@@ -32,6 +32,7 @@ module hub75_top #(
 	parameter integer N_CHANS  = 3,		// # of data channel
 	parameter integer N_PLANES = 8,		// # bitplanes
 	parameter integer BITDEPTH = 24,	// # bits per color
+	parameter integer PHY_AIR  = 0,		// PHY Address Inc/Reset
 
 	parameter SCAN_MODE = "ZIGZAG",		// 'LINEAR' or 'ZIGZAG'
 
@@ -41,6 +42,8 @@ module hub75_top #(
 	parameter integer LOG_N_COLS  = $clog2(N_COLS)
 )(
 	// Hub75 interface pads
+	output wire hub75_addr_inc,
+	output wire hub75_addr_rst,
 	output wire [LOG_N_ROWS-1:0] hub75_addr,
 	output wire [(N_BANKS*N_CHANS)-1:0] hub75_data,
 	output wire hub75_clk,
@@ -85,6 +88,8 @@ module hub75_top #(
 	wire frame_swap_fb;
 
 	// PHY interface
+	wire phy_addr_inc;
+	wire phy_addr_rst;
 	wire [LOG_N_ROWS-1:0] phy_addr;
 	wire [(N_BANKS*N_CHANS)-1:0] phy_data;
 	wire phy_clk;
@@ -109,6 +114,7 @@ module hub75_top #(
 
 	// Binary Code Modulator
 	wire [LOG_N_ROWS-1:0] bcm_row;
+	wire bcm_row_first;
 	wire bcm_go;
 	wire bcm_rdy;
 
@@ -182,6 +188,7 @@ module hub75_top #(
 		.SCAN_MODE(SCAN_MODE)
 	) scan_I (
 		.bcm_row(bcm_row),				// -> hub75_bcm
+		.bcm_row_first(bcm_row_first),	// -> hub75_bcm
 		.bcm_go(bcm_go),				// -> hub75_bcm
 		.bcm_rdy(bcm_rdy),				// <- hub75_bcm
 		.fb_row_addr(fbr_row_addr),		// -> hub75_framebuffer
@@ -198,6 +205,8 @@ module hub75_top #(
 	hub75_bcm #(
 		.N_PLANES(N_PLANES)
 	) bcm_I (
+		.phy_addr_inc(phy_addr_inc),	// -> hub75_phy
+		.phy_addr_rst(phy_addr_rst),	// -> hub75_phy
 		.phy_addr(phy_addr),			// -> hub75_phy
 		.phy_le(phy_le),				// -> hub75_phy
 		.shift_plane(shift_plane),		// -> hub75_shift
@@ -207,6 +216,7 @@ module hub75_top #(
 		.blank_go(blank_go),			// -> hub75_blanking
 		.blank_rdy(blank_rdy),			// <- hub75_blanking
 		.ctrl_row(bcm_row),				// <- hub75_scan
+		.ctrl_row_first(bcm_row_first),	// <- hub75_scan
 		.ctrl_go(bcm_go),				// <- hub75_scan
 		.ctrl_rdy(bcm_rdy),				// -> hub75_scan
 		.cfg_pre_latch_len(cfg_pre_latch_len),		// <- top
@@ -252,13 +262,18 @@ module hub75_top #(
 	hub75_phy #(
 		.N_BANKS(N_BANKS),
 		.N_ROWS(N_ROWS),
-		.N_CHANS(N_CHANS)
+		.N_CHANS(N_CHANS),
+		.PHY_AIR(PHY_AIR)
 	) phy_I (
+		.hub75_addr_inc(hub75_addr_inc),// -> pad
+		.hub75_addr_rst(hub75_addr_rst),// -> pad
 		.hub75_addr(hub75_addr),		// -> pad
 		.hub75_data(hub75_data),		// -> pad
 		.hub75_clk(hub75_clk),			// -> pad
 		.hub75_le(hub75_le),			// -> pad
 		.hub75_blank(hub75_blank),		// -> pad
+		.phy_addr_inc(phy_addr_inc),	// <- hub75_bcm
+		.phy_addr_rst(phy_addr_rst),	// <- hub75_bcm
 		.phy_addr(phy_addr),			// <- hub75_bcm
 		.phy_data(phy_data),			// <- hub75_shift
 		.phy_clk(phy_clk),				// <- hub75_shift

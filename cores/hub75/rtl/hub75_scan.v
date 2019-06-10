@@ -35,6 +35,7 @@ module hub75_scan #(
 )(
 	// BCM interface
 	output wire [LOG_N_ROWS-1:0] bcm_row,
+	output wire bcm_row_first,
 	output wire bcm_go,
 	input  wire bcm_rdy,
 
@@ -68,6 +69,7 @@ module hub75_scan #(
 
 	// Row counter
 	reg [LOG_N_ROWS-1:0] row;
+	reg row_first;
 	reg row_last;
 
 
@@ -112,14 +114,17 @@ module hub75_scan #(
 	always @(posedge clk)
 		if (fsm_state == ST_IDLE) begin
 			row <= 0;
-			row_last <= 1'b0;
+			row_first <= 1'b1;
+			row_last  <= 1'b0;
 		end else if (fsm_state == ST_PAINT) begin
 			if (SCAN_MODE == "ZIGZAG") begin
 				row <= ~(row + {LOG_N_ROWS{row[LOG_N_ROWS-1]}});
-				row_last <= (row == {1'b0, {(LOG_N_ROWS-1){1'b1}}});
+				row_first <= 1'b0;
+				row_last  <= (row == {1'b0, {(LOG_N_ROWS-1){1'b1}}});
 			end else begin
 				row <= row + 1;
-				row_last <= (row == {{(LOG_N_ROWS-1){1'b1}}, 1'b0});
+				row_first <= 1'b0;
+				row_last  <= (row == {{(LOG_N_ROWS-1){1'b1}}, 1'b0});
 			end
 		end
 
@@ -128,8 +133,9 @@ module hub75_scan #(
 	// -------------------
 
 	// BCM
-	assign bcm_row = row;
-	assign bcm_go  = (fsm_state == ST_PAINT);
+	assign bcm_row       = row;
+	assign bcm_row_first = row_first;
+	assign bcm_go        = (fsm_state == ST_PAINT);
 
 	// Frame Buffer pre loader
 	assign fb_row_addr = row;

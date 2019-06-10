@@ -30,11 +30,14 @@ module hub75_phy #(
 	parameter integer N_BANKS  = 2,
 	parameter integer N_ROWS   = 32,
 	parameter integer N_CHANS  = 3,
+	parameter integer PHY_AIR  = 0,		// PHY Address Inc/Reset
 
 	// Auto-set
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS)
 )(
 	// Hub75 interface pads
+	output wire hub75_addr_inc,
+	output wire hub75_addr_rst,
 	output wire [LOG_N_ROWS-1:0] hub75_addr,
 	output wire [(N_BANKS*N_CHANS)-1:0] hub75_data,
 	output wire hub75_clk,
@@ -42,6 +45,8 @@ module hub75_phy #(
 	output wire hub75_blank,
 
 	// PHY interface signals
+	input wire phy_addr_inc,
+	input wire phy_addr_rst,
 	input wire [LOG_N_ROWS-1:0] phy_addr,
 	input wire [(N_BANKS*N_CHANS)-1:0] phy_data,
 	input wire phy_clk,
@@ -59,18 +64,43 @@ module hub75_phy #(
 
 	// Address
 	generate
-		for (i=0; i<LOG_N_ROWS; i=i+1)
+		if (PHY_AIR == 0) begin
 			SB_IO #(
 				.PIN_TYPE(6'b010100),
 				.PULLUP(1'b0),
 				.NEG_TRIGGER(1'b0),
 				.IO_STANDARD("SB_LVCMOS")
-			) iob_addr_I (
-				.PACKAGE_PIN(hub75_addr[i]),
+			) iob_addr_I[LOG_N_ROWS-1:0] (
+				.PACKAGE_PIN(hub75_addr),
 				.CLOCK_ENABLE(1'b1),
 				.OUTPUT_CLK(clk),
-				.D_OUT_0(phy_addr[i])
+				.D_OUT_0(phy_addr)
 			);
+		end else begin
+			SB_IO #(
+				.PIN_TYPE(6'b010100),
+				.PULLUP(1'b0),
+				.NEG_TRIGGER(1'b0),
+				.IO_STANDARD("SB_LVCMOS")
+			) iob_addr_inc_I (
+				.PACKAGE_PIN(hub75_addr_inc),
+				.CLOCK_ENABLE(1'b1),
+				.OUTPUT_CLK(clk),
+				.D_OUT_0(phy_addr_inc ^ PHY_AIR[1])
+			);
+
+			SB_IO #(
+				.PIN_TYPE(6'b010100),
+				.PULLUP(1'b0),
+				.NEG_TRIGGER(1'b0),
+				.IO_STANDARD("SB_LVCMOS")
+			) iob_addr_rst_I (
+				.PACKAGE_PIN(hub75_addr_rst),
+				.CLOCK_ENABLE(1'b1),
+				.OUTPUT_CLK(clk),
+				.D_OUT_0(phy_addr_rst ^ PHY_AIR[2])
+			);
+		end
 	endgenerate
 
 	// Data lines
