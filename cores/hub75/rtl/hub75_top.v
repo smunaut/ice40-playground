@@ -37,6 +37,7 @@ module hub75_top #(
 	parameter SCAN_MODE = "ZIGZAG",		// 'LINEAR' or 'ZIGZAG'
 
 	// Auto-set
+	parameter integer SDW         = N_BANKS * N_CHANS,
 	parameter integer LOG_N_BANKS = $clog2(N_BANKS),
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS),
 	parameter integer LOG_N_COLS  = $clog2(N_COLS)
@@ -45,7 +46,7 @@ module hub75_top #(
 	output wire hub75_addr_inc,
 	output wire hub75_addr_rst,
 	output wire [LOG_N_ROWS-1:0] hub75_addr,
-	output wire [(N_BANKS*N_CHANS)-1:0] hub75_data,
+	output wire [SDW-1:0] hub75_data,
 	output wire hub75_clk,
 	output wire hub75_le,
 	output wire hub75_blank,
@@ -91,7 +92,7 @@ module hub75_top #(
 	wire phy_addr_inc;
 	wire phy_addr_rst;
 	wire [LOG_N_ROWS-1:0] phy_addr;
-	wire [(N_BANKS*N_CHANS)-1:0] phy_data;
+	wire [SDW-1:0] phy_data;
 	wire phy_clk;
 	wire phy_le;
 	wire phy_blank;

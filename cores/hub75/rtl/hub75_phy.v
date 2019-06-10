@@ -33,13 +33,14 @@ module hub75_phy #(
 	parameter integer PHY_AIR  = 0,		// PHY Address Inc/Reset
 
 	// Auto-set
+	parameter integer SDW         = N_BANKS * N_CHANS,
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS)
 )(
 	// Hub75 interface pads
 	output wire hub75_addr_inc,
 	output wire hub75_addr_rst,
 	output wire [LOG_N_ROWS-1:0] hub75_addr,
-	output wire [(N_BANKS*N_CHANS)-1:0] hub75_data,
+	output wire [SDW-1:0] hub75_data,
 	output wire hub75_clk,
 	output wire hub75_le,
 	output wire hub75_blank,
@@ -48,7 +49,7 @@ module hub75_phy #(
 	input wire phy_addr_inc,
 	input wire phy_addr_rst,
 	input wire [LOG_N_ROWS-1:0] phy_addr,
-	input wire [(N_BANKS*N_CHANS)-1:0] phy_data,
+	input wire [SDW-1:0] phy_data,
 	input wire phy_clk,
 	input wire phy_le,
 	input wire phy_blank,
@@ -57,8 +58,6 @@ module hub75_phy #(
 	input  wire clk,
 	input  wire rst
 );
-	genvar i;
-
 	// Signals
 	reg phy_clk_f;
 
@@ -104,20 +103,17 @@ module hub75_phy #(
 	endgenerate
 
 	// Data lines
-	generate
-		for (i=0; i<(N_BANKS*N_CHANS); i=i+1)
-			SB_IO #(
-				.PIN_TYPE(6'b010100),
-				.PULLUP(1'b0),
-				.NEG_TRIGGER(1'b0),
-				.IO_STANDARD("SB_LVCMOS")
-			) iob_data_I (
-				.PACKAGE_PIN(hub75_data[i]),
-				.CLOCK_ENABLE(1'b1),
-				.OUTPUT_CLK(clk),
-				.D_OUT_0(phy_data[i])
-			);
-	endgenerate
+	SB_IO #(
+		.PIN_TYPE(6'b010100),
+		.PULLUP(1'b0),
+		.NEG_TRIGGER(1'b0),
+		.IO_STANDARD("SB_LVCMOS")
+	) iob_data_I[SDW-1:0] (
+		.PACKAGE_PIN(hub75_data),
+		.CLOCK_ENABLE(1'b1),
+		.OUTPUT_CLK(clk),
+		.D_OUT_0(phy_data)
+	);
 
 	// Falling edge clock, so we need one more delay so it's not too early !
 	always @(posedge clk or posedge rst)

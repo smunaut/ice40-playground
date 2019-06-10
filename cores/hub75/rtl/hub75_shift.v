@@ -32,10 +32,11 @@ module hub75_shift #(
 	parameter integer N_PLANES = 8,
 
 	// Auto-set
+	parameter integer SDW         = N_BANKS * N_CHANS,
 	parameter integer LOG_N_COLS  = $clog2(N_COLS)
 )(
 	// PHY
-	output wire [(N_BANKS*N_CHANS)-1:0] phy_data,
+	output wire [SDW-1:0] phy_data,
 	output wire phy_clk,
 
 	// RAM interface
@@ -64,8 +65,8 @@ module hub75_shift #(
 	reg [LOG_N_COLS:0] cnt_0;
 	reg cnt_last_0;
 
-	wire [(N_BANKS*N_CHANS)-1:0] ram_data_bit;
-	reg  [(N_BANKS*N_CHANS)-1:0] data_2;
+	wire [SDW-1:0] ram_data_bit;
+	reg  [SDW-1:0] data_2;
 
 
 	// Control logic
@@ -106,7 +107,7 @@ module hub75_shift #(
 
 	// Data plane mux
 	generate
-		for (i=0; i<(N_BANKS*N_CHANS); i=i+1)
+		for (i=0; i<SDW; i=i+1)
 			assign ram_data_bit[i] = |(ram_data[((i+1)*N_PLANES)-1:i*N_PLANES] & ctrl_plane);
 	endgenerate
 
