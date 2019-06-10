@@ -32,12 +32,14 @@ module hub75_top #(
 	parameter integer N_CHANS  = 3,		// # of data channel
 	parameter integer N_PLANES = 8,		// # bitplanes
 	parameter integer BITDEPTH = 24,	// # bits per color
+	parameter integer PHY_DDR  = 0,		// PHY DDR data output
 	parameter integer PHY_AIR  = 0,		// PHY Address Inc/Reset
 
 	parameter SCAN_MODE = "ZIGZAG",		// 'LINEAR' or 'ZIGZAG'
 
 	// Auto-set
 	parameter integer SDW         = N_BANKS * N_CHANS,
+	parameter integer ESDW        = SDW / (PHY_DDR ? 2 : 1),
 	parameter integer LOG_N_BANKS = $clog2(N_BANKS),
 	parameter integer LOG_N_ROWS  = $clog2(N_ROWS),
 	parameter integer LOG_N_COLS  = $clog2(N_COLS)
@@ -46,7 +48,7 @@ module hub75_top #(
 	output wire hub75_addr_inc,
 	output wire hub75_addr_rst,
 	output wire [LOG_N_ROWS-1:0] hub75_addr,
-	output wire [SDW-1:0] hub75_data,
+	output wire [ESDW-1:0] hub75_data,
 	output wire hub75_clk,
 	output wire hub75_le,
 	output wire hub75_blank,
@@ -78,6 +80,7 @@ module hub75_top #(
 
 	// Clock / Reset
 	input  wire clk,
+	input  wire clk_2x,
 	input  wire rst
 );
 
@@ -260,28 +263,57 @@ module hub75_top #(
 	);
 
 	// Physical layer control
-	hub75_phy #(
-		.N_BANKS(N_BANKS),
-		.N_ROWS(N_ROWS),
-		.N_CHANS(N_CHANS),
-		.PHY_AIR(PHY_AIR)
-	) phy_I (
-		.hub75_addr_inc(hub75_addr_inc),// -> pad
-		.hub75_addr_rst(hub75_addr_rst),// -> pad
-		.hub75_addr(hub75_addr),		// -> pad
-		.hub75_data(hub75_data),		// -> pad
-		.hub75_clk(hub75_clk),			// -> pad
-		.hub75_le(hub75_le),			// -> pad
-		.hub75_blank(hub75_blank),		// -> pad
-		.phy_addr_inc(phy_addr_inc),	// <- hub75_bcm
-		.phy_addr_rst(phy_addr_rst),	// <- hub75_bcm
-		.phy_addr(phy_addr),			// <- hub75_bcm
-		.phy_data(phy_data),			// <- hub75_shift
-		.phy_clk(phy_clk),				// <- hub75_shift
-		.phy_le(phy_le),				// <- hub75_bcm
-		.phy_blank(phy_blank),			// <- hub75_blanking
-		.clk(clk),						// <- top
-		.rst(rst)						// <- top
-	);
+	generate
+		if (PHY_DDR == 0)
+			hub75_phy #(
+				.N_BANKS(N_BANKS),
+				.N_ROWS(N_ROWS),
+				.N_CHANS(N_CHANS),
+				.PHY_AIR(PHY_AIR)
+			) phy_I (
+				.hub75_addr_inc(hub75_addr_inc),// -> pad
+				.hub75_addr_rst(hub75_addr_rst),// -> pad
+				.hub75_addr(hub75_addr),		// -> pad
+				.hub75_data(hub75_data),		// -> pad
+				.hub75_clk(hub75_clk),			// -> pad
+				.hub75_le(hub75_le),			// -> pad
+				.hub75_blank(hub75_blank),		// -> pad
+				.phy_addr_inc(phy_addr_inc),	// <- hub75_bcm
+				.phy_addr_rst(phy_addr_rst),	// <- hub75_bcm
+				.phy_addr(phy_addr),			// <- hub75_bcm
+				.phy_data(phy_data),			// <- hub75_shift
+				.phy_clk(phy_clk),				// <- hub75_shift
+				.phy_le(phy_le),				// <- hub75_bcm
+				.phy_blank(phy_blank),			// <- hub75_blanking
+				.clk(clk),						// <- top
+				.rst(rst)						// <- top
+			);
+		else
+			hub75_phy_ddr #(
+				.N_BANKS(N_BANKS),
+				.N_ROWS(N_ROWS),
+				.N_CHANS(N_CHANS),
+				.PHY_DDR(PHY_DDR),
+				.PHY_AIR(PHY_AIR)
+			) phy_I (
+				.hub75_addr_inc(hub75_addr_inc),// -> pad
+				.hub75_addr_rst(hub75_addr_rst),// -> pad
+				.hub75_addr(hub75_addr),		// -> pad
+				.hub75_data(hub75_data),		// -> pad
+				.hub75_clk(hub75_clk),			// -> pad
+				.hub75_le(hub75_le),			// -> pad
+				.hub75_blank(hub75_blank),		// -> pad
+				.phy_addr_inc(phy_addr_inc),	// <- hub75_bcm
+				.phy_addr_rst(phy_addr_rst),	// <- hub75_bcm
+				.phy_addr(phy_addr),			// <- hub75_bcm
+				.phy_data(phy_data),			// <- hub75_shift
+				.phy_clk(phy_clk),				// <- hub75_shift
+				.phy_le(phy_le),				// <- hub75_bcm
+				.phy_blank(phy_blank),			// <- hub75_blanking
+				.clk(clk),						// <- top
+				.clk_2x(clk_2x),				// <- top
+				.rst(rst)						// <- top
+			);
+	endgenerate
 
 endmodule // hub75_top
