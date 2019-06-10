@@ -51,7 +51,7 @@ PROJ_TOP_SRC  := $(abspath $(PROJ_TOP_SRC))
 # Board config
 PIN_DEF ?= $(abspath data/$(PROJ_TOP_MOD)-$(BOARD).pcf)
 
-BOARD_DEFINE=BOARD_$(shell echo $(BOARD) | tr a-z A-Z)
+BOARD_DEFINE=BOARD_$(shell echo $(BOARD) | tr a-z\- A-Z_)
 YOSYS_READ_ARGS += -D$(BOARD_DEFINE)=1
 
 # Add those to the list
