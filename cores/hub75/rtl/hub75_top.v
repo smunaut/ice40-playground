@@ -35,6 +35,7 @@ module hub75_top #(
 	parameter integer PHY_DDR  = 0,		// PHY DDR data output
 	parameter integer PHY_AIR  = 0,		// PHY Address Inc/Reset
 
+	parameter PANEL_INIT = "NONE",		// 'NONE' or 'FM6126'
 	parameter SCAN_MODE = "ZIGZAG",		// 'LINEAR' or 'ZIGZAG'
 
 	// Auto-set
@@ -100,6 +101,14 @@ module hub75_top #(
 	wire phy_le;
 	wire phy_blank;
 
+	wire phz_addr_inc;
+	wire phz_addr_rst;
+	wire [LOG_N_ROWS-1:0] phz_addr;
+	wire [SDW-1:0] phz_data;
+	wire phz_clk;
+	wire phz_le;
+	wire phz_blank;
+
 	// Frame Buffer access
 		// Read - Back Buffer loading
 	wire [LOG_N_ROWS-1:0] fbr_row_addr;
@@ -120,7 +129,7 @@ module hub75_top #(
 	wire [LOG_N_ROWS-1:0] bcm_row;
 	wire bcm_row_first;
 	wire bcm_go;
-	wire bcm_rdy;
+	wire bcm_rdy, bcm_rdz;
 
 	// Shifter
 	wire [N_PLANES-1:0] shift_plane;
@@ -194,7 +203,7 @@ module hub75_top #(
 		.bcm_row(bcm_row),				// -> hub75_bcm
 		.bcm_row_first(bcm_row_first),	// -> hub75_bcm
 		.bcm_go(bcm_go),				// -> hub75_bcm
-		.bcm_rdy(bcm_rdy),				// <- hub75_bcm
+		.bcm_rdy(bcm_rdz),				// <- hub75_bcm
 		.fb_row_addr(fbr_row_addr),		// -> hub75_framebuffer
 		.fb_row_load(fbr_row_load),		// -> hub75_framebuffer
 		.fb_row_rdy(fbr_row_rdy),		// <- hub75_framebuffer
@@ -262,6 +271,57 @@ module hub75_top #(
 		.rst(rst)						// <- top
 	);
 
+	// Init injector
+	generate
+		if (PANEL_INIT == "NONE") begin
+
+			// Direct PHY connection
+			assign phz_addr_inc	= phy_addr_inc;
+			assign phz_addr_rst	= phy_addr_rst;
+			assign phz_addr		= phy_addr;
+			assign phz_data		= phy_data;
+			assign phz_clk		= phy_clk;
+			assign phz_le		= phy_le;
+			assign phz_blank	= phy_blank;
+
+			// No gating
+			assign bcm_rdz = bcm_rdy;
+
+		end else begin
+
+			hub75_init_inject #(
+				.N_BANKS(N_BANKS),
+				.N_ROWS(N_ROWS),
+				.N_COLS(N_COLS),
+				.N_CHANS(N_CHANS)
+			) init_I (
+				.phy_in_addr_inc(phy_addr_inc),
+				.phy_in_addr_rst(phy_addr_rst),
+				.phy_in_addr(phy_addr),
+				.phy_in_data(phy_data),
+				.phy_in_clk(phy_clk),
+				.phy_in_le(phy_le),
+				.phy_in_blank(phy_blank),
+				.phy_out_addr_inc(phz_addr_inc),
+				.phy_out_addr_rst(phz_addr_rst),
+				.phy_out_addr(phz_addr),
+				.phy_out_data(phz_data),
+				.phy_out_clk(phz_clk),
+				.phy_out_le(phz_le),
+				.phy_out_blank(phz_blank),
+				.init_req(1'b1),
+				.scan_go_in(scan_go),
+				.bcm_rdy_in(bcm_rdy),
+				.bcm_rdy_out(bcm_rdz),
+				.shift_rdy_in(shift_rdy),
+				.blank_rdy_in(blank_rdy),
+				.clk(clk),
+				.rst(rst)
+			);
+
+		end
+	endgenerate
+
 	// Physical layer control
 	generate
 		if (PHY_DDR == 0)
@@ -278,13 +338,13 @@ module hub75_top #(
 				.hub75_clk(hub75_clk),			// -> pad
 				.hub75_le(hub75_le),			// -> pad
 				.hub75_blank(hub75_blank),		// -> pad
-				.phy_addr_inc(phy_addr_inc),	// <- hub75_bcm
-				.phy_addr_rst(phy_addr_rst),	// <- hub75_bcm
-				.phy_addr(phy_addr),			// <- hub75_bcm
-				.phy_data(phy_data),			// <- hub75_shift
-				.phy_clk(phy_clk),				// <- hub75_shift
-				.phy_le(phy_le),				// <- hub75_bcm
-				.phy_blank(phy_blank),			// <- hub75_blanking
+				.phy_addr_inc(phz_addr_inc),	// <- hub75_bcm
+				.phy_addr_rst(phz_addr_rst),	// <- hub75_bcm
+				.phy_addr(phz_addr),			// <- hub75_bcm
+				.phy_data(phz_data),			// <- hub75_shift
+				.phy_clk(phz_clk),				// <- hub75_shift
+				.phy_le(phz_le),				// <- hub75_bcm
+				.phy_blank(phz_blank),			// <- hub75_blanking
 				.clk(clk),						// <- top
 				.rst(rst)						// <- top
 			);
@@ -303,13 +363,13 @@ module hub75_top #(
 				.hub75_clk(hub75_clk),			// -> pad
 				.hub75_le(hub75_le),			// -> pad
 				.hub75_blank(hub75_blank),		// -> pad
-				.phy_addr_inc(phy_addr_inc),	// <- hub75_bcm
-				.phy_addr_rst(phy_addr_rst),	// <- hub75_bcm
-				.phy_addr(phy_addr),			// <- hub75_bcm
-				.phy_data(phy_data),			// <- hub75_shift
-				.phy_clk(phy_clk),				// <- hub75_shift
-				.phy_le(phy_le),				// <- hub75_bcm
-				.phy_blank(phy_blank),			// <- hub75_blanking
+				.phy_addr_inc(phz_addr_inc),	// <- hub75_bcm
+				.phy_addr_rst(phz_addr_rst),	// <- hub75_bcm
+				.phy_addr(phz_addr),			// <- hub75_bcm
+				.phy_data(phz_data),			// <- hub75_shift
+				.phy_clk(phz_clk),				// <- hub75_shift
+				.phy_le(phz_le),				// <- hub75_bcm
+				.phy_blank(phz_blank),			// <- hub75_blanking
 				.clk(clk),						// <- top
 				.clk_2x(clk_2x),				// <- top
 				.rst(rst)						// <- top
