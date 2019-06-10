@@ -14,11 +14,11 @@ PROJ_TOP_SRC := rtl/top.v
 PROJ_TOP_MOD := top
 
 # Target config
-BOARD ?= icebreaker
+BOARD ?= icebreaker-double
 DEVICE = up5k
 PACKAGE = sg48
 
-NEXTPNR_ARGS = --freq 35
+NEXTPNR_ARGS = --pre-pack data/clocks.py
 
 # Include default rules
 include ../../build/project-rules.mk

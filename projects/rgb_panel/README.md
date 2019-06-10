@@ -96,3 +96,19 @@ Obviously the number for the `crop` filter need to be adjusted for your source
 material to get a square image that selects the best region to show. Also, you
 can do use unix FIFOs to directly pipe content from `ffmpeg` to the `stream.py`
 application without the need for intermediate files.
+
+
+Single PMOD support
+-------------------
+
+By default the code is built to have a [double-width PMOD](https://github.com/icebreaker-fpga/icebreaker-pmod/tree/master/led-panel)
+connected on the PMOD1A and PMOD1B port.
+
+There is an alternate [single-width PMOD](https://github.com/icebreaker-fpga/icebreaker-pmod/tree/master/led-panel-single)
+that uses a bit of external logic to reduce the number of IO lines used (so you
+have more free PMODs slots). To build the project with this option, use
+`make BOARD=icebreaker-single`.
+
+The `pcf` is by default configured to have this PMOD on slot P1A, but you can
+edit `icebreaker-single.pcf` to change the pin assignements if it's plugged
+somewhere else.

@@ -37,6 +37,7 @@ module sysmgr (
 	input  wire clk_in,
 	input  wire rst_in,
 	output wire clk_out,
+	output wire clk_2x_out,
 	output wire rst_out
 );
 
@@ -45,33 +46,43 @@ module sysmgr (
 	wire pll_reset_n;
 
 	wire clk_i;
+	wire clk_2x_i;
 	wire rst_i;
 	reg [3:0] rst_cnt;
 
 	// PLL instance
 `ifdef SIM
-	assign clk_i = clk_in;
+	reg clk_div = 1'b0;
+	always @(posedge clk_in)
+		clk_div <= ~clk_div;
+
+	assign clk_i = clk_div;
+	assign clk_2x_i = clk_in;
 	assign pll_lock = pll_reset_n;
 `else
-	SB_PLL40_PAD #(
+	SB_PLL40_2F_PAD #(
 		.DIVR(4'b0000),
 `ifdef PANEL_FAST
-		.DIVF(7'b1001111),
+		.DIVF(7'b1001111),	// 60 MHz output
 `else
-		.DIVF(7'b0111111),
+		.DIVF(7'b1000001),	// 49.5 MHz output
 `endif
-		.DIVQ(3'b101),
+		.DIVQ(3'b100),
 		.FILTER_RANGE(3'b001),
 		.FEEDBACK_PATH("SIMPLE"),
 		.DELAY_ADJUSTMENT_MODE_FEEDBACK("FIXED"),
 		.FDA_FEEDBACK(4'b0000),
 		.SHIFTREG_DIV_MODE(2'b00),
-		.PLLOUT_SELECT("GENCLK"),
-		.ENABLE_ICEGATE(1'b0)
+		.PLLOUT_SELECT_PORTA("GENCLK"),
+		.PLLOUT_SELECT_PORTB("GENCLK_HALF"),
+		.ENABLE_ICEGATE_PORTA(1'b0),
+		.ENABLE_ICEGATE_PORTB(1'b0)
 	) pll_I (
 		.PACKAGEPIN(clk_in),
-		.PLLOUTCORE(),
-		.PLLOUTGLOBAL(clk_i),
+		.PLLOUTCOREA(),
+		.PLLOUTGLOBALA(clk_2x_i),
+		.PLLOUTCOREB(),
+		.PLLOUTGLOBALB(clk_i),
 		.EXTFEEDBACK(1'b0),
 		.DYNAMICDELAY(8'h00),
 		.RESETB(pll_reset_n),
@@ -85,6 +96,7 @@ module sysmgr (
 `endif
 
 	assign clk_out = clk_i;
+	assign clk_2x_out = clk_2x_i;
 
 	// PLL reset generation
 	assign pll_reset_n = ~rst_in;

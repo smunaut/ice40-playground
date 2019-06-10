@@ -39,8 +39,14 @@
 
 module top (
 	// RGB panel PMOD
+`ifdef BOARD_ICEBREAKER_SINGLE
+	output wire hub75_addr_inc,
+	output wire hub75_addr_rst,
+	output wire [2:0] hub75_data,
+`else
 	output wire [4:0] hub75_addr,
 	output wire [5:0] hub75_data,
+`endif
 	output wire hub75_clk,
 	output wire hub75_le,
 	output wire hub75_blank,
@@ -91,6 +97,7 @@ module top (
 `endif
 
 	wire clk;
+	wire clk_2x;
 	wire rst;
 
 	// Frame buffer write port
@@ -120,9 +127,21 @@ module top (
 		.N_COLS(N_COLS),
 		.N_CHANS(N_CHANS),
 		.N_PLANES(N_PLANES),
-		.BITDEPTH(BITDEPTH)
+		.BITDEPTH(BITDEPTH),
+`ifdef BOARD_ICEBREAKER_SINGLE
+		.PHY_DDR(2),	// DDR data with early edge
+		.PHY_AIR(3),	// Enabled and invert INC
+		.SCAN_MODE("LINEAR")
+`else
+		.SCAN_MODE("ZIGZAG")
+`endif
 	) hub75_I (
+`ifdef BOARD_ICEBREAKER_SINGLE
+		.hub75_addr_inc(hub75_addr_inc),
+		.hub75_addr_rst(hub75_addr_rst),
+`else
 		.hub75_addr(hub75_addr),
+`endif
 		.hub75_data(hub75_data),
 		.hub75_clk(hub75_clk),
 		.hub75_le(hub75_le),
@@ -143,6 +162,7 @@ module top (
 		.cfg_post_latch_len(8'h80),
 		.cfg_bcm_bit_len(8'h06),
 		.clk(clk),
+		.clk_2x(clk_2x),
 		.rst(rst)
 	);
 
@@ -321,6 +341,7 @@ module top (
 		.clk_in(clk_12m),
 		.rst_in(1'b0),
 		.clk_out(clk),
+		.clk_2x_out(clk_2x),
 		.rst_out(rst)
 	);
 `endif

@@ -1,4 +1,4 @@
-# RGB panel pmod
+# RGB panel dual pmod
  # Data for panels with Red on pin 1/5 and Blue on pin 3/7
 set_io -nowarn hub75_data[5] 3  # A7 - Red   1
 set_io -nowarn hub75_data[4] 48 # A8 - Green 1
