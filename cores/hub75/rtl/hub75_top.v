@@ -32,6 +32,7 @@ module hub75_top #(
 	parameter integer N_CHANS  = 3,		// # of data channel
 	parameter integer N_PLANES = 8,		// # bitplanes
 	parameter integer BITDEPTH = 24,	// # bits per color
+	parameter integer PHY_N    = 1,		// # of PHY in //
 	parameter integer PHY_DDR  = 0,		// PHY DDR data output
 	parameter integer PHY_AIR  = 0,		// PHY Address Inc/Reset
 
@@ -46,13 +47,13 @@ module hub75_top #(
 	parameter integer LOG_N_COLS  = $clog2(N_COLS)
 )(
 	// Hub75 interface pads
-	output wire hub75_addr_inc,
-	output wire hub75_addr_rst,
-	output wire [LOG_N_ROWS-1:0] hub75_addr,
-	output wire [ESDW-1:0] hub75_data,
-	output wire hub75_clk,
-	output wire hub75_le,
-	output wire hub75_blank,
+	output wire [PHY_N-1:0] hub75_addr_inc,
+	output wire [PHY_N-1:0] hub75_addr_rst,
+	output wire [(PHY_N*LOG_N_ROWS)-1:0] hub75_addr,
+	output wire [ESDW-1 :0] hub75_data,
+	output wire [PHY_N-1:0] hub75_clk,
+	output wire [PHY_N-1:0] hub75_le,
+	output wire [PHY_N-1:0] hub75_blank,
 
 	// Frame Buffer write interface
 		// Row store/swap
@@ -329,6 +330,7 @@ module hub75_top #(
 				.N_BANKS(N_BANKS),
 				.N_ROWS(N_ROWS),
 				.N_CHANS(N_CHANS),
+				.PHY_N(PHY_N),
 				.PHY_AIR(PHY_AIR)
 			) phy_I (
 				.hub75_addr_inc(hub75_addr_inc),// -> pad
@@ -353,6 +355,7 @@ module hub75_top #(
 				.N_BANKS(N_BANKS),
 				.N_ROWS(N_ROWS),
 				.N_CHANS(N_CHANS),
+				.PHY_N(PHY_N),
 				.PHY_DDR(PHY_DDR),
 				.PHY_AIR(PHY_AIR)
 			) phy_I (
