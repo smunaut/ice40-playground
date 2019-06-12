@@ -49,7 +49,7 @@ module e1_crc4 #(
 	wire [3:0] state_fb_mux;
 	wire [3:0] state_upd_mux;
 
-	assign state_fb_mux  = in_first ? INIT : state;
+	assign state_fb_mux  = (INIT & {4{in_first}}) | (state & {4{~in_first}}); // in_first ? INIT : state
 	assign state_upd_mux = (state_fb_mux[3] != in_bit) ? POLY : 0;
 
 	always @(posedge clk)
