@@ -51,6 +51,7 @@ module hub75_top_tb;
 	// Signals
 	reg rst = 1'b1;
 	reg clk = 1'b0;
+	reg clk_2x = 1'b0;
 
 	wire [$clog2(N_ROWS)-1:0] hub75_addr;
 	wire [(N_BANKS*N_CHANS)-1:0] hub75_data;
@@ -100,7 +101,8 @@ module hub75_top_tb;
 	end
 
 	// Clocks
-	always #33 clk = !clk;	// ~ 30 MHz
+	always #33 clk = !clk;			// ~ 30 MHz
+	always #16.5 clk_2x = !clk_2x;	// ~ 60 MHz
 
 	// DUT
 	hub75_top #(
@@ -126,11 +128,13 @@ module hub75_top_tb;
 		.fbw_wren(fbw_wren),
 		.frame_swap(frame_swap),
 		.frame_rdy(frame_rdy),
+		.ctrl_run(1'b1),
 		.cfg_pre_latch_len(8'h80),
 		.cfg_latch_len(8'h80),
 		.cfg_post_latch_len(8'h80),
 		.cfg_bcm_bit_len(8'h06),
 		.clk(clk),
+		.clk_2x(clk_2x),
 		.rst(rst)
 	);
 
@@ -175,6 +179,9 @@ module hub75_top_tb;
 		.fbw_wren(fbw_wren),
 		.frame_swap(frame_swap),
 		.frame_rdy(frame_rdy),
+		.ui_up(1'b0),
+		.ui_mode(1'b0),
+		.ui_down(1'b0),
 		.clk(clk),
 		.rst(rst)
 	);
