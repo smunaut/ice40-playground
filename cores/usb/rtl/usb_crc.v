@@ -44,36 +44,25 @@ module usb_crc #(
 	input  wire rst
 );
 
-	wire [WIDTH-1:0] state;
+	reg  [WIDTH-1:0] state;
 	wire [WIDTH-1:0] state_fb_mux;
 	wire [WIDTH-1:0] state_upd_mux;
 	wire [WIDTH-1:0] state_nxt;
 
-	assign state_fb_mux  = in_first ? { WIDTH{1'b1} } : state;
-	assign state_upd_mux = (state_fb_mux[WIDTH-1] != in_bit) ? POLY : 0;
-	assign state_nxt = { state_fb_mux[WIDTH-2:0], 1'b0 } ^ state_upd_mux;
+	assign state_fb_mux  = state & { WIDTH{~in_first} };
+	assign state_upd_mux = (state_fb_mux[WIDTH-1] == in_bit) ? POLY : 0;
+	assign state_nxt = { state_fb_mux[WIDTH-2:0], 1'b1 } ^ state_upd_mux;
 
-/*
 	always @(posedge clk)
 		if (in_valid)
 			state <= state_nxt;
-*/
 
-	dffe_n #(
-		.WIDTH(WIDTH)
-	) state_reg_I (
-		.d(state_nxt),
-		.q(state),
-		.ce(in_valid),
-		.clk(clk)
-	);
-
-	assign crc_match = (state == MATCH);
+	assign crc_match = (state == ~MATCH);
 
 	genvar i;
 	generate
 		for (i=0; i<WIDTH; i=i+1)
-			assign crc[i] = ~state[WIDTH-1-i];
+			assign crc[i] = state[WIDTH-1-i];
 	endgenerate
 
 endmodule // usb_crc
