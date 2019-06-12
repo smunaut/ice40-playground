@@ -128,6 +128,7 @@ module top (
 		.N_CHANS(N_CHANS),
 		.N_PLANES(N_PLANES),
 		.BITDEPTH(BITDEPTH),
+		.PANEL_INIT("FM6126"),
 `ifdef BOARD_ICEBREAKER_SINGLE
 		.PHY_DDR(2),	// DDR data with early edge
 		.PHY_AIR(3),	// Enabled and invert INC
