@@ -60,6 +60,11 @@ struct usb_stack {
 	/* Timebase */
 	uint32_t tick;
 
+	/* EP configuration */
+	struct {
+		unsigned int mem[2];
+	} ep_cfg;
+
 	/* EP0 control state */
 	struct {
 		enum {
