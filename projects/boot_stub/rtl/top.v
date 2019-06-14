@@ -59,7 +59,8 @@ module top (
 		ST_START	= 0,
 		ST_WAIT		= 1,
 		ST_SEL		= 2,
-		ST_BOOT		= 3;
+		ST_SEL_WAIT = 3,
+		ST_BOOT		= 4;
 
 
 	// Signals
@@ -72,8 +73,8 @@ module top (
 	wire btn_f;
 
 	// FSM
-	reg  [1:0] state_nxt;
-	reg  [1:0] state;
+	reg  [2:0] state_nxt;
+	reg  [2:0] state;
 
 	// Boot selector
 	wire boot_now;
@@ -141,9 +142,18 @@ module top (
 					state_nxt <= ST_SEL;
 
 			ST_SEL:
-				// Wait for timeout
-				if (timer_tick)
+				// If button press, temporarily disable it
+				if (btn_f)
+					state_nxt <= ST_SEL_WAIT;
+
+				// Or wait for timeout
+				else if (timer_tick)
 					state_nxt <= ST_BOOT;
+
+			ST_SEL_WAIT:
+				// Wait for button to re-arm
+				if (timer_tick)
+					state_nxt <= ST_SEL;
 
 			ST_BOOT:
 				// Nothing to do ... will reconfigure shortly
@@ -169,7 +179,7 @@ module top (
 			timer <= timer + 1;
 
 	assign timer_rst  = (btn_v == 1'b0) | timer_tick;
-	assign timer_tick = timer[23];
+	assign timer_tick = (state == ST_SEL_WAIT) ? timer[15] : timer[23];
 
 
 	// Warm Boot
