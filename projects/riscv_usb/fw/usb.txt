@@ -1,0 +1,49 @@
+Control transfers
+-----------------
+
+To send a response:
+
+
+### Write transfers
+
+In the `SETUP` callback:
+ - Return `true` to indicate the request has been handles.
+ - Setup the `xfer` arguments.
+
+If there is no `cb_data` callback, then during the `SETUP`, a properly sized
+buffer must be provided in the `data` member. By default, it points to a
+static buffer capable of containing 1 packet at most (64 bytes).
+
+The stack will handle filling it up. and when the last data transaction is
+done, the `cb_done` callback will be called if it exists. It must
+return `true` to signal success (which is the default if no `cb_done`
+callback are given. If it returns `false`, the status stage will be answered
+with a `STALL`.
+
+If a `cb_data` callback is given, then the buffer provided in the `SETUP`
+stage only needs to be able to store 1 packet (64 bytes) and so can be left
+to the default. After each new packet is received the `cb_data` callback
+will be called. `ofs` will contain the number of bytes received in that
+packet.
+
+### Read transfers
+
+In the `SETUP` callback:
+ - Return `true` to indicate the request has been handles.
+ - Setup the `xfer` arguments.
+
+If there is no `cb_data` callback, then during the `SETUP`, the buffer
+`data` and `len` must be setup to point to whatever the response must be.
+By default it points to a 64 byte static buffer and that may be used if
+only a small response is needed.
+
+Once the read is complete, the `cb_done` callback will be called if it
+exists. It must return `true` to signal success (which is the default if no
+`cb_done`  callback are given. If it returns `false`, the status stage
+will be answered with a `STALL`.
+
+If a `cb_data` callback is given, then it will be called before each packet
+of the data stage to provide data. It must setup buffer and `len` field
+appropriately and return `true`. The first short packet will signal the end
+of the data stage (note that the callback must generate the ZLP if needed).
+If it returns `false`, then a `STALL` reponse will be generated.

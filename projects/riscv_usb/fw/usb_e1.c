@@ -44,6 +44,9 @@ unsigned int e1_tx_level(void);
 unsigned int e1_rx_level(void);
 /* ---- */
 
+bool
+usb_ep_boot(const struct usb_intf_desc *intf, uint8_t ep_addr, bool dual_bd);
+
 static void
 _usb_fill_feedback_ep(void)
 {
@@ -161,6 +164,54 @@ refill:
 	}
 }
 
+static const struct usb_intf_desc *
+_find_intf(const struct usb_conf_desc *conf, uint8_t idx)
+{
+	const struct usb_intf_desc *intf = NULL;
+	const void *sod, *eod;
+
+	if (!conf)
+		return NULL;
+
+	sod = conf;
+	eod = sod + conf->wTotalLength;
+
+	while (1) {
+		sod = usb_desc_find(sod, eod, USB_DT_INTF);
+		if (!sod)
+			break;
+
+		intf = (void*)sod;
+		if (intf->bInterfaceNumber == idx)
+			return intf;
+
+		sod = usb_desc_next(sod);
+	}
+
+	return NULL;
+}
+enum usb_fnd_resp
+_e1_set_conf(const struct usb_conf_desc *conf)
+{
+	const struct usb_intf_desc *intf;
+
+	printf("e1 set_conf %08x\n", conf);
+	if (!conf)
+		return USB_FND_SUCCESS;
+
+	intf = _find_intf(conf, 0);
+	if (!intf)
+		return USB_FND_ERROR;
+
+	printf("e1 set_conf %08x\n", intf);
+
+	usb_ep_boot(intf, 0x01, true);
+	usb_ep_boot(intf, 0x81, true);
+	usb_ep_boot(intf, 0x82, true);
+	
+	return USB_FND_SUCCESS;
+}
+
 enum usb_fnd_resp
 _e1_set_intf(const struct usb_intf_desc *base, const struct usb_intf_desc *sel)
 {
@@ -215,6 +266,7 @@ _e1_get_intf(const struct usb_intf_desc *base, uint8_t *alt)
 }
 
 static struct usb_fn_drv _e1_drv = {
+	.set_conf	= _e1_set_conf,
         .set_intf       = _e1_set_intf,
         .get_intf       = _e1_get_intf,
 };

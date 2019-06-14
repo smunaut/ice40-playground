@@ -52,6 +52,8 @@ _find_intf(uint8_t idx)
 		intf = (void*)sod;
 		if (intf->bInterfaceNumber == idx)
 			return intf;
+
+		sod = usb_desc_next(sod);
 	}
 
 	return NULL;
@@ -73,11 +75,16 @@ _find_intf_alt(uint8_t idx, uint8_t alt, const struct usb_intf_desc *start)
 	if (start)
 		sod = (const void *)start;
 
-	while (sod != NULL) {
+	while (1) {
+		sod = usb_desc_find(sod, eod, USB_DT_INTF);
+		if (!sod)
+			break;
+
 		intf = (void*)sod;
 		if ((intf->bInterfaceNumber == idx) && (intf->bAlternateSetting == alt))
 			return intf;
-		sod = usb_desc_find(usb_desc_next(sod), eod, USB_DT_INTF);
+
+		sod = usb_desc_next(sod);
 	}
 
 	return NULL;
