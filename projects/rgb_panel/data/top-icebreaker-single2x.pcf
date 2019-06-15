@@ -1,0 +1,61 @@
+# RBG panel single-pmod (on P1A)
+
+ # Data for panels with Red on pin 1/5 and Blue on pin 3/7
+#set_io -nowarn hub75_data[5] 2		# P1A2 Red
+#set_io -nowarn hub75_data[4] 3		# P1A7 Green
+#set_io -nowarn hub75_data[3] 4		# P1A1 Blue
+
+ # Data for panels with Red on pin 3/7 and Blue on pin 1/5
+set_io -nowarn hub75_data[5] 4		# P1A1 Red
+set_io -nowarn hub75_data[4] 3		# P1A7 Green
+set_io -nowarn hub75_data[3] 2		# P1A2 Blue
+
+ # Row address
+set_io -nowarn hub75_addr_inc[0] 47	# P1A3
+set_io -nowarn hub75_addr_rst[0] 48	# P1A8
+
+ # Control
+set_io -nowarn hub75_clk[0] 46		# P1A9
+set_io -nowarn hub75_le[0] 44		# P1A10
+set_io -nowarn hub75_blank[0] 45	# P1A4
+
+# RBG panel single-pmod (on P1B)
+
+ # Data for panels with Red on pin 1/5 and Blue on pin 3/7
+#set_io -nowarn hub75_data[2] 38	# P1B2 Red
+#set_io -nowarn hub75_data[1] 42	# P1B7 Green
+#set_io -nowarn hub75_data[0] 43	# P1B1 Blue
+
+ # Data for panels with Red on pin 3/7 and Blue on pin 1/5
+set_io -nowarn hub75_data[2] 43		# P1B1 Red
+set_io -nowarn hub75_data[1] 42		# P1B7 Green
+set_io -nowarn hub75_data[0] 38		# P1B2 Blue
+
+ # Row address
+set_io -nowarn hub75_addr_inc[1] 34	# P1B3
+set_io -nowarn hub75_addr_rst[1] 36	# P1B8
+
+ # Control
+set_io -nowarn hub75_clk[1] 32		# P1B9
+set_io -nowarn hub75_le[1] 28		# P1B10
+set_io -nowarn hub75_blank[1] 31	# P1B4
+
+# SPI Flash
+set_io -nowarn flash_mosi 14
+set_io -nowarn flash_miso 17
+set_io -nowarn flash_cs_n 16
+set_io -nowarn flash_clk 15
+
+# SPI Slave
+set_io -nowarn slave_mosi 14
+set_io -nowarn slave_miso 17
+set_io -nowarn slave_cs_n 11
+set_io -nowarn slave_clk 15
+
+# PMOD2 buttons
+set_io -nowarn pmod_btn[0] 20
+set_io -nowarn pmod_btn[1] 19
+set_io -nowarn pmod_btn[2] 18
+
+# Clock
+set_io -nowarn clk_12m 35

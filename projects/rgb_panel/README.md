@@ -112,3 +112,6 @@ have more free PMODs slots). To build the project with this option, use
 The `pcf` is by default configured to have this PMOD on slot P1A, but you can
 edit `icebreaker-single.pcf` to change the pin assignements if it's plugged
 somewhere else.
+
+If you happen to have two of those PMODs, you can plug them on slot P1A and
+P1B and use `make BOARD=icebreaker-single2x`.

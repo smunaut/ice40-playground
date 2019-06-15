@@ -43,13 +43,23 @@ module top (
 	output wire hub75_addr_inc,
 	output wire hub75_addr_rst,
 	output wire [2:0] hub75_data,
-`else
-	output wire [4:0] hub75_addr,
-	output wire [5:0] hub75_data,
-`endif
 	output wire hub75_clk,
 	output wire hub75_le,
 	output wire hub75_blank,
+`elsif BOARD_ICEBREAKER_SINGLE2X
+	output wire [1:0] hub75_addr_inc,
+	output wire [1:0] hub75_addr_rst,
+	output wire [5:0] hub75_data,
+	output wire [1:0] hub75_clk,
+	output wire [1:0] hub75_le,
+	output wire [1:0] hub75_blank,
+`else
+	output wire [4:0] hub75_addr,
+	output wire [5:0] hub75_data,
+	output wire hub75_clk,
+	output wire hub75_le,
+	output wire hub75_blank,
+`endif
 
 	// SPI Flash interface
 `ifdef VIDEO
@@ -75,7 +85,11 @@ module top (
 );
 
 	// Params
+`ifdef BOARD_ICEBREAKER_SINGLE2X
+	localparam integer N_BANKS  = 4;
+`else
 	localparam integer N_BANKS  = 2;
+`endif
 	localparam integer N_ROWS   = 32;
 	localparam integer N_COLS   = 64;
 	localparam integer N_CHANS  = 3;
@@ -133,11 +147,19 @@ module top (
 		.PHY_DDR(2),	// DDR data with early edge
 		.PHY_AIR(3),	// Enabled and invert INC
 		.SCAN_MODE("LINEAR")
+`elsif BOARD_ICEBREAKER_SINGLE2X
+		.PHY_N(2),
+		.PHY_DDR(2),	// DDR data with early edge
+		.PHY_AIR(3),	// Enabled and invert INC
+		.SCAN_MODE("LINEAR")
 `else
 		.SCAN_MODE("ZIGZAG")
 `endif
 	) hub75_I (
 `ifdef BOARD_ICEBREAKER_SINGLE
+		.hub75_addr_inc(hub75_addr_inc),
+		.hub75_addr_rst(hub75_addr_rst),
+`elsif BOARD_ICEBREAKER_SINGLE2X
 		.hub75_addr_inc(hub75_addr_inc),
 		.hub75_addr_rst(hub75_addr_rst),
 `else
