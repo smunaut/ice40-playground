@@ -128,6 +128,7 @@ module usb_trans #(
 	reg        trans_is_setup;
 	reg  [3:0] trans_endp;
 	reg        trans_dir;
+	reg        trans_cel;
 
 	reg  [2:0] ep_type;
 	reg        ep_bd_dual;
@@ -227,7 +228,7 @@ module usb_trans #(
 			casez (mc_opcode[2:1])
 				2'b00:   mc_a_reg <= evt;
 				2'b01:   mc_a_reg <= pkt_pid ^ { ep_data_toggle & mc_opcode[0], 3'b000 };
-				2'b10:   mc_a_reg <= { cel_state_i, ep_type };
+				2'b10:   mc_a_reg <= { trans_cel, ep_type };
 				2'b11:   mc_a_reg <= { 1'b0, bd_state };
 				default: mc_a_reg <= 4'hx;
 			endcase
@@ -293,12 +294,13 @@ module usb_trans #(
 	// EP infos
 	// --------
 
-	// Capture EP# and direction when we get a TOKEN packet
+	// Capture EP#, direction and CEL status when we get a TOKEN packet
 	always @(posedge clk)
 		if (rxpkt_done_ok & rxpkt_is_token) begin
 			trans_is_setup   <= rxpkt_pid == PID_SETUP;
 			trans_endp       <= rxpkt_endp;
 			trans_dir        <= rxpkt_pid == PID_IN;
+			trans_cel        <= cel_state_i;
 		end
 
 	// EP Status Fetch/WriteBack (epfw)
