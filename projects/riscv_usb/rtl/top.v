@@ -125,9 +125,6 @@ module top (
 	wire ub_we;
 	wire ub_ack;
 
-	wire        usb_ready;
-	wire [31:0] usb_rdata;
-
 	// SPI
 	wire [7:0] sb_addr;
 	wire [7:0] sb_di;
