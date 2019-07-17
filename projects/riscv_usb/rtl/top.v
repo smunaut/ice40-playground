@@ -50,6 +50,9 @@ module top (
 	input  wire uart_rx,
 	output wire uart_tx,
 
+	// Button
+	input  wire btn,
+
 	// LED
 	output wire [2:0] rgb,
 
@@ -494,11 +497,23 @@ module top (
 			boot_sel <= wb_wdata[1:0];
 		end
 
-	// IP core
-	SB_WARMBOOT warmboot (
-		.BOOT(boot_now),
-		.S0(boot_sel[0]),
-		.S1(boot_sel[1])
+	// Helper
+	dfu_helper #(
+		.TIMER_WIDTH(24),
+		.BTN_MODE(3),
+`ifdef DFU
+		.DFU_MODE(1)
+`else
+		.DFU_MODE(0)
+`endif
+	) dfu_helper_I (
+		.boot_now(boot_now),
+		.boot_sel(boot_sel),
+		.btn_pad(btn),
+		.btn_val(),
+		.rst_req(),
+		.clk(clk_24m),
+		.rst(rst)
 	);
 
 
