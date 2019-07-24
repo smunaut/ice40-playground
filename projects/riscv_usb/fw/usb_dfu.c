@@ -31,6 +31,12 @@
 #include "usb_dfu_proto.h"
 
 
+#define DFU_VENDOR_PROTO
+#ifdef DFU_VENDOR_PROTO
+enum usb_fnd_resp dfu_vendor_ctrl_req(struct usb_ctrl_req *req, struct usb_xfer *xfer);
+#endif
+
+
 #define DFU_POLL_MS		250
 
 
@@ -220,11 +226,22 @@ _dfu_ctrl_req(struct usb_ctrl_req *req, struct usb_xfer *xfer)
 {
 	uint8_t state;
 
-	/* If this a class request for DFU interface ? */
-	if (USB_REQ_TYPE_RCPT(req) != (USB_REQ_TYPE_CLASS | USB_REQ_RCPT_INTF))
+	/* If this a class or vendor request for DFU interface ? */
+	if (req->wIndex != g_dfu.intf)
 		return USB_FND_CONTINUE;
 
-	if (req->wIndex != g_dfu.intf)
+#ifdef DFU_VENDOR_PROTO
+	if ((USB_REQ_TYPE(req) | USB_REQ_RCPT(req)) == (USB_REQ_TYPE_VENDOR | USB_REQ_RCPT_INTF)) {
+		/* Let vendor code use our large buffer */
+		xfer->data = g_dfu.buf;
+		xfer->len  = sizeof(g_dfu.buf);
+
+		/* Call vendor code */
+		return dfu_vendor_ctrl_req(req, xfer);
+	}
+#endif
+
+	if ((USB_REQ_TYPE(req) | USB_REQ_RCPT(req)) != (USB_REQ_TYPE_CLASS | USB_REQ_RCPT_INTF))
 		return USB_FND_CONTINUE;
 
 	/* Check if this request is allowed in this state */

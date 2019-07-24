@@ -38,6 +38,7 @@ HEADERS_dfu=\
 SOURCES_dfu=\
 	fw_dfu.c \
 	usb_dfu.c \
+	usb_dfu_vendor.c \
 	usb_desc_dfu.c
 
 HEADERS_app=\
