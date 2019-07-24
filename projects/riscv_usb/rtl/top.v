@@ -445,7 +445,7 @@ module top (
 		.AW(12)
 	)  wb_48m_xclk_I (
 		.s_addr(wb_addr[11:0]),
-		.s_wdata(wb_wdata),
+		.s_wdata(wb_wdata[15:0]),
 		.s_rdata(wb_rdata[4][15:0]),
 		.s_cyc(wb_cyc[4]),
 		.s_ack(wb_ack[4]),
@@ -464,8 +464,12 @@ module top (
 	assign wb_rdata[4][31:16] = 16'h0000;
 
 	// EP buffer interface
+	reg wb_ack_ep;
+
 	always @(posedge clk_24m)
-		wb_ack[5] <= wb_cyc[5] & ~wb_ack[5];
+		wb_ack_ep <= wb_cyc[5] & ~wb_ack_ep;
+
+	assign wb_ack[5] = wb_ack_ep;
 
 	assign ep_tx_addr_0 = wb_addr[8:0];
 	assign ep_tx_data_0 = wb_wdata;
