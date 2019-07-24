@@ -3,6 +3,7 @@ CROSS ?= riscv-none-embed-
 CC = $(CROSS)gcc
 OBJCOPY = $(CROSS)objcopy
 ICEPROG = iceprog
+DFU_UTIL = dfu-util
 
 CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section --specs=nano.specs -DBOARD_$(BOARD)
 
@@ -81,6 +82,13 @@ prog_dfu: fw_dfu.bin
 
 prog_app: fw_app.bin
 	$(ICEPROG) -o 640k $<
+
+dfuprog_app: fw_app.bin
+ifeq ($(DFU_SERIAL),)
+	@echo "[!] DFU_SERIAL not defined"
+else
+	$(DFU_UTIL) -R -S $(DFU_SERIAL) -a 1 -D $<
+endif
 
 
 clean:
