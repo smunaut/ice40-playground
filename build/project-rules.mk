@@ -11,6 +11,7 @@ NEXTPNR_ARGS ?= --freq 50
 ICEPACK ?= icepack
 ICEPROG ?= iceprog
 IVERILOG ?= iverilog
+DFU_UTIL ?= dfu-util
 
 ifeq ($(PLACER),heap)
 NEXTPNR_SYS_ARGS += --placer heap
@@ -107,6 +108,13 @@ prog: $(BUILD_TMP)/$(PROJ).bin
 sudo-prog: $(BUILD_TMP)/$(PROJ).bin
 	@echo 'Executing prog as root!!!'
 	sudo $(ICEPROG) $<
+
+dfuprog: $(BUILD_TMP)/$(PROJ).bin
+ifeq ($(DFU_SERIAL),)
+	@echo "[!] DFU_SERIAL not defined"
+else
+	$(DFU_UTIL) -e -S $(DFU_SERIAL) -a 0 -D $<
+endif
 
 clean:
 	@rm -Rf $(BUILD_TMP)
