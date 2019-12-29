@@ -6,6 +6,7 @@ RTL_SRCS_e1 = $(addprefix rtl/, \
 	e1_rx_deframer.v \
 	e1_rx_filter.v \
 	e1_rx_phy.v \
+	e1_rx_liu.v \
 	e1_rx.v \
 	e1_tx_framer.v \
 	e1_tx_phy.v \

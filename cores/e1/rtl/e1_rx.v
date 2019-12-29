@@ -29,6 +29,7 @@
 `default_nettype none
 
 module e1_rx #(
+	parameter integer LIU = 0,
 	parameter integer MFW = 7
 )(
 	// IO pads
@@ -36,6 +37,9 @@ module e1_rx #(
 	input  wire pad_rx_hi_n,
 	input  wire pad_rx_lo_p,
 	input  wire pad_rx_lo_n,
+
+	input  wire pad_rx_data,
+	input  wire pad_rx_clk,
 
 	// Buffer interface
 	output wire [7:0] buf_data,
@@ -98,6 +102,9 @@ module e1_rx #(
 	// Low-level bit recovery
 	// ----------------------
 
+generate
+if (LIU == 0) begin
+
 	// PHY
 	e1_rx_phy phy_I (
 		.pad_rx_hi_p(pad_rx_hi_p),
@@ -143,6 +150,20 @@ module e1_rx #(
 		.clk(clk),
 		.rst(rst)
 	);
+
+end else begin
+
+	e1_rx_liu liuif_I (
+		.pad_rx_data(pad_rx_data),
+		.pad_rx_clk(pad_rx_clk),
+		.out_data(ll_bit),
+		.out_valid(ll_valid),
+		.clk(clk),
+		.rst(rst)
+	);
+
+end
+endgenerate
 
 	// Loopback output
 	assign lb_bit = ll_bit;
