@@ -49,21 +49,21 @@ module wb_e1data #(
 	output wire wb_we,
 	input  wire wb_ack,
 
-	// E1 RX data if (write)
-	input  wire [7:0] e1rx_data,
-	input  wire [4:0] e1rx_ts,
-	input  wire [3:0] e1rx_frame,
-	input  wire [MFW-1:0] e1rx_mf,
-	input  wire e1rx_we,
-	output wire e1rx_rdy,
+	// E1 RX0 data if (write)
+	input  wire [7:0] e1rx0_data,
+	input  wire [4:0] e1rx0_ts,
+	input  wire [3:0] e1rx0_frame,
+	input  wire [MFW-1:0] e1rx0_mf,
+	input  wire e1rx0_we,
+	output wire e1rx0_rdy,
 
-	// E1 TX data if (read)
-	output wire [7:0] e1tx_data,
-	input  wire [4:0] e1tx_ts,
-	input  wire [3:0] e1tx_frame,
-	input  wire [MFW-1:0] e1tx_mf,
-	input  wire e1tx_re,
-	output wire e1tx_rdy,
+	// E1 RX1 data if (write)
+	input  wire [7:0] e1rx1_data,
+	input  wire [4:0] e1rx1_ts,
+	input  wire [3:0] e1rx1_frame,
+	input  wire [MFW-1:0] e1rx1_mf,
+	input  wire e1rx1_we,
+	output wire e1rx1_rdy,
 
 	// Clock / Reset
 	input  wire clk,
@@ -75,66 +75,56 @@ module wb_e1data #(
 
 	genvar i;
 
-	// E1 RX
-	reg  e1rx_pending;
-	wire e1rx_done;
-	reg  [7:0] e1rx_data_reg;
-	reg  [AW+LW-1:0] e1rx_addr_reg;
+	// E1 RX0
+	reg  e1rx0_pending;
+	wire e1rx0_done;
+	reg  [7:0] e1rx0_data_reg;
+	reg  [AW+LW-1:0] e1rx0_addr_reg;
 
-	// E1 TX
-	reg  e1tx_pending;
-	wire e1tx_done;
-	reg  [7:0] e1tx_data_reg;
-	reg  [AW+LW-1:0] e1tx_addr_reg;
+	// E1 RX1
+	reg  e1rx1_pending;
+	wire e1rx1_done;
+	reg  [7:0] e1rx1_data_reg;
+	reg  [AW+LW-1:0] e1rx1_addr_reg;
 
 	// Transactions
-	reg  [1:0] state;		// [1] = busy  [0] = r(0) / w(1)
+	reg  [1:0] state;		// [1] = busy  [0] = RX0(0) / RX1(1)
 
 
-	// E1 RX (write)
+	// E1 RX0 (write)
 	// -------------
 
 	always @(posedge clk)
-		if (e1rx_we) begin
-			e1rx_data_reg <= e1rx_data;
-			e1rx_addr_reg <= { e1rx_mf, e1rx_frame, e1rx_ts };
+		if (e1rx0_we) begin
+			e1rx0_data_reg <= e1rx0_data;
+			e1rx0_addr_reg <= { e1rx0_mf, e1rx0_frame, e1rx0_ts };
 		end
 
 	always @(posedge clk or posedge rst)
 		if (rst)
-			e1rx_pending <= 1'b0;
+			e1rx0_pending <= 1'b0;
 		else
-			e1rx_pending <= (e1rx_pending | e1rx_we) & ~e1rx_done;
+			e1rx0_pending <= (e1rx0_pending | e1rx0_we) & ~e1rx0_done;
 
-	assign e1rx_rdy = ~e1rx_pending;
-
-	for (i=0; i<MW; i=i+1)
-	begin
-		assign wb_wdata[8*i+:8] = e1rx_data_reg;
-		assign wb_wmsk[i] = (e1rx_addr_reg[LW-1:0] == i);
-	end
+	assign e1rx0_rdy = ~e1rx0_pending;
 
 
-	// E1 TX (read)
-	// ------------
+	// E1 RX1 (write)
+	// -------------
 
 	always @(posedge clk)
-		if (e1tx_re)
-			e1tx_addr_reg <= { e1tx_mf, e1tx_frame, e1tx_ts };
+		if (e1rx1_we) begin
+			e1rx1_data_reg <= e1rx1_data;
+			e1rx1_addr_reg <= { e1rx1_mf, e1rx1_frame, e1rx1_ts };
+		end
 
 	always @(posedge clk or posedge rst)
 		if (rst)
-			e1tx_pending <= 1'b0;
+			e1rx1_pending <= 1'b0;
 		else
-			e1tx_pending <= (e1tx_pending | e1tx_re) & ~e1tx_done;
+			e1rx1_pending <= (e1rx1_pending | e1rx1_we) & ~e1rx1_done;
 
-	assign e1tx_rdy = ~e1tx_pending;
-
-	always @(posedge clk)
-		if (e1tx_done)
-			e1tx_data_reg <= wb_rdata[8*e1tx_addr_reg[LW-1:0]+:8];
-
-	assign e1tx_data = e1tx_data_reg;
+	assign e1rx1_rdy = ~e1rx1_pending;
 
 
 	// Wishbone transactions
@@ -144,14 +134,20 @@ module wb_e1data #(
 		if (rst)
 			state <= 2'b00;
 		else
-			state <= wb_ack ? 2'b00 : { e1rx_pending | e1tx_pending, ~e1tx_pending };
+			state <= wb_ack ? 2'b00 : { e1rx0_pending | e1rx1_pending, e1rx1_pending };
 
-	assign e1rx_done = wb_ack &  state[0];
-	assign e1tx_done = wb_ack & ~state[0];
+	assign e1rx0_done = wb_ack & ~state[0];
+	assign e1rx1_done = wb_ack &  state[0];
 
-	assign wb_addr = state[0] ? e1rx_addr_reg[LW+:AW] : e1tx_addr_reg[LW+:AW];
+	assign wb_addr = state[0] ? e1rx1_addr_reg[LW+:AW] : e1rx0_addr_reg[LW+:AW];
 
 	assign wb_cyc = state[1];
-	assign wb_we  = state[0];
+	assign wb_we  = 1'b1;
+
+	for (i=0; i<MW; i=i+1)
+	begin
+		assign wb_wdata[8*i+:8] = state[0] ? e1rx1_data_reg : e1rx0_data_reg;
+		assign wb_wmsk[i] = ((state[0] ? e1rx1_addr_reg[LW-1:0] : e1rx0_addr_reg[LW-1:0]) == i);
+	end
 
 endmodule // wb_e1data

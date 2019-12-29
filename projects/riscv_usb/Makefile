@@ -9,7 +9,7 @@ PROJ_RTL_SRCS := $(addprefix rtl/, \
 	picorv32.v \
 	soc_bram.v \
 	soc_spram.v \
-	sysmgr_icebreaker.v \
+	sysmgr.v \
 	wb_arbiter.v \
 	wb_dma.v \
 	wb_e1data.v \
@@ -33,7 +33,7 @@ BOARD ?= icebreaker
 DEVICE = up5k
 PACKAGE = sg48
 
-NEXTPNR_ARGS = --pre-pack data/clocks.py --seed 29
+NEXTPNR_ARGS = --pre-pack data/clocks.py --seed 19
 
 # Include default rules
 include ../../build/project-rules.mk

@@ -34,12 +34,17 @@
 `default_nettype none
 
 module top (
+	// IOs
+	//inout  wire [5:0] io_p_a;
+	//inout  wire [5:0] io_d_a;
+	//inout  wire [3:0] io_p_b;
+	//inout  wire [3:0] io_d_b;
+
 	// SPI
 	inout  wire spi_mosi,
 	inout  wire spi_miso,
 	inout  wire spi_clk,
 	inout  wire spi_flash_cs_n,
-	inout  wire spi_ram_cs_n,
 
 	// USB
 	inout  wire usb_dp,
@@ -47,36 +52,35 @@ module top (
 	output wire usb_pu,
 
 	// E1
-	input  wire e1_rx_hi_p,
-//	input  wire e1_rx_hi_n,
-	input  wire e1_rx_lo_p,
-//	input  wire e1_rx_lo_n,
+	input  wire pad_rx0_data,
+	input  wire pad_rx0_clk,
+	input  wire pad_rx1_data,
+	input  wire pad_rx1_clk,
 
-	output wire e1_tx_hi,
-	output wire e1_tx_lo,
-
-	output wire e1_vref_ct_pdm,
-	output wire e1_vref_p_pdm,
-	output wire e1_vref_n_pdm,
+	// LIU control
+	inout  wire liu_mosi,
+	inout  wire liu_miso,
+	inout  wire liu_clk,
+	inout  wire [1:0] liu_cs_n,
 
 	// Debug UART
-	input  wire uart_rx,
+	//input  wire uart_rx,
 	output wire uart_tx,
 
 	// Button
 	input  wire btn,
 
+	// VIO PDM
+	output wire vio_pdm,
+
 	// LED
 	output wire [2:0] rgb,
 
 	// Clock
-	output wire clk_tune_pdm_hi,
-	output wire clk_tune_pdm_lo,
-
-	input  wire clk_30m72_in
+	input  wire clk_in
 );
 
-	localparam WB_N  =  9;
+	localparam WB_N  = 10;
 	localparam WB_DW = 32;
 	localparam WB_AW = 16;
 	localparam WB_AI =  2;
@@ -86,6 +90,9 @@ module top (
 
 	// Signals
 	// -------
+
+	// Dummy IOs
+	wire uart_rx = 1'b1;
 
 	// Memory bus
 	wire        mem_valid;
@@ -145,26 +152,41 @@ module top (
 
 	// E1
 		// Data interface
-	wire [ 7:0] e1rx_data;
-	wire [ 4:0] e1rx_ts;
-	wire [ 3:0] e1rx_frame;
-	wire [ 6:0] e1rx_mf;
-	wire e1rx_we;
-	wire e1rx_rdy;
+	wire [ 7:0] e1rx0_data;
+	wire [ 4:0] e1rx0_ts;
+	wire [ 3:0] e1rx0_frame;
+	wire [ 6:0] e1rx0_mf;
+	wire e1rx0_we;
+	wire e1rx0_rdy;
 
-	wire [ 7:0] e1tx_data;
-	wire [ 4:0] e1tx_ts;
-	wire [ 3:0] e1tx_frame;
-	wire [ 6:0] e1tx_mf;
-	wire e1tx_re;
-	wire e1tx_rdy;
+	wire [ 7:0] e1rx1_data;
+	wire [ 4:0] e1rx1_ts;
+	wire [ 3:0] e1rx1_frame;
+	wire [ 6:0] e1rx1_mf;
+	wire e1rx1_we;
+	wire e1rx1_rdy;
 
 		// Tick
-	wire e1_tick_tx;
-	wire e1_tick_rx;
+	wire e1_tick_rx0;
+	wire e1_tick_rx1;
 
 	// IObuf
 	wire [31:0] iobuf_rdata;
+
+	// LIU SPI
+	wire [7:0] liu_addr;
+	wire [7:0] liu_di;
+	wire [7:0] liu_do;
+	wire liu_rw;
+	wire liu_stb;
+	wire liu_ack;
+	wire liu_irq;
+	wire liu_wkup;
+
+	wire liu_miso_o, liu_miso_oe, liu_miso_i;
+	wire liu_mosi_o, liu_mosi_oe, liu_mosi_i;
+	wire liu_clk_o,  liu_clk_oe,  liu_clk_i;
+	wire [3:0] liu_csn_o, liu_csn_oe;
 
 	// SPI
 	wire [7:0] sb_addr;
@@ -190,19 +212,17 @@ module top (
 	reg [1:0] boot_sel;
 
 	// Tick counter
-	reg [15:0] tick_cnt;
-	reg [15:0] tick_cap;
+	reg [15:0] tick0_cnt;
+	reg [15:0] tick0_cap;
+
+	reg [15:0] tick1_cnt;
+	reg [15:0] tick1_cap;
 
 	// PDM
-	reg [ 8:0] pdm_vref_ct;
-	reg [ 8:0] pdm_vref_p;
-	reg [ 8:0] pdm_vref_n;
-
-	reg [12:0] pdm_clk_hi;
-	reg [12:0] pdm_clk_lo;
+	reg [ 7:0] vio_pdm_val;
 
 	// Clock / Reset logic
-	wire clk_30m72;
+	wire clk_24m;
 	wire clk_48m;
 	wire rst;
 
@@ -224,7 +244,7 @@ module top (
 		.CATCH_MISALIGN(0),
 		.CATCH_ILLINSN(0)
 	) cpu_I (
-		.clk       (clk_30m72),
+		.clk       (clk_24m),
 		.resetn    (~rst),
 		.mem_valid (mem_valid),
 		.mem_instr (mem_instr),
@@ -265,7 +285,7 @@ module top (
 		.wb_cyc(wb_cyc),
 		.wb_we(wb_we),
 		.wb_ack(wb_ack),
-		.clk(clk_30m72),
+		.clk(clk_24m),
 		.rst(rst)
 	);
 
@@ -281,7 +301,7 @@ module top (
 		.wdata(bram_wdata),
 		.wmsk(bram_wmsk),
 		.we(bram_we),
-		.clk(clk_30m72)
+		.clk(clk_24m)
 	);
 
 	// Main memory
@@ -291,7 +311,7 @@ module top (
 		.wdata(spram_wdata),
 		.wmsk(spram_wmsk),
 		.we(spram_we),
-		.clk(clk_30m72)
+		.clk(clk_24m)
 	);
 
 
@@ -310,7 +330,7 @@ module top (
 		.bus_cyc(wb_cyc[1]),
 		.bus_ack(wb_ack[1]),
 		.bus_we(wb_we),
-		.clk(clk_30m72),
+		.clk(clk_24m),
 		.rst(rst)
 	);
 
@@ -323,7 +343,7 @@ module top (
 	SB_SPI #(
 		.BUS_ADDR74("0b0000")
 	) spi_I (
-		.SBCLKI(clk_30m72),
+		.SBCLKI(clk_24m),
 		.SBRWI(sb_rw),
 		.SBSTBI(sb_stb),
 		.SBADRI7(sb_addr[7]),
@@ -378,7 +398,7 @@ module top (
 	assign sb_ack = sb_stb;
 	assign sb_do = { sim, 4'h8 };
 
-	always @(posedge clk_30m72)
+	always @(posedge clk_24m)
 		if (rst)
 			sim <= 0;
 		else if (sb_ack & sb_rw)
@@ -398,7 +418,6 @@ module top (
 
 		// Bypass OE for CS_n lines
 	assign spi_flash_cs_n = sio_csn_o[0];
-	assign spi_ram_cs_n   = sio_csn_o[1];
 
 	// Bus interface
 	assign sb_addr = { 4'h0, wb_addr[3:0] };
@@ -415,7 +434,7 @@ module top (
 
 	SB_LEDDA_IP led_I (
 		.LEDDCS(wb_addr[4] & wb_we),
-		.LEDDCLK(clk_30m72),
+		.LEDDCLK(clk_24m),
 		.LEDDDAT7(wb_wdata[7]),
 		.LEDDDAT6(wb_wdata[6]),
 		.LEDDDAT5(wb_wdata[5]),
@@ -452,7 +471,7 @@ module top (
 		.RGB2(rgb[2])
 	);
 
-	always @(posedge clk_30m72 or posedge rst)
+	always @(posedge clk_24m or posedge rst)
 		if (rst)
 			led_ctrl <= 0;
 		else if (wb_cyc[3] & ~wb_addr[4] & wb_we)
@@ -478,7 +497,7 @@ module top (
 		.ep_rx_addr_0(ep_rx_addr_0),
 		.ep_rx_data_1(ep_rx_data_1),
 		.ep_rx_re_0(ep_rx_re_0),
-		.ep_clk(clk_30m72),
+		.ep_clk(clk_24m),
 		.bus_addr(ub_addr),
 		.bus_din(ub_wdata),
 		.bus_dout(ub_rdata),
@@ -501,7 +520,7 @@ module top (
 		.s_cyc(wb_cyc[4]),
 		.s_ack(wb_ack[4]),
 		.s_we(wb_we),
-		.s_clk(clk_30m72),
+		.s_clk(clk_24m),
 		.m_addr(ub_addr),
 		.m_wdata(ub_wdata),
 		.m_rdata(ub_rdata),
@@ -517,7 +536,7 @@ module top (
 		.in_stb(sof_usb),
 		.in_clk(clk_48m),
 		.out_stb(sof_sys),
-		.out_clk(clk_30m72),
+		.out_clk(clk_24m),
 		.rst(rst)
 	);
 
@@ -541,19 +560,19 @@ module top (
 		.ep_rx_addr_0(ep_rx_addr_0),
 		.ep_rx_data_1(ep_rx_data_1),
 		.ep_rx_re_0(ep_rx_re_0),
-		.e1rx_data(e1rx_data),
-		.e1rx_ts(e1rx_ts),
-		.e1rx_frame(e1rx_frame),
-		.e1rx_mf(e1rx_mf),
-		.e1rx_we(e1rx_we),
-		.e1rx_rdy(e1rx_rdy),
-		.e1tx_data(e1tx_data),
-		.e1tx_ts(e1tx_ts),
-		.e1tx_frame(e1tx_frame),
-		.e1tx_mf(e1tx_mf),
-		.e1tx_re(e1tx_re),
-		.e1tx_rdy(e1tx_rdy),
-		.clk(clk_30m72),
+		.e1rx0_data(e1rx0_data),
+		.e1rx0_ts(e1rx0_ts),
+		.e1rx0_frame(e1rx0_frame),
+		.e1rx0_mf(e1rx0_mf),
+		.e1rx0_we(e1rx0_we),
+		.e1rx0_rdy(e1rx0_rdy),
+		.e1rx1_data(e1rx1_data),
+		.e1rx1_ts(e1rx1_ts),
+		.e1rx1_frame(e1rx1_frame),
+		.e1rx1_mf(e1rx1_mf),
+		.e1rx1_we(e1rx1_we),
+		.e1rx1_rdy(e1rx1_rdy),
+		.clk(clk_24m),
 		.rst(rst)
 	);
 
@@ -565,68 +584,168 @@ module top (
 	// E1
 	// --
 
-	e1_wb #(
+	e1_spy_wb #(
 		.MFW(7)
-	) e1_I (
-		.pad_rx_hi_p(e1_rx_hi_p),
-		.pad_rx_hi_n(1'b0), // e1_rx_hi_n
-		.pad_rx_lo_p(e1_rx_lo_p),
-		.pad_rx_lo_n(1'b0), // e1_rx_lo_n
-		.pad_tx_hi(e1_tx_hi),
-		.pad_tx_lo(e1_tx_lo),
-		.buf_rx_data(e1rx_data),
-		.buf_rx_ts(e1rx_ts),
-		.buf_rx_frame(e1rx_frame),
-		.buf_rx_mf(e1rx_mf),
-		.buf_rx_we(e1rx_we),
-		.buf_rx_rdy(e1rx_rdy),
-		.buf_tx_data(e1tx_data),
-		.buf_tx_ts(e1tx_ts),
-		.buf_tx_frame(e1tx_frame),
-		.buf_tx_mf(e1tx_mf),
-		.buf_tx_re(e1tx_re),
-		.buf_tx_rdy(e1tx_rdy),
+	) e1_spy_I (
+		.pad_rx0_data(pad_rx0_data),
+		.pad_rx0_clk(pad_rx0_clk),
+		.pad_rx1_data(pad_rx1_data),
+		.pad_rx1_clk(pad_rx1_clk),
+		.buf_rx0_data(e1rx0_data),
+		.buf_rx0_ts(e1rx0_ts),
+		.buf_rx0_frame(e1rx0_frame),
+		.buf_rx0_mf(e1rx0_mf),
+		.buf_rx0_we(e1rx0_we),
+		.buf_rx0_rdy(e1rx0_rdy),
+		.buf_rx1_data(e1rx1_data),
+		.buf_rx1_ts(e1rx1_ts),
+		.buf_rx1_frame(e1rx1_frame),
+		.buf_rx1_mf(e1rx1_mf),
+		.buf_rx1_we(e1rx1_we),
+		.buf_rx1_rdy(e1rx1_rdy),
 		.bus_addr(wb_addr[3:0]),
 		.bus_wdata(wb_wdata[15:0]),
 		.bus_rdata(wb_rdata[8][15:0]),
 		.bus_cyc(wb_cyc[8]),
 		.bus_we(wb_we),
 		.bus_ack(wb_ack[8]),
-		.tick_tx(e1_tick_tx),
-		.tick_rx(e1_tick_rx),
-		.clk(clk_30m72),
+		.tick_rx0(e1_tick_rx0),
+		.tick_rx1(e1_tick_rx1),
+		.clk(clk_24m),
 		.rst(rst)
 	);
 
 	assign wb_rdata[8][31:16] = 16'h0000;
 
 
+	// LIU SPI
+	// -------
+
+	// Hard-IP
+`ifndef SIM
+	SB_SPI #(
+		.BUS_ADDR74("0b0010")
+	) spi_liu_I (
+		.SBCLKI(clk_24m),
+		.SBRWI(liu_rw),
+		.SBSTBI(liu_stb),
+		.SBADRI7(liu_addr[7]),
+		.SBADRI6(liu_addr[6]),
+		.SBADRI5(liu_addr[5]),
+		.SBADRI4(liu_addr[4]),
+		.SBADRI3(liu_addr[3]),
+		.SBADRI2(liu_addr[2]),
+		.SBADRI1(liu_addr[1]),
+		.SBADRI0(liu_addr[0]),
+		.SBDATI7(liu_di[7]),
+		.SBDATI6(liu_di[6]),
+		.SBDATI5(liu_di[5]),
+		.SBDATI4(liu_di[4]),
+		.SBDATI3(liu_di[3]),
+		.SBDATI2(liu_di[2]),
+		.SBDATI1(liu_di[1]),
+		.SBDATI0(liu_di[0]),
+		.MI(liu_miso_i),
+		.SI(liu_mosi_i),
+		.SCKI(liu_clk_i),
+		.SCSNI(1'b1),
+		.SBDATO7(liu_do[7]),
+		.SBDATO6(liu_do[6]),
+		.SBDATO5(liu_do[5]),
+		.SBDATO4(liu_do[4]),
+		.SBDATO3(liu_do[3]),
+		.SBDATO2(liu_do[2]),
+		.SBDATO1(liu_do[1]),
+		.SBDATO0(liu_do[0]),
+		.SBACKO(liu_ack),
+		.SPIIRQ(liu_irq),
+		.SPIWKUP(liu_wkup),
+		.SO(liu_miso_o),
+		.SOE(liu_miso_oe),
+		.MO(liu_mosi_o),
+		.MOE(liu_mosi_oe),
+		.SCKO(liu_clk_o),
+		.SCKOE(liu_clk_oe),
+		.MCSNO3(liu_csn_o[3]),
+		.MCSNO2(liu_csn_o[2]),
+		.MCSNO1(liu_csn_o[1]),
+		.MCSNO0(liu_csn_o[0]),
+		.MCSNOE3(liu_csn_oe[3]),
+		.MCSNOE2(liu_csn_oe[2]),
+		.MCSNOE1(liu_csn_oe[1]),
+		.MCSNOE0(liu_csn_oe[0])
+	);
+`else
+	reg [3:0] sim;
+
+	assign liu_ack = liu_stb;
+	assign liu_do = { sim, 4'h8 };
+
+	always @(posedge clk_24m)
+		if (rst)
+			sim <= 0;
+		else if (liu_ack & liu_rw)
+			sim <= sim + 1;
+`endif
+
+	// IO pads
+	SB_IO #(
+		.PIN_TYPE(6'b101001),
+		.PULLUP(1'b1)
+	) liu_io_I[2:0] (
+		.PACKAGE_PIN  ({liu_mosi,    liu_miso,    liu_clk   }),
+		.OUTPUT_ENABLE({liu_mosi_oe, liu_miso_oe, liu_clk_oe}),
+		.D_OUT_0      ({liu_mosi_o,  liu_miso_o,  liu_clk_o }),
+		.D_IN_0       ({liu_mosi_i,  liu_miso_i,  liu_clk_i })
+	);
+
+		// Bypass OE for CS_n lines
+	assign liu_cs_n = liu_csn_o[1:0];
+
+	// Bus interface
+	assign liu_addr = { 4'h2, wb_addr[3:0] };
+	assign liu_di   = wb_wdata[7:0];
+	assign liu_rw   = wb_we;
+	assign liu_stb  = wb_cyc[9];
+
+	assign wb_rdata[9] = { {(WB_DW-8){1'b0}}, wb_cyc[9] ? liu_do : 8'h00 };
+	assign wb_ack[9] = liu_ack;
+
+
 	// Bus IF for "Misc"
 	// -----------------
 
-	assign wb_rdata[0] = wb_cyc[0] ? { 16'h0000, tick_cap } : 32'h00000000;
+	assign wb_rdata[0] = wb_cyc[0] ? { tick1_cap, tick0_cap } : 32'h00000000;
 	assign wb_ack[0] = wb_cyc[0];
 
 
-	// E1 Tick counter
-	// ---------------
+	// E1 Tick counters
+	// ----------------
 
-	always @(posedge clk_30m72 or posedge rst)
+	always @(posedge clk_24m or posedge rst)
 		if (rst)
-			tick_cnt <= 16'h0000;
-		else if (e1_tick_rx)
-			tick_cnt <= tick_cnt + 1;
+			tick0_cnt <= 16'h0000;
+		else if (e1_tick_rx0)
+			tick0_cnt <= tick0_cnt + 1;
 
-	always @(posedge clk_30m72)
-		if (sof_sys)
-			tick_cap <= tick_cnt;
+	always @(posedge clk_24m or posedge rst)
+		if (rst)
+			tick0_cnt <= 16'h0000;
+		else if (e1_tick_rx1)
+			tick1_cnt <= tick1_cnt + 1;
+
+	always @(posedge clk_24m)
+		if (sof_sys) begin
+			tick0_cap <= tick0_cnt;
+			tick1_cap <= tick1_cnt;
+		end
 
 
 	// Warm Boot
 	// ---------
 
 	// Bus interface
-	always @(posedge clk_30m72 or posedge rst)
+	always @(posedge clk_24m or posedge rst)
 		if (rst) begin
 			boot_now <= 1'b0;
 			boot_sel <= 2'b00;
@@ -659,43 +778,23 @@ module top (
 	// ---
 
 	// Config registers
-	always @(posedge clk_30m72 or posedge rst)
+	always @(posedge clk_24m or posedge rst)
 		if (rst) begin
-			pdm_vref_ct <= 0;
-			pdm_vref_p  <= 0;
-			pdm_vref_n  <= 0;
-			pdm_clk_hi  <= 0;
-			pdm_clk_lo  <= 0;
+			vio_pdm_val <= 8'hff;
 		end else if (wb_cyc[0] & wb_we) begin
-			if (wb_addr[2:0] == 3'b010) pdm_clk_hi  <= wb_wdata[12:0];
-			if (wb_addr[2:0] == 3'b011) pdm_clk_lo  <= wb_wdata[12:0];
-			if (wb_addr[2:0] == 3'b100) pdm_vref_ct <= wb_wdata[ 8:0];
-			if (wb_addr[2:0] == 3'b110) pdm_vref_p  <= wb_wdata[ 8:0];
-			if (wb_addr[2:0] == 3'b111) pdm_vref_n  <= wb_wdata[ 8:0];
-		end
+			if (wb_addr[2:0] == 3'b010) vio_pdm_val <= wb_wdata[7:0];
+        end
 
 	// PDM cores
 	pdm #(
 		.WIDTH(8),
 		.PHY("ICE40"),
 		.DITHER("NO")
-	) pdm_e1_I[2:0] (
-		.in ({ pdm_vref_ct[7:0], pdm_vref_p[7:0], pdm_vref_n[7:0] }),
-		.pdm({  e1_vref_ct_pdm,   e1_vref_p_pdm,   e1_vref_n_pdm  }),
-		.oe ({ pdm_vref_ct[8],   pdm_vref_p[8],   pdm_vref_n[8]   }),
-		.clk(clk_30m72),
-		.rst(rst)
-	);
-
-	pdm #(
-		.WIDTH(12),
-		.PHY("ICE40"),
-		.DITHER("YES")
-	) pdm_clk_I[1:0] (
-		.in ({ pdm_clk_hi[11:0], pdm_clk_lo[11:0] }),
-		.pdm({ clk_tune_pdm_hi, clk_tune_pdm_lo   }),
-		.oe ({ pdm_clk_hi[12],   pdm_clk_lo[12]   }),
-		.clk(clk_30m72),
+	) vio_pdm_I (
+		.in (vio_pdm_val),
+		.pdm(vio_pdm),
+		.oe (1'b1),
+		.clk(clk_24m),
 		.rst(rst)
 	);
 
@@ -704,25 +803,25 @@ module top (
 	// -------------
 
 `ifdef SIM
-	reg clk_30m72_s = 1'b0;
+	reg clk_24m_s = 1'b0;
 	reg clk_48m_s = 1'b0;
 	reg rst_s = 1'b1;
 
-	always #16.27 clk_30m72_s <= !clk_30m72_s;
+	always #20.84 clk_24m_s <= !clk_24m_s;
 	always #10.42 clk_48m_s <= !clk_48m_s;
 
 	initial begin
 		#200 rst_s = 0;
 	end
 
-	assign clk_30m72 = clk_30m72_s;
+	assign clk_24m = clk_24m_s;
 	assign clk_48m = clk_48m_s;
 	assign rst = rst_s;
 `else
-	sysmgr_icebreaker sys_mgr_I (
-		.clk_in(clk_30m72_in),
+	sysmgr sys_mgr_I (
+		.clk_in(clk_in),
 		.rst_in(1'b0),
-		.clk_30m72(clk_30m72),
+		.clk_24m(clk_24m),
 		.clk_48m(clk_48m),
 		.rst_out(rst)
 	);
