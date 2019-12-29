@@ -1,5 +1,5 @@
 /*
- * spi.h
+ * usb_dfu_rt.h
  *
  * Copyright (C) 2019 Sylvain Munaut
  * All rights reserved.
@@ -23,29 +23,5 @@
 
 #pragma once
 
-#include <stdbool.h>
-
-struct spi_xfer_chunk {
-	uint8_t *data;
-	unsigned len;
-	bool write;
-	bool read;
-};
-
-#define SPI_CS_FLASH	0
-
-void spi_init(const unsigned chan);
-void spi_xfer(const unsigned chan, const unsigned cs, struct spi_xfer_chunk *xfer, unsigned n);
-
-void flash_cmd(uint8_t cmd);
-void flash_deep_power_down(void);
-void flash_wake_up(void);
-void flash_write_enable(void);
-void flash_write_disable(void);
-void flash_manuf_id(void *manuf);
-void flash_unique_id(void *id);
-uint8_t flash_read_sr(void);
-void flash_write_sr(uint8_t sr);
-void flash_read(void *dst, uint32_t addr, unsigned len);
-void flash_page_program(void *src, uint32_t addr, unsigned len);
-void flash_sector_erase(uint32_t addr);
+void usb_dfu_rt_cb_reboot(void);
+void usb_dfu_rt_init(void);

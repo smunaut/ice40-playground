@@ -66,41 +66,56 @@ struct spi {
 #define SPI_SR_MDF		(1 << 0)
 
 
-static volatile struct spi * const spi_regs = (void*)(SPI_BASE);
+static volatile struct spi * const spi_regs[2] = {
+	(void*)(SPI_FLASH_BASE),
+	(void*)(SPI_LIU_BASE),
+};
 
 
 void
-spi_init(void)
+spi_init(const unsigned chan)
 {
-	spi_regs->cr0 = SPI_CR0_TIDLE(3) |
-	                SPI_CR0_TTRAIL(7) |
-	                SPI_CR0_TLEAD(7);
-	spi_regs->cr1 = SPI_CR1_ENABLE;
-	spi_regs->cr2 = SPI_CR2_MASTER | SPI_CR2_MCSH;
-	spi_regs->br  = 3;
-	spi_regs->csr = 0xf;
+	spi_regs[chan]->cr0 = SPI_CR0_TIDLE(3) |
+	                      SPI_CR0_TTRAIL(7) |
+	                      SPI_CR0_TLEAD(7);
+
+	if (chan) {
+		/* LIU */
+		spi_regs[chan]->cr1 = SPI_CR1_ENABLE | SPI_CR1_TXEDGE;
+		spi_regs[chan]->cr2 = SPI_CR2_MASTER | SPI_CR2_LSBF | SPI_CR2_MCSH | SPI_CR2_CPHA;
+		spi_regs[chan]->br  = 3;
+		spi_regs[chan]->csr = 0xf;
+	} else {
+		/* Flash */
+		spi_regs[chan]->cr1 = SPI_CR1_ENABLE;
+		spi_regs[chan]->cr2 = SPI_CR2_MASTER | SPI_CR2_MCSH;
+		spi_regs[chan]->br  = 3;
+		spi_regs[chan]->csr = 0xf;
+	}
 }
 
 void
-spi_xfer(unsigned cs, struct spi_xfer_chunk *xfer, unsigned n)
+spi_xfer(const unsigned chan, const unsigned cs, struct spi_xfer_chunk *xfer, unsigned n)
 {
 	/* Setup CS */
-	spi_regs->csr = 0xf ^ (1 << cs);
+	//spi_regs[chan]->cr2 |= SPI_CR2_MCSH;
+	spi_regs[chan]->csr = 0xf ^ (1 << cs);
 
 	/* Run the chunks */
 	while (n--) {
 		for (int i=0; i<xfer->len; i++)
 		{
-			spi_regs->txdr = xfer->write ? xfer->data[i] : 0x00;
-			while (!(spi_regs->sr & SPI_SR_RRDY));
+			spi_regs[chan]->txdr = xfer->write ? xfer->data[i] : 0x00;
+			while (!(spi_regs[chan]->sr & SPI_SR_RRDY));
 			if (xfer->read)
-				xfer->data[i] = spi_regs->rxdr;
+				xfer->data[i] = spi_regs[chan]->rxdr;
 		}
 		xfer++;
 	}
 
 	/* Clear CS */
-	spi_regs->csr = 0xf ^ (1 << cs);
+	//spi_regs[chan]->cr2 &= ~SPI_CR2_MCSH;
+	spi_regs[chan]->csr = 0xf;
 }
 
 
@@ -127,7 +142,7 @@ flash_cmd(uint8_t cmd)
 	struct spi_xfer_chunk xfer[1] = {
 		{ .data = (void*)&cmd, .len = 1, .read = false, .write = true,  },
 	};
-	spi_xfer(SPI_CS_FLASH, xfer, 1);
+	spi_xfer(0, SPI_CS_FLASH, xfer, 1);
 }
 
 void
@@ -168,7 +183,7 @@ flash_manuf_id(void *manuf)
 		{ .data = (void*)&cmd,  .len = 1, .read = false, .write = true,  },
 		{ .data = (void*)manuf, .len = 3, .read = true,  .write = false, },
 	};
-	spi_xfer(SPI_CS_FLASH, xfer, 2);
+	spi_xfer(0, SPI_CS_FLASH, xfer, 2);
 }
 
 void
@@ -180,7 +195,7 @@ flash_unique_id(void *id)
 		{ .data = (void*)0,    .len = 4, .read = false, .write = false, },
 		{ .data = (void*)id,   .len = 8, .read = true,  .write = false, },
 	};
-	spi_xfer(SPI_CS_FLASH, xfer, 3);
+	spi_xfer(0, SPI_CS_FLASH, xfer, 3);
 }
 
 uint8_t
@@ -192,7 +207,7 @@ flash_read_sr(void)
 		{ .data = (void*)&cmd, .len = 1, .read = false, .write = true,  },
 		{ .data = (void*)&rv,  .len = 1, .read = true,  .write = false, },
 	};
-	spi_xfer(SPI_CS_FLASH, xfer, 2);
+	spi_xfer(0, SPI_CS_FLASH, xfer, 2);
 	return rv;
 }
 
@@ -203,7 +218,7 @@ flash_write_sr(uint8_t sr)
 	struct spi_xfer_chunk xfer[1] = {
 		{ .data = (void*)cmd, .len = 2, .read = false, .write = true,  },
 	};
-	spi_xfer(SPI_CS_FLASH, xfer, 1);
+	spi_xfer(0, SPI_CS_FLASH, xfer, 1);
 }
 
 void
@@ -214,7 +229,7 @@ flash_read(void *dst, uint32_t addr, unsigned len)
 		{ .data = (void*)cmd, .len = 4,   .read = false, .write = true,  },
 		{ .data = (void*)dst, .len = len, .read = true,  .write = false, },
 	};
-	spi_xfer(SPI_CS_FLASH, xfer, 2);
+	spi_xfer(0, SPI_CS_FLASH, xfer, 2);
 }
 
 void
@@ -225,7 +240,7 @@ flash_page_program(void *src, uint32_t addr, unsigned len)
 		{ .data = (void*)cmd, .len = 4,   .read = false, .write = true, },
 		{ .data = (void*)src, .len = len, .read = false, .write = true, },
 	};
-	spi_xfer(SPI_CS_FLASH, xfer, 2);
+	spi_xfer(0, SPI_CS_FLASH, xfer, 2);
 }
 
 void
@@ -235,5 +250,5 @@ flash_sector_erase(uint32_t addr)
 	struct spi_xfer_chunk xfer[1] = {
 		{ .data = (void*)cmd, .len = 4,   .read = false, .write = true,  },
 	};
-	spi_xfer(SPI_CS_FLASH, xfer, 1);
+	spi_xfer(0, SPI_CS_FLASH, xfer, 1);
 }

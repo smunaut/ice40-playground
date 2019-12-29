@@ -26,141 +26,79 @@
 #include <string.h>
 
 #include "console.h"
+#include "e1.h"
 #include "misc.h"
 #include "usb_hw.h"
 #include "usb_priv.h"
 
 struct {
 	bool running;
-	int out_bdi;
-	int in_bdi;
+	int in_bdi[2];
 } g_usb_e1;
 
 
 /* Hack */
-unsigned int e1_rx_need_data(unsigned int usb_addr, unsigned int max_len);
-unsigned int e1_tx_feed_data(unsigned int usb_addr, unsigned int len);
-unsigned int e1_tx_level(void);
-unsigned int e1_rx_level(void);
+unsigned int e1_rx_need_data(int chan, unsigned int usb_addr, unsigned int max_len, unsigned int *pos);
+unsigned int e1_rx_level(int chan);
+uint8_t e1_get_pending_flags(int chan);
 /* ---- */
 
 bool
 usb_ep_boot(const struct usb_intf_desc *intf, uint8_t ep_addr, bool dual_bd);
 
-static void
-_usb_fill_feedback_ep(void)
-{
-	static uint16_t ticks_prev = 0;
-	uint16_t ticks;
-	uint32_t val = 8192;
-	unsigned int level;
-
-	/* Compute real E1 tick count (with safety agains bad values) */
-	ticks = e1_tick_read();
-	val = (ticks - ticks_prev) & 0xffff;
-	ticks_prev = ticks;
-	if ((val < 7168) | (val > 9216))
-		val = 8192;
-
-	/* Bias depending on TX fifo level */
-	level = e1_tx_level();
-	if (level < (3 * 16))
-		val += 256;
-	else if (level > (8 * 16))
-		val -= 256;
-
-	/* Prepare buffer */
-	usb_data_write(64, &val, 4);
-	usb_ep_regs[1].in.bd[0].ptr = 64;
-	usb_ep_regs[1].in.bd[0].csr = USB_BD_STATE_RDY_DATA | USB_BD_LEN(3);
-}
-
 
 void
 usb_e1_run(void)
 {
+	int chan;
 	int bdi;
 
 	if (!g_usb_e1.running)
 		return;
 
-	/* EP2 IN */
-	bdi = g_usb_e1.in_bdi;
-
-	while ((usb_ep_regs[2].in.bd[bdi].csr & USB_BD_STATE_MSK) != USB_BD_STATE_RDY_DATA)
+	/* EP[1-2] IN */
+	for (chan=0; chan<2; chan++)
 	{
-		uint32_t ptr = usb_ep_regs[2].in.bd[bdi].ptr;
-		uint32_t hdr;
+		bdi = g_usb_e1.in_bdi[chan];
 
-		/* Error check */
-		if ((usb_ep_regs[2].in.bd[bdi].csr & USB_BD_STATE_MSK) == USB_BD_STATE_DONE_ERR)
-			puts("Err EP2 IN\n");
+		while ((usb_ep_regs[1+chan].in.bd[bdi].csr & USB_BD_STATE_MSK) != USB_BD_STATE_RDY_DATA)
+		{
+			uint32_t ptr = usb_ep_regs[1+chan].in.bd[bdi].ptr;
+			uint32_t hdr;
+			unsigned int pos;
 
-		/* Get some data from E1 */
-		int n = e1_rx_level();
+			/* Error check */
+			if ((usb_ep_regs[1+chan].in.bd[bdi].csr & USB_BD_STATE_MSK) == USB_BD_STATE_DONE_ERR)
+				printf("Err EP%d IN\n", 1+chan);
 
-		if (n > 64)
-			n = 12;
-		else if (n > 32)
-			n = 10;
-		else if (n > 8)
-			n = 8;
-		else if (!n)
-			break;
+			/* Get some data from E1 */
+			int n = e1_rx_level(chan);
 
-		n = e1_rx_need_data((ptr >> 2) + 1, n);
+			if (n > 64)
+				n = 12;
+			else if (n > 32)
+				n = 10;
+			else if (n > 8)
+				n = 8;
+			else if (!n)
+				break;
 
-		/* Write header */
-		hdr = 0x616b00b5;
-		usb_data_write(ptr, &hdr, 4);
+			n = e1_rx_need_data(chan, (ptr >> 2) + 1, n, &pos);
 
-		/* Resubmit */
-		usb_ep_regs[2].in.bd[bdi].csr = USB_BD_STATE_RDY_DATA | USB_BD_LEN((n * 32) + 4);
+			/* Write header */
+				/* [31:12] (reserved) */
+				/* [11:10] CRC results (first new multiframe present in packet)  */
+				/* [ 9: 8] CRC results (second new multiframe present in packet) */
+				/* [ 7: 5] Multiframe sequence number (first frame of packet)    */
+				/* [ 4: 0] Position in multi-frame    (first frame of packet)    */
+			hdr = (pos & 0xff) | (e1_get_pending_flags(chan) << 24);
+			usb_data_write(ptr, &hdr, 4);
+			usb_ep_regs[1+chan].in.bd[bdi].csr = USB_BD_STATE_RDY_DATA | USB_BD_LEN((n * 32) + 4);
 
-		/* Next BDI */
-		bdi ^= 1;
-		g_usb_e1.in_bdi = bdi;
-	}
-
-	/* EP1 OUT */
-	bdi = g_usb_e1.out_bdi;
-
-	while ((usb_ep_regs[1].out.bd[bdi].csr & USB_BD_STATE_MSK) != USB_BD_STATE_RDY_DATA)
-	{
-		uint32_t ptr = usb_ep_regs[1].out.bd[bdi].ptr;
-		uint32_t csr = usb_ep_regs[1].out.bd[bdi].csr;
-		uint32_t hdr;
-
-		/* Error check */
-		if ((csr & USB_BD_STATE_MSK) == USB_BD_STATE_DONE_ERR) {
-			puts("Err EP1 OUT\n");
-			goto refill;
+			/* Next BDI */
+			bdi ^= 1;
+			g_usb_e1.in_bdi[chan] = bdi;
 		}
-
-		/* Grab header */
-		usb_data_read(&hdr, ptr, 4);
-
-		/* Empty data into the FIFO */
-		int n = ((csr & USB_BD_LEN_MSK) - 4) / 32;
-		n = e1_tx_feed_data((ptr >> 2) + 1, n);
-
-refill:
-		/* Refill it */
-		usb_ep_regs[1].out.bd[bdi].csr = USB_BD_STATE_RDY_DATA | USB_BD_LEN(388);
-
-		/* Next BDI */
-		bdi ^= 1;
-		g_usb_e1.out_bdi = bdi;
-
-		static int x = 0;
-		if ((x++ & 0xff) == 0xff)
-			puts(".");
-	}
-
-	/* EP1 IN */
-	if ((usb_ep_regs[1].in.bd[0].csr & USB_BD_STATE_MSK) != USB_BD_STATE_RDY_DATA)
-	{
-		_usb_fill_feedback_ep();
 	}
 }
 
@@ -205,7 +143,6 @@ _e1_set_conf(const struct usb_conf_desc *conf)
 
 	printf("e1 set_conf %08x\n", intf);
 
-	usb_ep_boot(intf, 0x01, true);
 	usb_ep_boot(intf, 0x81, true);
 	usb_ep_boot(intf, 0x82, true);
 	
@@ -218,38 +155,58 @@ _e1_set_intf(const struct usb_intf_desc *base, const struct usb_intf_desc *sel)
 	if (base->bInterfaceNumber != 0)
 		return USB_FND_CONTINUE;
 
-	if (sel->bAlternateSetting != 1)
-		return USB_FND_SUCCESS;
-
-	/* Hack to avoid re-setting while running ... avoid BD desync */
-	if (g_usb_e1.running)
-		return USB_FND_SUCCESS;
+	if (sel->bAlternateSetting == 0)
+	{
+		/* Already stopped ? */
+		if (!g_usb_e1.running)
+			return USB_FND_SUCCESS;
 	
-	g_usb_e1.running = true;
+		/* Update state */
+		g_usb_e1.running = false;
 
-	/* Configure EP1 OUT / EP2 IN */
-	usb_ep_regs[1].out.status = USB_EP_TYPE_ISOC | USB_EP_BD_DUAL;	/* Type=Isochronous, dual buffered */
-	usb_ep_regs[2].in.status  = USB_EP_TYPE_ISOC | USB_EP_BD_DUAL;	/* Type=Isochronous, dual buffered */
+		/* Stop E1 */
+		e1_stop();
 
-	/* Configure EP1 IN (feedback) */
-	usb_ep_regs[1].in.status  = USB_EP_TYPE_ISOC; /* Type=Isochronous, single buffered */
+		/* Disable end-points */
+		usb_ep_regs[1].in.status = 0;
+		usb_ep_regs[2].in.status = 0;
+	}
+	else if (sel->bAlternateSetting == 1)
+	{
+		/* Already running ? */
+		if (g_usb_e1.running)
+			return USB_FND_SUCCESS;
 
-	/* EP2 IN: Prepare two buffers */
-	usb_ep_regs[2].in.bd[0].ptr = 1024;
-	usb_ep_regs[2].in.bd[0].csr = 0;
+		/* Update state */
+		g_usb_e1.running = true;
 
-	usb_ep_regs[2].in.bd[1].ptr = 1536;
-	usb_ep_regs[2].in.bd[1].csr = 0;
+		/* Configure EP1 IN / EP2 IN */
+		usb_ep_regs[1].in.status = USB_EP_TYPE_ISOC | USB_EP_BD_DUAL;	/* Type=Isochronous, dual buffered */
+		usb_ep_regs[2].in.status = USB_EP_TYPE_ISOC | USB_EP_BD_DUAL;	/* Type=Isochronous, dual buffered */
 
-	/* EP1 OUT: Queue two buffers */
-	usb_ep_regs[1].out.bd[0].ptr = 1024;
-	usb_ep_regs[1].out.bd[0].csr = USB_BD_STATE_RDY_DATA | USB_BD_LEN(388);
+		/* EP1 IN: Prepare two buffers */
+		usb_ep_regs[1].in.bd[0].ptr = 256 + 0 * 388;
+		usb_ep_regs[1].in.bd[0].csr = 0;
 
-	usb_ep_regs[1].out.bd[1].ptr = 1536;
-	usb_ep_regs[1].out.bd[1].csr = USB_BD_STATE_RDY_DATA | USB_BD_LEN(388);
+		usb_ep_regs[1].in.bd[1].ptr = 256 + 1 * 388;
+		usb_ep_regs[1].in.bd[1].csr = 0;
 
-	/* EP1 IN: Queue buffer */
-	_usb_fill_feedback_ep();
+		/* EP2 IN: Prepare two buffers */
+		usb_ep_regs[2].in.bd[0].ptr = 256 + 2 * 388;
+		usb_ep_regs[2].in.bd[0].csr = 0;
+
+		usb_ep_regs[2].in.bd[1].ptr = 256 + 3 * 388;
+		usb_ep_regs[2].in.bd[1].csr = 0;
+
+		/* Start E1 */
+		e1_start();
+	}
+	else
+	{
+		/* Unknown */
+		return USB_FND_ERROR;
+	}
+
 
 	return USB_FND_SUCCESS;
 }
@@ -274,6 +231,9 @@ static struct usb_fn_drv _e1_drv = {
 void
 usb_e1_init(void)
 {
+	/* Clear state */
 	memset(&g_usb_e1, 0x00, sizeof(g_usb_e1));
+
+	/* Install driver */
 	usb_register_function_driver(&_e1_drv);
 }

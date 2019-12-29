@@ -31,28 +31,23 @@
 struct misc {
 	uint32_t warmboot;
 	uint32_t e1_tick;
-	uint32_t pdm[6];
+	uint32_t vio_pdm;
 } __attribute__((packed,aligned(4)));
 
 static volatile struct misc * const misc_regs = (void*)(MISC_BASE);
 
 
-static const int pdm_bits[6] = { 12, 12, 8, 0, 8, 8 };
-
-
 void
-pdm_set(int chan, bool enable, unsigned value, bool normalize)
+vio_set(unsigned value)
 {
-	if (normalize)
-		value >>= (16 - pdm_bits[chan]);
-	if (enable)
-		value |= (1 << pdm_bits[chan]);
-	misc_regs->pdm[chan] = value;
+	misc_regs->vio_pdm = value;
 }
 
 
-uint16_t
-e1_tick_read(void)
+void
+e1_tick_read(uint16_t *ticks)
 {
-	return misc_regs->e1_tick;
+	uint32_t v = misc_regs->e1_tick;
+	ticks[0] = (v      ) & 0xffff;
+	ticks[1] = (v >> 16) & 0xffff;
 }

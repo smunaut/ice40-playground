@@ -74,6 +74,13 @@ struct led {
 
 static volatile struct led * const led_regs = (void*)(LED_BASE);
 
+static const uint32_t led_cr0_base =
+	LEDDA_IP_CR0_FR250 |
+	LEDDA_IP_CR0_OUTSKEW |
+	LEDDA_IP_CR0_QUICK_STOP |
+	LEDDA_IP_CR0_PWM_LFSR |
+	LEDDA_IP_CR0_SCALE_MSB(480);
+
 
 void
 led_init(void)
@@ -89,12 +96,7 @@ led_init(void)
 	led_regs->ip.ofr = 0;
 
 	led_regs->ip.br = LEDDA_IP_BR_SCALE_LSB(480);
-	led_regs->ip.cr0 =
-		LEDDA_IP_CR0_FR250 |
-		LEDDA_IP_CR0_OUTSKEW |
-		LEDDA_IP_CR0_QUICK_STOP |
-		LEDDA_IP_CR0_PWM_LFSR |
-		LEDDA_IP_CR0_SCALE_MSB(480);
+	led_regs->ip.cr0 = led_cr0_base;
 
 	led_regs->csr = LED_CSR_LEDDEXE | LED_CSR_RGBLEDEN | LED_CSR_CURREN;
 }
@@ -110,6 +112,10 @@ led_color(uint8_t r, uint8_t g, uint8_t b)
 	led_regs->ip.pwrr = g;
 	led_regs->ip.pwrg = r;
 	led_regs->ip.pwrb = b;
+#elif defined(BOARD_icepick)
+        led_regs->ip.pwrr = b;
+        led_regs->ip.pwrg = g;
+        led_regs->ip.pwrb = r;
 #else
 	led_regs->ip.pwrr = r;
 	led_regs->ip.pwrg = g;
@@ -121,14 +127,18 @@ void
 led_state(bool on)
 {
 	if (on)
-		led_regs->ip.cr0 |=  LEDDA_IP_CR0_LEDDEN;
+		led_regs->ip.cr0 = led_cr0_base | LEDDA_IP_CR0_LEDDEN;
 	else
-		led_regs->ip.cr0 &= ~LEDDA_IP_CR0_LEDDEN;
+		led_regs->ip.cr0 = led_cr0_base;
 }
 
 void
 led_blink(bool enabled, int on_time_ms, int off_time_ms)
 {
+	/* Disable EXE before doing any change */
+	led_regs->csr = LED_CSR_RGBLEDEN | LED_CSR_CURREN;
+
+	/* Load new config */
 	if (enabled) {
 		led_regs->ip.onr = LEDDA_IP_ONOFF_TIME_MS(on_time_ms);
 		led_regs->ip.ofr = LEDDA_IP_ONOFF_TIME_MS(off_time_ms);
@@ -136,6 +146,9 @@ led_blink(bool enabled, int on_time_ms, int off_time_ms)
 		led_regs->ip.onr = 0;
 		led_regs->ip.ofr = 0;
 	}
+
+	/* Re-enable execution */
+	led_regs->csr = LED_CSR_LEDDEXE | LED_CSR_RGBLEDEN | LED_CSR_CURREN;
 }
 
 void

@@ -26,14 +26,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-enum pdm_chan {
-	PDM_CLK_HI	= 0,
-	PDM_CLK_LO	= 1,
-	PDM_E1_CT	= 2,
-	PDM_E1_P	= 4,
-	PDM_E1_N	= 5,
-};
+void vio_set(unsigned value);
 
-void pdm_set(int chan, bool enable, unsigned value, bool normalize);
-
-uint16_t e1_tick_read(void);
+void e1_tick_read(uint16_t *ticks);

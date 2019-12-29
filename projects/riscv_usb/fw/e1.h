@@ -23,8 +23,12 @@
 
 #pragma once
 
-void e1_init(bool clk_mode);
+void e1_init();
+void e1_start();
+void e1_stop();
+
 void e1_poll(void);
+
 void e1_debug_print(bool data);
 
 volatile uint8_t *e1_data_ptr(int mf, int frame, int ts);

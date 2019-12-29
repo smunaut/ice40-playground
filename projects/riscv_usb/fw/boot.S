@@ -22,6 +22,8 @@
 #define FLASH_APP_ADDR 0x00100000
 #endif
 
+//#define BOOT_DEBUG
+
 	.section .text.start
 	.global _start
 _start:
@@ -29,7 +31,7 @@ _start:
 #ifdef BOOT_DEBUG
 	// Set UART divisor
 	li	a0, 0x81000004
-	li	a1, 29
+	li	a1, 22
 	sw	a1, 0(a0)
 
 	// Output 'a'
