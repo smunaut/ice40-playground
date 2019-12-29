@@ -29,11 +29,17 @@
 `default_nettype none
 
 module e1_tx #(
+	parameter integer LIU = 0,
 	parameter integer MFW = 7
 )(
 	// IO pads
+		// Raw PHY
 	output wire pad_tx_hi,
 	output wire pad_tx_lo,
+
+		// LIU
+	output wire pad_tx_data,
+	output wire pad_tx_clk,
 
 	// Buffer interface
 	input  wire [7:0] buf_data,
@@ -153,45 +159,63 @@ module e1_tx #(
 	// Low-level
 	// ---------
 
-	// HDB3 encoding
-	hdb3_enc hdb3_I (
-		.out_pos(ll_pg_hi),
-		.out_neg(ll_pg_lo),
-		.out_valid(ll_pg_stb),
-		.in_data(ll_bit),
-		.in_valid(ll_valid),
-		.clk(clk),
-		.rst(rst)
-	);
+	generate
+		if (LIU == 0) begin
 
-	// Pulse generation
-	always @(posedge clk)
-	begin
-		if (rst) begin
-			pg_hi <= 0;
-			pg_lo <= 0;
-		end else begin
-			if (ll_pg_stb) begin
-				pg_hi <= ll_pg_hi ? 5'h19 : 5'h00;
-				pg_lo <= ll_pg_lo ? 5'h19 : 5'h00;
-			end else begin
-				pg_hi <= pg_hi - pg_hi[4];
-				pg_lo <= pg_lo - pg_lo[4];
+			// HDB3 encoding
+			hdb3_enc hdb3_I (
+				.out_pos(ll_pg_hi),
+				.out_neg(ll_pg_lo),
+				.out_valid(ll_pg_stb),
+				.in_data(ll_bit),
+				.in_valid(ll_valid),
+				.clk(clk),
+				.rst(rst)
+			);
+
+			// Pulse generation
+			always @(posedge clk)
+			begin
+				if (rst) begin
+					pg_hi <= 0;
+					pg_lo <= 0;
+				end else begin
+					if (ll_pg_stb) begin
+						pg_hi <= ll_pg_hi ? 5'h19 : 5'h00;
+						pg_lo <= ll_pg_lo ? 5'h19 : 5'h00;
+					end else begin
+						pg_hi <= pg_hi - pg_hi[4];
+						pg_lo <= pg_lo - pg_lo[4];
+					end
+				end
 			end
+
+			assign ll_raw_hi = pg_hi[4];
+			assign ll_raw_lo = pg_lo[4];
+
+			// PHY
+			e1_tx_phy phy_I (
+				.pad_tx_hi(pad_tx_hi),
+				.pad_tx_lo(pad_tx_lo),
+				.tx_hi(ll_raw_hi),
+				.tx_lo(ll_raw_lo),
+				.clk(clk),
+				.rst(rst)
+			);
+
+		end else begin
+
+			// LIU interface
+			e1_tx_liu liuif_I (
+				.pad_tx_data(pad_tx_data),
+				.pad_tx_clk(pad_tx_clk),
+				.in_data(ll_bit),
+				.in_valid(ll_valid),
+				.clk(clk),
+				.rst(rst)
+			);
+
 		end
-	end
-
-	assign ll_raw_hi = pg_hi[4];
-	assign ll_raw_lo = pg_lo[4];
-
-	// PHY
-	e1_tx_phy phy_I (
-		.pad_tx_hi(pad_tx_hi),
-		.pad_tx_lo(pad_tx_lo),
-		.tx_hi(ll_raw_hi),
-		.tx_lo(ll_raw_lo),
-		.clk(clk),
-		.rst(rst)
-	);
+	endgenerate
 
 endmodule // e1_tx

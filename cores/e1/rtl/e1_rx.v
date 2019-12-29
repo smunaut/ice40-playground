@@ -29,13 +29,19 @@
 `default_nettype none
 
 module e1_rx #(
+	parameter integer LIU = 0,
 	parameter integer MFW = 7
 )(
 	// IO pads
+		// Raw PHY
 	input  wire pad_rx_hi_p,
 	input  wire pad_rx_hi_n,
 	input  wire pad_rx_lo_p,
 	input  wire pad_rx_lo_n,
+
+		// LIU
+	input  wire pad_rx_data,
+	input  wire pad_rx_clk,
 
 	// Buffer interface
 	output wire [7:0] buf_data,
@@ -98,51 +104,69 @@ module e1_rx #(
 	// Low-level bit recovery
 	// ----------------------
 
-	// PHY
-	e1_rx_phy phy_I (
-		.pad_rx_hi_p(pad_rx_hi_p),
-		.pad_rx_hi_n(pad_rx_hi_n),
-		.pad_rx_lo_p(pad_rx_lo_p),
-		.pad_rx_lo_n(pad_rx_lo_n),
-		.rx_hi(ll_raw_hi),
-		.rx_lo(ll_raw_lo),
-		.clk(clk),
-		.rst(rst)
-	);
+	generate
+		if (LIU == 0) begin
 
-	// Glitch filtering
-	e1_rx_filter filter_I (
-		.in_hi(ll_raw_hi),
-		.in_lo(ll_raw_lo),
-		.out_hi(ll_flt_hi),
-		.out_lo(ll_flt_lo),
-		.out_stb(ll_flt_stb),
-		.clk(clk),
-		.rst(rst)
-	);
+			// PHY
+			e1_rx_phy phy_I (
+				.pad_rx_hi_p(pad_rx_hi_p),
+				.pad_rx_hi_n(pad_rx_hi_n),
+				.pad_rx_lo_p(pad_rx_lo_p),
+				.pad_rx_lo_n(pad_rx_lo_n),
+				.rx_hi(ll_raw_hi),
+				.rx_lo(ll_raw_lo),
+				.clk(clk),
+				.rst(rst)
+			);
 
-	// Clock recovery
-	e1_rx_clock_recovery clock_I (
-		.in_hi(ll_flt_hi),
-		.in_lo(ll_flt_lo),
-		.in_stb(ll_flt_stb),
-		.out_hi(ll_cdr_hi),
-		.out_lo(ll_cdr_lo),
-		.out_stb(ll_cdr_stb),
-		.clk(clk),
-		.rst(rst)
-	);
+			// Glitch filtering
+			e1_rx_filter filter_I (
+				.in_hi(ll_raw_hi),
+				.in_lo(ll_raw_lo),
+				.out_hi(ll_flt_hi),
+				.out_lo(ll_flt_lo),
+				.out_stb(ll_flt_stb),
+				.clk(clk),
+				.rst(rst)
+			);
 
-	// HDB3 decoding
-	hdb3_dec hdb3_I (
-		.in_pos(ll_cdr_hi),
-		.in_neg(ll_cdr_lo),
-		.in_valid(ll_cdr_stb),
-		.out_data(ll_bit),
-		.out_valid(ll_valid),
-		.clk(clk),
-		.rst(rst)
-	);
+			// Clock recovery
+			e1_rx_clock_recovery clock_I (
+				.in_hi(ll_flt_hi),
+				.in_lo(ll_flt_lo),
+				.in_stb(ll_flt_stb),
+				.out_hi(ll_cdr_hi),
+				.out_lo(ll_cdr_lo),
+				.out_stb(ll_cdr_stb),
+				.clk(clk),
+				.rst(rst)
+			);
+
+			// HDB3 decoding
+			hdb3_dec hdb3_I (
+				.in_pos(ll_cdr_hi),
+				.in_neg(ll_cdr_lo),
+				.in_valid(ll_cdr_stb),
+				.out_data(ll_bit),
+				.out_valid(ll_valid),
+				.clk(clk),
+				.rst(rst)
+			);
+
+		end else begin
+
+			// LIU interface
+			e1_rx_liu liuif_I (
+				.pad_rx_data(pad_rx_data),
+				.pad_rx_clk(pad_rx_clk),
+				.out_data(ll_bit),
+				.out_valid(ll_valid),
+				.clk(clk),
+				.rst(rst)
+			);
+
+		end
+	endgenerate
 
 	// Loopback output
 	assign lb_bit = ll_bit;
