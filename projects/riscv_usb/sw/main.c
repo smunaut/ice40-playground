@@ -313,7 +313,7 @@ opts_help(void)
 static int
 opts_parse(struct options *opts, int argc, char *argv[])
 {
-	const char *opts_short = "ao:n:p:mh";
+	const char *opts_short = "ao:n:p:mrh";
 	int opt;
 
 	while ((opt = getopt(argc, argv, opts_short)) != -1)
