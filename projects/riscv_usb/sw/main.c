@@ -70,6 +70,7 @@ cb_xfr_data_in(struct e1_streamer *e1s, struct flow *flow, uint8_t *buf, int siz
 {
 	struct e1_chunk_hdr hdr;
 	struct timeval tv;
+	int rc;
 
 	hdr.magic = 0xe115600d;	/* E1 is good */
 
@@ -88,10 +89,27 @@ cb_xfr_data_in(struct e1_streamer *e1s, struct flow *flow, uint8_t *buf, int siz
 	if (!e1s->fh)
 		return 0;
 
-	fwrite(&hdr, sizeof(struct e1_chunk_hdr), 1, e1s->fh);
+	rc = fwrite(&hdr, sizeof(struct e1_chunk_hdr), 1, e1s->fh);
+	if (rc != 1) {
+		fprintf(stderr, "[!] Short write: %d != %zd", rc, sizeof(struct e1_chunk_hdr));
+		if (rc == -1)
+			fprintf(stderr, ", %s\n", strerror(errno));
+		else
+			fprintf(stderr, "\n");
+		g_do_exit = 1;
+	}
 
-	if (size > 0)
-		fwrite(buf, size, 1, e1s->fh);
+	if (size > 0) {
+		rc = fwrite(buf, size, 1, e1s->fh);
+		if (rc != 1) {
+			fprintf(stderr, "[!] Short write: %d != %zd", rc, sizeof(struct e1_chunk_hdr));
+			if (rc == -1)
+				fprintf(stderr, ", %s\n", strerror(errno));
+			else
+				fprintf(stderr, "\n");
+			g_do_exit = 1;
+		}
+	}
 
 	return 0;
 }
