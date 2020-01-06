@@ -81,7 +81,7 @@ cb_xfr_data_in(struct e1_streamer *e1s, struct flow *flow, uint8_t *buf, int siz
 	hdr.len = size;
 
 	if (size < 0) {
-		printf("EP %02x - Err %d\n", flow->ep, size);
+		printf("EP %02x - Err %d: %s\n", flow->ep, size, libusb_strerror(size));
 		return 0;
 	}
 
@@ -136,7 +136,7 @@ static void LIBUSB_CALL cb_xfr(struct libusb_transfer *xfr)
 
 	rv = libusb_submit_transfer(xfr);
 	if (rv)
-		fprintf(stderr, "[!] Error re-submitting buffer (%d)\n", rv);
+		fprintf(stderr, "[!] Error re-submitting buffer (%d): %s\n", rv, libusb_strerror(rv));
 }
 
 
