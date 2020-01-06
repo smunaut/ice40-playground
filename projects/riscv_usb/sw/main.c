@@ -111,6 +111,11 @@ static void LIBUSB_CALL cb_xfr(struct libusb_transfer *xfr)
 	);
 #endif
 
+	if (xfr->status != LIBUSB_TRANSFER_COMPLETED) {
+		fprintf(stderr, "[!] XFR status != completed (%d)\n", xfr->status);
+		g_do_exit = 1;
+	}
+
 	len = 0;
 
 	if (flow->ep & 0x80) {
@@ -120,8 +125,12 @@ static void LIBUSB_CALL cb_xfr(struct libusb_transfer *xfr)
 				(xfr->iso_packet_desc[j].status == LIBUSB_TRANSFER_COMPLETED) ?
 					xfr->iso_packet_desc[j].actual_length : -1
 			);
-			if (!(xfr->iso_packet_desc[j].status == LIBUSB_TRANSFER_COMPLETED))
-				printf("%d\n", xfr->iso_packet_desc[j].status);
+			if (!(xfr->iso_packet_desc[j].status == LIBUSB_TRANSFER_COMPLETED)) {
+				fprintf(stderr, "[!] ISO packet status != completed (%d)\n",
+					xfr->iso_packet_desc[j].status);
+				g_do_exit = 1;
+			}
+
 			len += (xfr->iso_packet_desc[j].length = flow->size);
 		}
 	} else {
@@ -135,8 +144,10 @@ static void LIBUSB_CALL cb_xfr(struct libusb_transfer *xfr)
 	);
 
 	rv = libusb_submit_transfer(xfr);
-	if (rv)
+	if (rv) {
 		fprintf(stderr, "[!] Error re-submitting buffer (%d): %s\n", rv, libusb_strerror(rv));
+		g_do_exit = 1;
+	}
 }
 
 
