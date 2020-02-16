@@ -65,6 +65,9 @@ module uart_wb #(
 	wire        urf_rden;
 	wire        urf_empty;
 
+	reg         urf_overflow;
+	wire        urf_overflow_clr;
+
 	// TX fifo
 	wire [ 7:0] utf_wdata;
 	wire        utf_wren;
@@ -86,10 +89,13 @@ module uart_wb #(
 	reg  [DIV_WIDTH-1:0] uart_div;
 
 	// Bus IF
-	reg ub_rd_data;
-	reg ub_wr_data;
-	reg ub_wr_div;
-	reg ub_ack;
+	wire          ub_rdata_rst;
+	reg  [DW-1:0] ub_rdata;
+	reg           ub_rd_data;
+	reg           ub_rd_ctrl;
+	reg           ub_wr_data;
+	reg           ub_wr_div;
+	reg           ub_ack;
 
 
 	// TX Core
@@ -130,6 +136,7 @@ module uart_wb #(
 	assign uart_tx_valid = ~utf_empty;
 	assign utf_rden      =  uart_tx_ack;
 
+
 	// RX Core
 	// -------
 
@@ -167,6 +174,13 @@ module uart_wb #(
 	assign urf_wdata = uart_rx_data;
 	assign urf_wren  = uart_rx_stb & ~urf_full;
 
+	// Overflow
+	always @(posedge clk or posedge rst)
+		if (rst)
+			urf_overflow <= 1'b0;
+		else
+			urf_overflow <= (urf_overflow & ~urf_overflow_clr) | (uart_rx_stb & urf_full);
+
 
 	// Bus interface
 	// -------------
@@ -174,10 +188,12 @@ module uart_wb #(
 	always @(posedge clk)
 		if (ub_ack) begin
 			ub_rd_data <= 1'b0;
+			ub_rd_ctrl <= 1'b0;
 			ub_wr_data <= 1'b0;
 			ub_wr_div  <= 1'b0;
 		end else begin
 			ub_rd_data <= ~bus_we & bus_cyc & (bus_addr == 2'b00);
+			ub_rd_ctrl <= ~bus_we & bus_cyc & (bus_addr == 2'b01);
 			ub_wr_data <=  bus_we & bus_cyc & (bus_addr == 2'b00) & ~utf_full;
 			ub_wr_div  <=  bus_we & bus_cyc & (bus_addr == 2'b01);
 		end
@@ -188,6 +204,16 @@ module uart_wb #(
 		else
 			ub_ack <= bus_cyc & (~bus_we | (bus_addr == 2'b01) | ~utf_full);
 
+	assign ub_rdata_rst = ub_ack | bus_we | ~bus_cyc;
+
+	always @(posedge clk)
+		if (ub_rdata_rst)
+			ub_rdata <= { DW{1'b0} };
+		else
+			ub_rdata <= bus_addr[0] ?
+				{ urf_empty, urf_overflow, utf_empty, utf_full, { (DW-DIV_WIDTH-4){1'b0} }, uart_div } :
+				{ urf_empty, { (DW-9){1'b0} }, urf_rdata };
+
 	always @(posedge clk)
 		if (ub_wr_div)
 			uart_div <= bus_wdata[DIV_WIDTH-1:0];
@@ -195,9 +221,10 @@ module uart_wb #(
 	assign utf_wdata = bus_wdata[7:0];
 	assign utf_wren  = ub_wr_data;
 
-	assign urf_rden  = ub_rd_data & ~urf_empty;
+	assign urf_rden  = ub_rd_data & ~ub_rdata[DW-1];
+	assign urf_overflow_clr = ub_rd_ctrl & ub_rdata[DW-2];
 
-	assign bus_rdata = ub_rd_data ? { urf_empty, { (DW-9){1'b0} }, urf_rdata } : { DW{1'b0} };
+	assign bus_rdata = ub_rdata;
 	assign bus_ack = ub_ack;
 
 endmodule // uart_wb
