@@ -114,8 +114,6 @@ module uart_rx #(
 		else if (ce)
 			bit_cnt <= bit_cnt - 1;
 
-	// Signals
-
 	// Shift register
 	always @(posedge clk)
 		if (ce)
