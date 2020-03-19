@@ -62,7 +62,7 @@ module usb_rx_ll (
 	reg  [3:0] dec_sync_state_1;
 	reg  [3:0] dec_rep_state_1;
 
-	reg  [1:0] dec_sym_1;
+	reg  [1:0] dec_sym_1 = 2'b00;			/* Init is for simulation benefit only */
 	reg        dec_bit_1;
 	reg        dec_valid_1;
 	wire       dec_eop_1;
