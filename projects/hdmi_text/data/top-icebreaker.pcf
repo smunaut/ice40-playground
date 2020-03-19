@@ -1,5 +1,5 @@
 # Clock
-set_io clk12m_in 35
+set_io -nowarn clk12m_in 35
 
 # HDMI pmod on 1A
 set_io -nowarn hdmi_clk 2
@@ -10,6 +10,26 @@ set_io -nowarn hdmi_r 3
 set_io -nowarn hdmi_g 4
 set_io -nowarn hdmi_b 48
 set_io -nowarn hdmi_i 45
+
+# HDMI pmod on 1B
+#set_io -nowarn hdmi_clk 2
+#set_io -nowarn hdmi_hsync 47
+#set_io -nowarn hdmi_vsync 44
+#set_io -nowarn hdmi_de 46
+#set_io -nowarn hdmi_r 3
+#set_io -nowarn hdmi_g 4
+#set_io -nowarn hdmi_b 48
+#set_io -nowarn hdmi_i 45
+
+# HDMI pmod on 2
+#set_io -nowarn hdmi_clk 25
+#set_io -nowarn hdmi_hsync 21
+#set_io -nowarn hdmi_vsync 18
+#set_io -nowarn hdmi_de 20
+#set_io -nowarn hdmi_r 26
+#set_io -nowarn hdmi_g 27
+#set_io -nowarn hdmi_b 23
+#set_io -nowarn hdmi_i 19
 
 # SPI Slave
 set_io -nowarn slave_mosi 14
