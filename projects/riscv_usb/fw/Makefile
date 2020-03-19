@@ -4,7 +4,7 @@ CC = $(CROSS)gcc
 OBJCOPY = $(CROSS)objcopy
 ICEPROG = iceprog
 
-CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section -DBOARD_$(BOARD)
+CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section --specs=nano.specs -DBOARD_$(BOARD)
 
 HEADERS=\
 	config.h \
