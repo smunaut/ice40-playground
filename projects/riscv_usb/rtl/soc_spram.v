@@ -33,8 +33,10 @@
 
 `default_nettype none
 
-module soc_spram (
-	input  wire [13:0] addr,
+module soc_spram #(
+	parameter integer AW = 14
+)(
+	input  wire [AW-1:0] addr,
 	output wire [31:0] rdata,
 	input  wire [31:0] wdata,
 	input  wire [ 3:0] wmsk,
@@ -42,33 +44,24 @@ module soc_spram (
 	input  wire clk
 );
 
-	wire [3:0] msk_msb = { wmsk[3], wmsk[3], wmsk[2], wmsk[2] };
-	wire [3:0] msk_lsb = { wmsk[1], wmsk[1], wmsk[0], wmsk[0] };
+	wire [7:0] msk_nibble = {
+		wmsk[3], wmsk[3],
+		wmsk[2], wmsk[2],
+		wmsk[1], wmsk[1],
+		wmsk[0], wmsk[0]
+	};
 
-	SB_SPRAM256KA spram_msb_I (
-		.DATAIN(wdata[31:16]),
-		.ADDRESS(addr[13:0]),
-		.MASKWREN(msk_msb),
-		.WREN(we),
-		.CHIPSELECT(1'b1),
-		.CLOCK(clk),
-		.STANDBY(1'b0),
-		.SLEEP(1'b0),
-		.POWEROFF(1'b1),
-		.DATAOUT(rdata[31:16])
-	);
-
-	SB_SPRAM256KA spram_lsb_I (
-		.DATAIN(wdata[15:0]),
-		.ADDRESS(addr[13:0]),
-		.MASKWREN(msk_lsb),
-		.WREN(we),
-		.CHIPSELECT(1'b1),
-		.CLOCK(clk),
-		.STANDBY(1'b0),
-		.SLEEP(1'b0),
-		.POWEROFF(1'b1),
-		.DATAOUT(rdata[15:0])
+	ice40_spram_gen #(
+		.ADDR_WIDTH(AW),
+		.DATA_WIDTH(32)
+	) spram_I (
+		.addr(addr),
+		.rd_data(rdata),
+		.rd_ena(1'b1),
+		.wr_data(wdata),
+		.wr_mask(msk_nibble),
+		.wr_ena(we),
+		.clk(clk)
 	);
 
 endmodule // soc_spram
