@@ -65,6 +65,8 @@ module top (
 	localparam WB_AW = 16;
 	localparam WB_AI =  2;
 
+	localparam SPRAM_AW = 14; /* 14 => 64k, 15 => 128k */
+
 	genvar i;
 
 
@@ -89,7 +91,7 @@ module top (
 	wire        bram_we;
 
 		// SPRAM
-	wire [13:0] spram_addr;
+	wire [14:0] spram_addr;
 	wire [31:0] spram_rdata;
 	wire [31:0] spram_wdata;
 	wire [ 3:0] spram_wmsk;
@@ -235,8 +237,10 @@ module top (
 	);
 
 	// Main memory
-	soc_spram spram_I (
-		.addr(spram_addr),
+	soc_spram #(
+		.AW(SPRAM_AW)
+	) spram_I (
+		.addr(spram_addr[SPRAM_AW-1:0]),
 		.rdata(spram_rdata),
 		.wdata(spram_wdata),
 		.wmsk(spram_wmsk),

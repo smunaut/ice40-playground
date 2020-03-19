@@ -67,21 +67,6 @@ _start:
 	sw a1, 0(a0)
 #endif
 
-	// zero initialize entire scratchpad memory
-	li a0, 0x0001c000
-	li a1, 0
-setmemloop:
-	sw a1, 0(a0)
-	addi a0, a0, 4
-	blt a0, sp, setmemloop
-
-#ifdef BOOT_DEBUG
-	// Output '2'
-	li a0, 0x81000000
-	li a1, 50
-	sw a1, 0(a0)
-#endif
-
 	// copy data section
 	la a0, _sidata
 	la a1, _sdata
@@ -96,9 +81,9 @@ loop_init_data:
 end_init_data:
 
 #ifdef BOOT_DEBUG
-	// Output '3'
+	// Output '2'
 	li a0, 0x81000000
-	li a1, 51
+	li a1, 50
 	sw a1, 0(a0)
 #endif
 
@@ -113,9 +98,9 @@ loop_init_bss:
 end_init_bss:
 
 #ifdef BOOT_DEBUG
-	// Output '4'
+	// Output '3'
 	li a0, 0x81000000
-	li a1, 52
+	li a1, 51
 	sw a1, 0(a0)
 #endif
 

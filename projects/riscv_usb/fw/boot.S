@@ -48,8 +48,12 @@ _start:
 	sw	a1, 0(a0)
 #endif
 
-	li	a0, 0x00010000
+	li	a0, 0x00020000
+#ifdef SPRAM128K
+	li	a1, 0x00020000
+#else
 	li	a1, 0x00010000
+#endif
 	li	a2, FLASH_APP_ADDR
 	jal	spi_flash_read
 
@@ -61,11 +65,11 @@ _start:
 #endif
 
 	// Setup reboot code
-	li	t0, 0x0001006f
+	li	t0, 0x0002006f
 	sw	t0, 0(zero)
 
 	// Jump to main code
-	j	0x00010000
+	j	0x00020000
 
 
 	.equ    SPI_BASE, 0x82000000

@@ -56,7 +56,7 @@ module bridge #(
 	output wire        bram_we,
 
 	/* SPRAM */
-	output wire [13:0] spram_addr,
+	output wire [14:0] spram_addr,
 	input  wire [31:0] spram_rdata,
 	output wire [31:0] spram_wdata,
 	output wire [ 3:0] spram_wmsk,
@@ -83,8 +83,8 @@ module bridge #(
 	reg  ram_rdy;
 	wire [31:0] ram_rdata;
 
-	(* keep="true" *) wire [WB_N-1:0] wb_match;
-	(* keep="true" *) wire wb_cyc_rst;
+	(* keep *) wire [WB_N-1:0] wb_match;
+	(* keep *) wire wb_cyc_rst;
 
 	reg  [31:0] wb_rdata_or;
 	wire [31:0] wb_rdata_out;
@@ -94,21 +94,21 @@ module bridge #(
 	// RAM access
 	// ----------
 	// BRAM  : 0x00000000 -> 0x000003ff
-	// SPRAM : 0x00010000 -> 0x0001ffff
+	// SPRAM : 0x00020000 -> 0x0003ffff
 
 	assign bram_addr  = pb_addr[ 9:2];
-	assign spram_addr = pb_addr[15:2];
+	assign spram_addr = pb_addr[16:2];
 
 	assign bram_wdata  = pb_wdata;
 	assign spram_wdata = pb_wdata;
 
-	assign bram_wmsk  = pb_wstrb;
-	assign spram_wmsk = pb_wstrb;
+	assign bram_wmsk  = ~pb_wstrb;
+	assign spram_wmsk = ~pb_wstrb;
 
-	assign bram_we  = pb_valid & ~pb_addr[31] & |pb_wstrb & ~pb_addr[16];
-	assign spram_we = pb_valid & ~pb_addr[31] & |pb_wstrb &  pb_addr[16];
+	assign bram_we  = pb_valid & ~pb_addr[31] & |pb_wstrb & ~pb_addr[17];
+	assign spram_we = pb_valid & ~pb_addr[31] & |pb_wstrb &  pb_addr[17];
 
-	assign ram_rdata = ~pb_addr[31] ? (pb_addr[16] ? spram_rdata : bram_rdata) : 32'h00000000;
+	assign ram_rdata = ~pb_addr[31] ? (pb_addr[17] ? spram_rdata : bram_rdata) : 32'h00000000;
 
 	assign ram_sel = pb_valid & ~pb_addr[31];
 
@@ -151,7 +151,7 @@ module bridge #(
 		begin
 			wb_addr_reg  <= pb_addr[WB_AW+WB_AI-1:WB_AI];
 			wb_wdata_reg <= pb_wdata[WB_DW-1:0];
-			wb_wmsk_reg  <= pb_wstrb[(WB_DW/8)-1:0];
+			wb_wmsk_reg  <= ~pb_wstrb[(WB_DW/8)-1:0];
 			wb_we_reg    <= |pb_wstrb;
 		end
 
