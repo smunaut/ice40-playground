@@ -5,7 +5,7 @@ OBJCOPY = $(CROSS)objcopy
 ICEPROG = iceprog
 
 BOARD_DEFINE=BOARD_$(shell echo $(BOARD) | tr a-z\- A-Z_)
-CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section -D$(BOARD_DEFINE)
+CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section --specs=nano.specs -D$(BOARD_DEFINE)
 
 HEADERS=\
 	config.h \
