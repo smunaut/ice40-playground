@@ -1,7 +1,7 @@
 /*
- * config.h
+ * hram.h
  *
- * Copyright (C) 2019 Sylvain Munaut
+ * Copyright (C) 2020 Sylvain Munaut
  * All rights reserved.
  *
  * LGPL v3+, see LICENSE.lgpl3
@@ -23,9 +23,4 @@
 
 #pragma once
 
-#define UART_BASE	0x81000000
-#define SPI_BASE	0x82000000
-#define LED_BASE	0x83000000
-#define USB_CORE_BASE	0x84000000
-#define USB_DATA_BASE	0x85000000
-#define HRAM_BASE	0x86000000
+void hram_init(void);

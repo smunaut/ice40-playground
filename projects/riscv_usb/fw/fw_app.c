@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "console.h"
+#include "hram.h"
 #include "led.h"
 #include "mini-printf.h"
 #include "spi.h"
@@ -127,6 +128,9 @@ void main()
 				break;
 			case 'd':
 				usb_disconnect();
+				break;
+			case 'h':
+				hram_init();
 				break;
 			default:
 				break;
