@@ -151,13 +151,27 @@ module top (
 	reg [1:0] boot_sel;
 
 	// Clock / Reset logic
+	wire [3:0] pll_delay;
 	wire clk_24m;
 	wire clk_48m;
+	wire clk_96m;
+	wire clk_rd;
+	wire sync_96m;
+	wire sync_rd;
 	wire rst;
 
 
 	// SoC
 	// ---
+
+	// Local reset for SoC to help timing
+	reg soc_rst_n;
+
+	always @(posedge clk_24m or posedge rst)
+		if (rst)
+			soc_rst_n <= 1'b0;
+		else
+			soc_rst_n <= 1'b1;
 
 	// CPU
 	picorv32 #(
@@ -174,7 +188,7 @@ module top (
 		.CATCH_ILLINSN(0)
 	) cpu_I (
 		.clk       (clk_24m),
-		.resetn    (~rst),
+		.resetn    (soc_rst_n),
 		.mem_valid (mem_valid),
 		.mem_instr (mem_instr),
 		.mem_ready (mem_ready),
@@ -522,10 +536,13 @@ module top (
 	// -------------
 
 `ifdef SIM
+	reg clk_96m_s = 1'b0;
 	reg clk_48m_s = 1'b0;
 	reg clk_24m_s = 1'b0;
 	reg rst_s = 1'b1;
+	reg [1:0] clk_sync_cnt = 2'b00;
 
+	always  #5.21 clk_96m_s <= !clk_96m_s;
 	always #10.42 clk_48m_s <= !clk_48m_s;
 	always #20.84 clk_24m_s <= !clk_24m_s;
 
@@ -533,16 +550,30 @@ module top (
 		#200 rst_s = 0;
 	end
 
-	assign clk_48m = clk_48m_s;
-	assign clk_24m = clk_24m_s;
+	always @(posedge clk_96m_s)
+		if (rst)
+			clk_sync_cnt <= 2'b00;
+		else
+			clk_sync_cnt <= clk_sync_cnt + 1;
+
+	assign clk_rd   = clk_96m_s;
+	assign clk_96m  = clk_96m_s;
+	assign clk_48m  = clk_48m_s;
+	assign clk_24m  = clk_24m_s;
+	assign sync_96m = (clk_sync_cnt == 2'b10);
+	assign sync_rd  = sync_96m;
 	assign rst = rst_s;
 `else
 	sysmgr sys_mgr_I (
+		.delay(pll_delay),
 		.clk_in(clk_in),
-		.rst_in(1'b0),
-		.clk_48m(clk_48m),
 		.clk_24m(clk_24m),
-		.rst_out(rst)
+		.clk_48m(clk_48m),
+		.clk_96m(clk_96m),
+		.clk_rd(clk_rd),
+		.sync_96m(sync_96m),
+		.sync_rd(sync_rd),
+		.rst(rst)
 	);
 `endif
 
