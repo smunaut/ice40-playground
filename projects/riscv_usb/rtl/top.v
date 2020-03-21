@@ -104,6 +104,15 @@ module top (
 	wire [ 3:0] spram_wmsk;
 	wire        spram_we;
 
+	// Memory cache wishbone
+	wire [23:0] mc_addr;
+	wire [31:0] mc_rdata;
+	wire [31:0] mc_wdata;
+	wire [ 3:0] mc_wmsk;
+	wire        mc_cyc;
+	wire        mc_we;
+	wire        mc_ack;
+
 	// Wishbone
 	wire [WB_AW-1:0] wb_addr;
 	wire [WB_DW-1:0] wb_wdata;
@@ -228,6 +237,13 @@ module top (
 		.spram_wdata(spram_wdata),
 		.spram_wmsk(spram_wmsk),
 		.spram_we(spram_we),
+		.mc_addr(mc_addr),
+		.mc_rdata(mc_rdata),
+		.mc_wdata(mc_wdata),
+		.mc_wmsk(mc_wmsk),
+		.mc_cyc(mc_cyc),
+		.mc_we(mc_we),
+		.mc_ack(mc_ack),
 		.wb_addr(wb_addr),
 		.wb_wdata(wb_wdata),
 		.wb_wmsk(wb_wmsk),
@@ -508,6 +524,9 @@ module top (
 
 	// HyperRAM
 	// --------
+
+	assign mc_ack   = mc_cyc;
+	assign mc_rdata = 32'h600dbabe;
 
 	// PHY signals
 	wire [ 1:0] phy_ck_en;

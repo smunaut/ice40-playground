@@ -42,7 +42,7 @@ module bridge #(
 )(
 	/* PicoRV32 bus */
 	input  wire [31:0] pb_addr,
-	output wire [31:0] pb_rdata,
+	output reg  [31:0] pb_rdata,
 	input  wire [31:0] pb_wdata,
 	input  wire [ 3:0] pb_wstrb,
 	input  wire pb_valid,
@@ -61,6 +61,15 @@ module bridge #(
 	output wire [31:0] spram_wdata,
 	output wire [ 3:0] spram_wmsk,
 	output wire        spram_we,
+
+	/* Memory cache wishbone */
+	output wire [23:0] mc_addr,
+	input  wire [31:0] mc_rdata,
+	output wire [31:0] mc_wdata,
+	output wire [ 3:0] mc_wmsk,
+	output wire        mc_cyc,
+	output wire        mc_we,
+	input  wire        mc_ack,
 
 	/* Wishbone buses */
 	output wire [WB_AW-1:0] wb_addr,
@@ -105,15 +114,25 @@ module bridge #(
 	assign bram_wmsk  = ~pb_wstrb;
 	assign spram_wmsk = ~pb_wstrb;
 
-	assign bram_we  = pb_valid & ~pb_addr[31] & |pb_wstrb & ~pb_addr[17];
-	assign spram_we = pb_valid & ~pb_addr[31] & |pb_wstrb &  pb_addr[17];
+	assign bram_we  = pb_valid & (pb_addr[31:30] == 2'b00) & |pb_wstrb & ~pb_addr[17];
+	assign spram_we = pb_valid & (pb_addr[31:30] == 2'b00) & |pb_wstrb &  pb_addr[17];
 
-	assign ram_rdata = ~pb_addr[31] ? (pb_addr[17] ? spram_rdata : bram_rdata) : 32'h00000000;
+	assign ram_rdata = pb_addr[17] ? spram_rdata : bram_rdata;
 
-	assign ram_sel = pb_valid & ~pb_addr[31];
+	assign ram_sel = pb_valid & (pb_addr[31:30] == 2'b00);
 
 	always @(posedge clk)
 		ram_rdy <= ram_sel && ~ram_rdy;
+
+
+	// Memory cache
+	// ------------
+
+	assign mc_addr  =  pb_addr[25:2];
+	assign mc_wdata =  pb_wdata;
+	assign mc_wmsk  = ~pb_wstrb;
+	assign mc_cyc   =  pb_valid & (pb_addr[31:30] == 2'b01);
+	assign mc_we    = |pb_wstrb;
 
 
 	// Wishbone
@@ -204,7 +223,16 @@ module bridge #(
 	// Final data combining
 	// --------------------
 
-	assign pb_rdata = ram_rdata | wb_rdata_out;
-	assign pb_ready = ram_rdy | wb_rdy;
+	always @(*)
+	begin
+		casez (pb_addr[31:30])
+			2'b00:   pb_rdata = ram_rdata;
+			2'b01:   pb_rdata = mc_rdata;
+			2'b1z:   pb_rdata = wb_rdata_out;
+			default: pb_rdata = 32'hxxxxxxxx;
+		endcase
+	end
+
+	assign pb_ready = ram_rdy | mc_ack | wb_rdy;
 
 endmodule // bridge
