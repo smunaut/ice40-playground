@@ -34,6 +34,13 @@
 `default_nettype none
 
 module top (
+	// HyperRAM pins
+	inout  wire [7:0] hram_dq,
+	inout  wire       hram_rwds,
+	output wire       hram_ck,
+	output wire [3:0] hram_cs_n,
+	output wire       hram_rst_n,
+
 	// SPI
 	inout  wire spi_mosi,
 	inout  wire spi_miso,
@@ -60,7 +67,7 @@ module top (
 	input  wire clk_in
 );
 
-	localparam WB_N  =  6;
+	localparam WB_N  =  7;
 	localparam WB_DW = 32;
 	localparam WB_AW = 16;
 	localparam WB_AI =  2;
@@ -497,6 +504,120 @@ module top (
 	assign ep_rx_re_0   = 1'b1;
 
 	assign wb_rdata[5] = wb_cyc[5] ? ep_rx_data_1 : 32'h00000000;
+
+
+	// HyperRAM
+	// --------
+
+	// PHY signals
+	wire [ 1:0] phy_ck_en;
+
+	wire [ 3:0] phy_rwds_in;
+	wire [ 3:0] phy_rwds_out;
+	wire [ 1:0] phy_rwds_oe;
+
+	wire [31:0] phy_dq_in;
+	wire [31:0] phy_dq_out;
+	wire [ 1:0] phy_dq_oe;
+
+	wire [ 3:0] phy_cs_n;
+	wire        phy_rst_n;
+
+	wire [ 7:0] phy_cfg_wdata;
+	wire [ 7:0] phy_cfg_rdata;
+	wire        phy_cfg_stb;
+
+	// Memory interface
+	wire [ 1:0] mi_addr_cs;
+	wire [31:0] mi_addr;
+	wire [ 6:0] mi_len;
+	wire        mi_rw;
+	wire        mi_linear;
+	wire        mi_valid;
+	wire        mi_ready;
+
+	wire [31:0] mi_wdata;
+	wire [ 3:0] mi_wmsk;
+	wire        mi_wack;
+	wire        mi_wlast;
+
+	wire [31:0] mi_rdata;
+	wire        mi_rstb;
+	wire        mi_rlast;
+
+	// Dummy mem-if
+	assign mi_addr_cs = 2'b00;
+	assign mi_addr    = 32'h00000000;
+	assign mi_len     = 7'h00;
+	assign mi_rw      = 1'b0;
+	assign mi_linear  = 1'b0;
+	assign mi_valid   = 1'b0;
+	assign mi_wdata   = 32'h00000000;
+
+	// Controller
+	hram_top hram_ctrl_I (
+		.phy_ck_en(phy_ck_en),
+		.phy_rwds_in(phy_rwds_in),
+		.phy_rwds_out(phy_rwds_out),
+		.phy_rwds_oe(phy_rwds_oe),
+		.phy_dq_in(phy_dq_in),
+		.phy_dq_out(phy_dq_out),
+		.phy_dq_oe(phy_dq_oe),
+		.phy_cs_n(phy_cs_n),
+		.phy_rst_n(phy_rst_n),
+		.phy_cfg_wdata(phy_cfg_wdata),
+		.phy_cfg_rdata(phy_cfg_rdata),
+		.phy_cfg_stb(phy_cfg_stb),
+		.mi_addr_cs(mi_addr_cs),
+		.mi_addr(mi_addr),
+		.mi_len(mi_len),
+		.mi_rw(mi_rw),
+		.mi_linear(mi_linear),
+		.mi_valid(mi_valid),
+		.mi_ready(mi_ready),
+		.mi_wdata(mi_wdata),
+		.mi_wmsk(mi_wmsk),
+		.mi_wack(mi_wack),
+		.mi_wlast(mi_wlast),
+		.mi_rdata(mi_rdata),
+		.mi_rstb(mi_rstb),
+		.mi_rlast(mi_rlast),
+		.wb_wdata(wb_wdata),
+		.wb_rdata(wb_rdata[6]),
+		.wb_addr(wb_addr[3:0]),
+		.wb_we(wb_we),
+		.wb_cyc(wb_cyc[6]),
+		.wb_ack(wb_ack[6]),
+		.clk(clk_24m),
+		.rst(rst)
+	);
+
+	// PHY
+	hram_phy_ice40 hram_phy_I (
+		.hram_dq(hram_dq),
+		.hram_rwds(hram_rwds),
+		.hram_ck(hram_ck),
+		.hram_cs_n(hram_cs_n),
+		.hram_rst_n(hram_rst_n),
+		.phy_ck_en(phy_ck_en),
+		.phy_rwds_in(phy_rwds_in),
+		.phy_rwds_out(phy_rwds_out),
+		.phy_rwds_oe(phy_rwds_oe),
+		.phy_dq_in(phy_dq_in),
+		.phy_dq_out(phy_dq_out),
+		.phy_dq_oe(phy_dq_oe),
+		.phy_cs_n(phy_cs_n),
+		.phy_rst_n(phy_rst_n),
+		.phy_cfg_wdata(phy_cfg_wdata),
+		.phy_cfg_rdata(phy_cfg_rdata),
+		.phy_cfg_stb(phy_cfg_stb),
+		.clk_rd_delay(pll_delay),
+		.clk_1x(clk_24m),
+		.clk_4x(clk_96m),
+		.clk_rd(clk_rd),
+		.sync_4x(sync_96m),
+		.sync_rd(sync_rd)
+	);
 
 
 	// Warm Boot

@@ -1,7 +1,7 @@
 # Project config
 PROJ = riscv_usb
 
-PROJ_DEPS := usb misc ice40
+PROJ_DEPS := usb misc ice40 hyperram
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 	bridge.v \
 	dfu_helper.v \
@@ -28,7 +28,7 @@ BOARD ?= icebreaker
 DEVICE = up5k
 PACKAGE = sg48
 
-NEXTPNR_ARGS = --pre-pack data/clocks.py --seed 2
+NEXTPNR_ARGS = --no-promote-globals --pre-pack data/clocks.py --pre-place $(CORE_ice40_DIR)/sw/serdes-nextpnr-place.py --seed 16
 
 # Include default rules
 include ../../build/project-rules.mk
