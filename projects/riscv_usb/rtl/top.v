@@ -525,9 +525,6 @@ module top (
 	// HyperRAM
 	// --------
 
-	assign mc_ack   = mc_cyc;
-	assign mc_rdata = 32'h600dbabe;
-
 	// PHY signals
 	wire [ 1:0] phy_ck_en;
 
@@ -547,8 +544,7 @@ module top (
 	wire        phy_cfg_stb;
 
 	// Memory interface
-	wire [ 1:0] mi_addr_cs;
-	wire [31:0] mi_addr;
+	wire [23:0] mi_addr;
 	wire [ 6:0] mi_len;
 	wire        mi_rw;
 	wire        mi_linear;
@@ -564,14 +560,73 @@ module top (
 	wire        mi_rstb;
 	wire        mi_rlast;
 
-	// Dummy mem-if
-	assign mi_addr_cs = 2'b00;
-	assign mi_addr    = 32'h00000000;
-	assign mi_len     = 7'h00;
-	assign mi_rw      = 1'b0;
-	assign mi_linear  = 1'b0;
-	assign mi_valid   = 1'b0;
-	assign mi_wdata   = 32'h00000000;
+	// Cache Request / Response interface
+	wire [23:0] cache_req_addr_pre;
+	wire        cache_req_valid;
+	wire        cache_req_write;
+	wire [31:0] cache_req_wdata;
+	wire [ 3:0] cache_req_wmask;
+
+	wire        cache_resp_ack;
+	wire        cache_resp_nak;
+	wire [31:0] cache_resp_rdata;
+
+	// Cache bus interface
+	mc_bus_wb #(
+		.ADDR_WIDTH(24)
+	) cache_bus_I (
+		.wb_addr(mc_addr),
+		.wb_wdata(mc_wdata),
+		.wb_wmask(mc_wmsk),
+		.wb_rdata(mc_rdata),
+		.wb_cyc(mc_cyc),
+		.wb_we(mc_we),
+		.wb_ack(mc_ack),
+		.req_addr_pre(cache_req_addr_pre),
+		.req_valid(cache_req_valid),
+		.req_write(cache_req_write),
+		.req_wdata(cache_req_wdata),
+		.req_wmask(cache_req_wmask),
+		.resp_ack(cache_resp_ack),
+		.resp_nak(cache_resp_nak),
+		.resp_rdata(cache_resp_rdata),
+		.clk(clk_24m),
+		.rst(rst)
+	);
+
+	// Cache
+	mc_core #(
+		.N_WAYS(4),
+		.ADDR_WIDTH(24),
+		.CACHE_LINE(64),
+		.CACHE_SIZE(64)
+	) cache_I (
+		.req_addr_pre(cache_req_addr_pre),
+		.req_valid(cache_req_valid),
+		.req_write(cache_req_write),
+		.req_wdata(cache_req_wdata),
+		.req_wmask(cache_req_wmask),
+		.resp_ack(cache_resp_ack),
+		.resp_nak(cache_resp_nak),
+		.resp_rdata(cache_resp_rdata),
+		.mi_addr(mi_addr),
+		.mi_len(mi_len),
+		.mi_rw(mi_rw),
+		.mi_valid(mi_valid),
+		.mi_ready(mi_ready),
+		.mi_wdata(mi_wdata),
+		.mi_wack(mi_wack),
+		.mi_wlast(mi_wlast),
+		.mi_rdata(mi_rdata),
+		.mi_rstb(mi_rstb),
+		.mi_rlast(mi_rlast),
+		.clk(clk_24m),
+		.rst(rst)
+	);
+
+	// Un-used mem-if features
+	assign mi_wmsk = 4'h0;
+	assign mi_linear = 1'b0;
 
 	// Controller
 	hram_top hram_ctrl_I (
@@ -587,8 +642,8 @@ module top (
 		.phy_cfg_wdata(phy_cfg_wdata),
 		.phy_cfg_rdata(phy_cfg_rdata),
 		.phy_cfg_stb(phy_cfg_stb),
-		.mi_addr_cs(mi_addr_cs),
-		.mi_addr(mi_addr),
+		.mi_addr_cs(mi_addr[22:21]),
+		.mi_addr({10'b0000000000, mi_addr[20:0], 1'b0}),
 		.mi_len(mi_len),
 		.mi_rw(mi_rw),
 		.mi_linear(mi_linear),
