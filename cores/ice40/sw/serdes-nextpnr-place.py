@@ -346,12 +346,37 @@ debug = True
 # -------
 
 groups = {}
+sync_lbuf_net_map = {}
+sync_lbuf_top = {}
+sync_lbuf_bot = {}
 
 for n,c in ctx.cells:
 	# Filter out dummy 'BEL' attributes
 	if 'BEL' in c.attrs:
 		if not c.attrs['BEL'].strip():
 			c.unsetAttr('BEL')
+
+	# Special processing
+	if 'SERDES_ATTR' in c.attrs:
+		attr = c.attrs['SERDES_ATTR']
+		c.unsetAttr('SERDES_ATTR')
+
+		# Local sync buffer
+		if attr.startswith('sync_lbuf'):
+			# Position
+			if attr.endswith('top'):
+				d = sync_lbuf_top
+			elif attr.endswith('bot'):
+				d = sync_lbuf_bot
+
+			# Sync source
+			src_net = c.ports['I0'].net
+			src_plb = BEL.from_json_attr(src_net.driver.cell.attrs['BEL'])[0:2]
+			dst_net = c.ports['O'].net
+
+			# Collect
+			sync_lbuf_net_map.setdefault(src_plb, []).append(src_net.name)
+			d[src_plb] = dst_net.name
 
 	# Does the cell need grouping ?
 	if 'SERDES_GRP' in c.attrs:
@@ -387,6 +412,40 @@ for g in groups.values():
 		groups_bot.append(g)
 	else:
 		groups_top.append(g)
+
+
+# Process local buffers
+# ---------------------
+
+def lbuf_build_map(src_net_map, dst_net_map):
+	rv = {}
+	for k, v in dst_net_map.items():
+		for n in src_net_map[k]:
+			rv[n] = v
+	return rv
+
+def lbuf_reconnect(net_map, cells):
+	# Scan all cells
+	for lc in cells:
+		# Scan all ports
+		for pn in ['I0', 'I1', 'I2', 'I3', 'CEN']:
+			n = lc.ports[pn].net
+			if (n is not None) and (n.name in net_map):
+				# Reconnect
+				ctx.disconnectPort(lc.name, pn)
+				ctx.connectPort(net_map[n.name], lc.name, pn)
+
+
+sync_lbuf_top = lbuf_build_map(sync_lbuf_net_map, sync_lbuf_top)
+sync_lbuf_bot = lbuf_build_map(sync_lbuf_net_map, sync_lbuf_bot)
+
+for g in groups_top:
+	for blk in g.blocks.values():
+		lbuf_reconnect(sync_lbuf_top, blk.lcs)
+
+for g in groups_bot:
+	for blk in g.blocks.values():
+		lbuf_reconnect(sync_lbuf_bot, blk.lcs)
 
 
 # Execute placer

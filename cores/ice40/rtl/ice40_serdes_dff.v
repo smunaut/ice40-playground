@@ -38,6 +38,7 @@ module ice40_serdes_dff #(
 	parameter integer ENA = 0,
 	parameter integer RST = 0,
 	parameter integer SERDES_GRP = -1,
+	parameter SERDES_ATTR = "",
 	parameter BEL = ""
 )(
 	input  wire d,
@@ -50,8 +51,8 @@ module ice40_serdes_dff #(
 
 	generate
 		if (TYPE == 0)			// Simple
-			(* BEL=BEL, SERDES_GRP=SERDES_GRP *)
-			(* dont_touch *)
+			(* BEL=BEL, SERDES_GRP=SERDES_GRP, SERDES_ATTR=SERDES_ATTR *)
+			(* dont_touch, keep *)
 			SB_DFF dff_I (
 				.D(d),
 				.Q(q),
@@ -59,8 +60,8 @@ module ice40_serdes_dff #(
 			);
 
 		else if (TYPE == 1)		// NEG
-			(* BEL=BEL, SERDES_GRP=SERDES_GRP *)
-			(* dont_touch *)
+			(* BEL=BEL, SERDES_GRP=SERDES_GRP, SERDES_ATTR=SERDES_ATTR *)
+			(* dont_touch, keep *)
 			SB_DFFN dff_I (
 				.D(d),
 				.Q(q),
@@ -68,8 +69,8 @@ module ice40_serdes_dff #(
 			);
 
 		else if (TYPE == 2)		//     ENA
-			(* BEL=BEL, SERDES_GRP=SERDES_GRP *)
-			(* dont_touch *)
+			(* BEL=BEL, SERDES_GRP=SERDES_GRP, SERDES_ATTR=SERDES_ATTR *)
+			(* dont_touch, keep *)
 			SB_DFFE dff_I (
 				.D(d),
 				.Q(q),
@@ -78,8 +79,8 @@ module ice40_serdes_dff #(
 			);
 
 		else if (TYPE == 3)		// NEG ENA
-			(* BEL=BEL, SERDES_GRP=SERDES_GRP *)
-			(* dont_touch *)
+			(* BEL=BEL, SERDES_GRP=SERDES_GRP, SERDES_ATTR=SERDES_ATTR *)
+			(* dont_touch, keep *)
 			SB_DFFNE dff_I (
 				.D(d),
 				.Q(q),
@@ -88,8 +89,8 @@ module ice40_serdes_dff #(
 			);
 
 		else if (TYPE == 4)		//         RST
-			(* BEL=BEL, SERDES_GRP=SERDES_GRP *)
-			(* dont_touch *)
+			(* BEL=BEL, SERDES_GRP=SERDES_GRP, SERDES_ATTR=SERDES_ATTR *)
+			(* dont_touch, keep *)
 			SB_DFFR dff_I (
 				.D(d),
 				.Q(q),
@@ -98,8 +99,8 @@ module ice40_serdes_dff #(
 			);
 
 		else if (TYPE == 5)		// NEG     RST
-			(* BEL=BEL, SERDES_GRP=SERDES_GRP *)
-			(* dont_touch *)
+			(* BEL=BEL, SERDES_GRP=SERDES_GRP, SERDES_ATTR=SERDES_ATTR *)
+			(* dont_touch, keep *)
 			SB_DFFNR dff_I (
 				.D(d),
 				.Q(q),
@@ -108,8 +109,8 @@ module ice40_serdes_dff #(
 			);
 
 		else if (TYPE == 6)		//     ENA RST
-			(* BEL=BEL, SERDES_GRP=SERDES_GRP *)
-			(* dont_touch *)
+			(* BEL=BEL, SERDES_GRP=SERDES_GRP, SERDES_ATTR=SERDES_ATTR *)
+			(* dont_touch, keep *)
 			SB_DFFER dff_I (
 				.D(d),
 				.Q(q),
@@ -119,8 +120,8 @@ module ice40_serdes_dff #(
 			);
 
 		else if (TYPE == 7)		// NEG ENA RST
-			(* BEL=BEL, SERDES_GRP=SERDES_GRP *)
-			(* dont_touch *)
+			(* BEL=BEL, SERDES_GRP=SERDES_GRP, SERDES_ATTR=SERDES_ATTR *)
+			(* dont_touch, keep *)
 			SB_DFFNER dff_I (
 				.D(d),
 				.Q(q),
