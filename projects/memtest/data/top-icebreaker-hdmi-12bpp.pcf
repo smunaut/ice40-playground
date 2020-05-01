@@ -1,0 +1,20 @@
+# HDMI 12bpp on PMOD1AB
+set_io --warn-no-port hdmi_data[11] 43	# b[3]
+set_io --warn-no-port hdmi_data[10] 42	# b[2]
+set_io --warn-no-port hdmi_data[9] 36	# b[1]
+set_io --warn-no-port hdmi_data[8] 34	# b[0]
+
+set_io --warn-no-port hdmi_data[7] 47	# g[3]
+set_io --warn-no-port hdmi_data[6] 46	# g[2]
+set_io --warn-no-port hdmi_data[5] 45	# g[1]
+set_io --warn-no-port hdmi_data[4] 44	# g[0]
+
+set_io --warn-no-port hdmi_data[3]  4	# r[3]
+set_io --warn-no-port hdmi_data[2]  3	# r[2]
+set_io --warn-no-port hdmi_data[1]  2	# r[1]
+set_io --warn-no-port hdmi_data[0] 48	# r[0]
+
+set_io --warn-no-port hdmi_hsync 31
+set_io --warn-no-port hdmi_vsync 28
+set_io --warn-no-port hdmi_de 32
+set_io --warn-no-port hdmi_clk 38

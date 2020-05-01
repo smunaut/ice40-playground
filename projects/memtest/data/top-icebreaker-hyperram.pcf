@@ -1,0 +1,41 @@
+# Quad HyperRAM
+set_io --warn-no-port hram_dq[0] 43
+set_io --warn-no-port hram_dq[1] 38
+set_io --warn-no-port hram_dq[2] 34
+set_io --warn-no-port hram_dq[3] 31
+set_io --warn-no-port hram_dq[4] 28
+set_io --warn-no-port hram_dq[5] 32
+set_io --warn-no-port hram_dq[6] 36
+set_io --warn-no-port hram_dq[7] 42
+
+set_io --warn-no-port hram_rwds 44
+
+set_io --warn-no-port hram_ck 47
+
+set_io --warn-no-port hram_rst_n 46
+
+set_io --warn-no-port hram_cs_n[0] 2
+set_io --warn-no-port hram_cs_n[1] 48
+set_io --warn-no-port hram_cs_n[2] 4
+set_io --warn-no-port hram_cs_n[3] 3
+
+# Single HyperRAM
+#set_io --warn-no-port hram_dq[0] 34
+#set_io --warn-no-port hram_dq[1] 36
+#set_io --warn-no-port hram_dq[2] 46
+#set_io --warn-no-port hram_dq[3] 2
+#set_io --warn-no-port hram_dq[4] 48
+#set_io --warn-no-port hram_dq[5] 28
+#set_io --warn-no-port hram_dq[6] 32
+#set_io --warn-no-port hram_dq[7] 38
+#
+#set_io --warn-no-port hram_rwds 47
+#
+#set_io --warn-no-port hram_ck 42
+#
+#set_io --warn-no-port hram_rst_n 45
+#
+#set_io --warn-no-port hram_cs_n[0] 44
+#set_io --warn-no-port hram_cs_n[1] 31
+#set_io --warn-no-port hram_cs_n[2] 4
+#set_io --warn-no-port hram_cs_n[3] 3

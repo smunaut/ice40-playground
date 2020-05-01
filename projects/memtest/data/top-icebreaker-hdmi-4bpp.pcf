@@ -1,0 +1,9 @@
+# HDMI 4bpp on PMOD2
+set_io --warn-no-port hdmi_data[0] 26 # R
+set_io --warn-no-port hdmi_data[1] 27 # G
+set_io --warn-no-port hdmi_data[2] 23 # B
+set_io --warn-no-port hdmi_data[3] 19 # I
+set_io --warn-no-port hdmi_hsync 21
+set_io --warn-no-port hdmi_vsync 18
+set_io --warn-no-port hdmi_de 20
+set_io --warn-no-port hdmi_clk 25
