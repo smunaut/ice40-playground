@@ -75,6 +75,62 @@ usb_dfu_rt_cb_reboot(void)
         boot_dfu();
 }
 
+void
+membench()
+{
+#define	MAIN_RAM_BASE		0x40000000
+//#define	MAIN_RAM_BASE		0x00028000
+#define	MEMTEST_DATA_SIZE	(1 << 15)
+#define CONFIG_CLOCK_FREQUENCY	24000000
+
+	volatile unsigned int *array = (unsigned int *)MAIN_RAM_BASE;
+	int i;
+	unsigned int start, end;
+	unsigned long write_speed;
+	unsigned long read_speed;
+	__attribute__((unused)) unsigned int data;
+
+	/* write speed */
+	__asm__ volatile ("rdcycle %0" : "=r"(start));
+	for(i=0;i<MEMTEST_DATA_SIZE/4;i++) {
+		array[i] = i;
+	}
+	__asm__ volatile ("rdcycle %0" : "=r"(end));
+	write_speed = (8*MEMTEST_DATA_SIZE*(CONFIG_CLOCK_FREQUENCY/1000000))/(end - start);
+	printf("%d\n", end-start);
+
+	/* read speed */
+	__asm__ volatile ("rdcycle %0" : "=r"(start));
+	for(i=0;i<MEMTEST_DATA_SIZE/4;i++) {
+		data = array[i];
+	}
+	__asm__ volatile ("rdcycle %0" : "=r"(end));
+	read_speed = (8*MEMTEST_DATA_SIZE*(CONFIG_CLOCK_FREQUENCY/1000000))/(end-start);
+	printf("%d\n", end-start);
+
+	printf("Memspeed Writes: %dMbps Reads: %dMbps\n", write_speed, read_speed);
+}
+
+
+void python()
+{
+	uint32_t flash_addr = 0x00100000;
+	uint8_t *hr_addr    = 0x40000000;
+	int i;
+
+
+	for (i=0; i<256*1024; i+=256)
+	{
+		flash_read(hr_addr, flash_addr, 256);
+
+		flash_addr += 256;
+		hr_addr += 256;
+	}
+
+	void (*foo)(void) = 0x40000000;
+	foo();
+}
+
 void main()
 {
 	int cmd = 0;
@@ -131,6 +187,12 @@ void main()
 				break;
 			case 'h':
 				hram_init();
+				break;
+			case 't':
+				membench();
+				break;
+			case 'P':
+				python();
 				break;
 			default:
 				break;
