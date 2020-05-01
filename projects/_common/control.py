@@ -24,7 +24,7 @@ class BoardControlBase(object):
 			r = port.exchange(b'\x00', duplex=True)[0]
 			if r != 0xff:
 				return port
-		raise RunttimeError('Automatic SPI CS probe failed')
+		raise RuntimeError('Automatic SPI CS probe failed')
 
 	def reg_w16(self, reg, v):
 		self.slave.exchange(struct.pack('>BH', reg, v))
