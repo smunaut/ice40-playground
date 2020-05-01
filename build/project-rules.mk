@@ -5,7 +5,7 @@
 # Default tools
 YOSYS ?= yosys
 YOSYS_READ_ARGS ?=
-YOSYS_SYNTH_ARGS ?= -dffe_min_ce_use 4 -relut
+YOSYS_SYNTH_ARGS ?= -dffe_min_ce_use 4
 NEXTPNR ?= nextpnr-ice40
 NEXTPNR_ARGS ?= --freq 50
 ICEPACK ?= icepack
