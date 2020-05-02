@@ -1,0 +1,6 @@
+# Clock
+set_io --warn-no-port clk_in 35
+
+# UART
+set_io --warn-no-port uart_rx 6
+set_io --warn-no-port uart_tx 9
