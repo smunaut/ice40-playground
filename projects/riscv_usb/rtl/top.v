@@ -34,19 +34,10 @@
 `default_nettype none
 
 module top (
-	// HyperRAM pins
-	inout  wire [7:0] hram_dq,
-	inout  wire       hram_rwds,
-	output wire       hram_ck,
-	output wire [3:0] hram_cs_n,
-	output wire       hram_rst_n,
-
 	// SPI
-	inout  wire spi_mosi,
-	inout  wire spi_miso,
-	inout  wire spi_clk,
-	inout  wire spi_flash_cs_n,
-	inout  wire spi_ram_cs_n,
+	inout  wire [3:0] spi_io,
+	inout  wire       spi_sck,
+	inout  wire [1:0] spi_cs_n,
 
 	// USB
 	inout  wire usb_dp,
@@ -67,7 +58,7 @@ module top (
 	input  wire clk_in
 );
 
-	localparam WB_N  =  7;
+	localparam WB_N  =  6;
 	localparam WB_DW = 32;
 	localparam WB_AW = 16;
 	localparam WB_AI =  2;
@@ -142,21 +133,6 @@ module top (
 	wire ub_cyc;
 	wire ub_we;
 	wire ub_ack;
-
-	// SPI
-	wire [7:0] sb_addr;
-	wire [7:0] sb_di;
-	wire [7:0] sb_do;
-	wire sb_rw;
-	wire sb_stb;
-	wire sb_ack;
-	wire sb_irq;
-	wire sb_wkup;
-
-	wire sio_miso_o, sio_miso_oe, sio_miso_i;
-	wire sio_mosi_o, sio_mosi_oe, sio_mosi_i;
-	wire sio_clk_o,  sio_clk_oe,  sio_clk_i;
-	wire [3:0] sio_csn_o, sio_csn_oe;
 
 	// LEDs
 	reg  [4:0] led_ctrl;
@@ -306,101 +282,6 @@ module top (
 	);
 
 
-	// SPI
-	// ---
-
-	// Hard-IP
-`ifndef SIM
-	SB_SPI #(
-		.BUS_ADDR74("0b0000")
-	) spi_I (
-		.SBCLKI(clk_24m),
-		.SBRWI(sb_rw),
-		.SBSTBI(sb_stb),
-		.SBADRI7(sb_addr[7]),
-		.SBADRI6(sb_addr[6]),
-		.SBADRI5(sb_addr[5]),
-		.SBADRI4(sb_addr[4]),
-		.SBADRI3(sb_addr[3]),
-		.SBADRI2(sb_addr[2]),
-		.SBADRI1(sb_addr[1]),
-		.SBADRI0(sb_addr[0]),
-		.SBDATI7(sb_di[7]),
-		.SBDATI6(sb_di[6]),
-		.SBDATI5(sb_di[5]),
-		.SBDATI4(sb_di[4]),
-		.SBDATI3(sb_di[3]),
-		.SBDATI2(sb_di[2]),
-		.SBDATI1(sb_di[1]),
-		.SBDATI0(sb_di[0]),
-		.MI(sio_miso_i),
-		.SI(sio_mosi_i),
-		.SCKI(sio_clk_i),
-		.SCSNI(1'b1),
-		.SBDATO7(sb_do[7]),
-		.SBDATO6(sb_do[6]),
-		.SBDATO5(sb_do[5]),
-		.SBDATO4(sb_do[4]),
-		.SBDATO3(sb_do[3]),
-		.SBDATO2(sb_do[2]),
-		.SBDATO1(sb_do[1]),
-		.SBDATO0(sb_do[0]),
-		.SBACKO(sb_ack),
-		.SPIIRQ(sb_irq),
-		.SPIWKUP(sb_wkup),
-		.SO(sio_miso_o),
-		.SOE(sio_miso_oe),
-		.MO(sio_mosi_o),
-		.MOE(sio_mosi_oe),
-		.SCKO(sio_clk_o),
-		.SCKOE(sio_clk_oe),
-		.MCSNO3(sio_csn_o[3]),
-		.MCSNO2(sio_csn_o[2]),
-		.MCSNO1(sio_csn_o[1]),
-		.MCSNO0(sio_csn_o[0]),
-		.MCSNOE3(sio_csn_oe[3]),
-		.MCSNOE2(sio_csn_oe[2]),
-		.MCSNOE1(sio_csn_oe[1]),
-		.MCSNOE0(sio_csn_oe[0])
-	);
-`else
-	reg [3:0] sim;
-
-	assign sb_ack = sb_stb;
-	assign sb_do = { sim, 4'h8 };
-
-	always @(posedge clk_24m)
-		if (rst)
-			sim <= 0;
-		else if (sb_ack & sb_rw)
-			sim <= sim + 1;
-`endif
-
-	// IO pads
-	SB_IO #(
-		.PIN_TYPE(6'b101001),
-		.PULLUP(1'b1)
-	) spi_io_I[2:0] (
-		.PACKAGE_PIN  ({spi_mosi,    spi_miso,    spi_clk   }),
-		.OUTPUT_ENABLE({sio_mosi_oe, sio_miso_oe, sio_clk_oe}),
-		.D_OUT_0      ({sio_mosi_o,  sio_miso_o,  sio_clk_o }),
-		.D_IN_0       ({sio_mosi_i,  sio_miso_i,  sio_clk_i })
-	);
-
-		// Bypass OE for CS_n lines
-	assign spi_flash_cs_n = sio_csn_o[0];
-	assign spi_ram_cs_n   = sio_csn_o[1];
-
-	// Bus interface
-	assign sb_addr = { 4'h0, wb_addr[3:0] };
-	assign sb_di   = wb_wdata[7:0];
-	assign sb_rw   = wb_we;
-	assign sb_stb  = wb_cyc[2];
-
-	assign wb_rdata[2] = { {(WB_DW-8){1'b0}}, wb_cyc[2] ? sb_do : 8'h00 };
-	assign wb_ack[2] = sb_ack;
-
-
 	// LEDs
 	// ----
 
@@ -522,26 +403,15 @@ module top (
 	assign wb_rdata[5] = wb_cyc[5] ? ep_rx_data_1 : 32'h00000000;
 
 
-	// HyperRAM
-	// --------
+	// QSPI
+	// ----
 
 	// PHY signals
-	wire [ 1:0] phy_ck_en;
-
-	wire [ 3:0] phy_rwds_in;
-	wire [ 3:0] phy_rwds_out;
-	wire [ 1:0] phy_rwds_oe;
-
-	wire [31:0] phy_dq_in;
-	wire [31:0] phy_dq_out;
-	wire [ 1:0] phy_dq_oe;
-
-	wire [ 3:0] phy_cs_n;
-	wire        phy_rst_n;
-
-	wire [ 7:0] phy_cfg_wdata;
-	wire [ 7:0] phy_cfg_rdata;
-	wire        phy_cfg_stb;
+	wire [15:0] phy_io_i;
+	wire [15:0] phy_io_o;
+	wire [ 3:0] phy_io_oe;
+	wire [ 3:0] phy_clk_o;
+	wire [ 1:0] phy_cs_o;
 
 	// Memory interface
 	wire [23:0] mi_addr;
@@ -624,74 +494,66 @@ module top (
 		.rst(rst)
 	);
 
-	// Un-used mem-if features
-	assign mi_wmsk = 4'h0;
-	assign mi_linear = 1'b0;
-
 	// Controller
-	hram_top hram_ctrl_I (
-		.phy_ck_en(phy_ck_en),
-		.phy_rwds_in(phy_rwds_in),
-		.phy_rwds_out(phy_rwds_out),
-		.phy_rwds_oe(phy_rwds_oe),
-		.phy_dq_in(phy_dq_in),
-		.phy_dq_out(phy_dq_out),
-		.phy_dq_oe(phy_dq_oe),
-		.phy_cs_n(phy_cs_n),
-		.phy_rst_n(phy_rst_n),
-		.phy_cfg_wdata(phy_cfg_wdata),
-		.phy_cfg_rdata(phy_cfg_rdata),
-		.phy_cfg_stb(phy_cfg_stb),
-		.mi_addr_cs(mi_addr[22:21]),
-		.mi_addr({10'b0000000000, mi_addr[20:0], 1'b0}),
+	qspi_master #(
+		.CMD_READ(16'hEB0B),
+		.CMD_WRITE(16'h0202),
+		.DUMMY_CLK(6),
+		.PAUSE_CLK(8),
+		.FIFO_DEPTH(1),
+		.N_CS(2),
+		.PHY_SPEED(4),
+		.PHY_WIDTH(1),
+		.PHY_DELAY(4)
+	) memctrl_I (
+		.phy_io_i(phy_io_i),
+		.phy_io_o(phy_io_o),
+		.phy_io_oe(phy_io_oe),
+		.phy_clk_o(phy_clk_o),
+		.phy_cs_o(phy_cs_o),
+		.mi_addr_cs(mi_addr[23:22]),
+		.mi_addr({mi_addr[21:0], 2'b00 }),	/* 32 bits aligned */
 		.mi_len(mi_len),
 		.mi_rw(mi_rw),
-		.mi_linear(mi_linear),
 		.mi_valid(mi_valid),
 		.mi_ready(mi_ready),
-		.mi_wdata(mi_wdata),
-		.mi_wmsk(mi_wmsk),
+		.mi_wdata({mi_wdata[7:0], mi_wdata[15:8], mi_wdata[23:16], mi_wdata[31:24]}),
+	//	.mi_wdata(mi_wdata),
 		.mi_wack(mi_wack),
 		.mi_wlast(mi_wlast),
-		.mi_rdata(mi_rdata),
+		.mi_rdata({mi_rdata[7:0], mi_rdata[15:8], mi_rdata[23:16], mi_rdata[31:24]}),
+	//	.mi_rdata(mi_rdata),
 		.mi_rstb(mi_rstb),
 		.mi_rlast(mi_rlast),
 		.wb_wdata(wb_wdata),
-		.wb_rdata(wb_rdata[6]),
-		.wb_addr(wb_addr[3:0]),
+		.wb_rdata(wb_rdata[2]),
+		.wb_addr(wb_addr[4:0]),
 		.wb_we(wb_we),
-		.wb_cyc(wb_cyc[6]),
-		.wb_ack(wb_ack[6]),
+		.wb_cyc(wb_cyc[2]),
+		.wb_ack(wb_ack[2]),
 		.clk(clk_24m),
 		.rst(rst)
 	);
 
 	// PHY
-	hram_phy_ice40 hram_phy_I (
-		.hram_dq(hram_dq),
-		.hram_rwds(hram_rwds),
-		.hram_ck(hram_ck),
-		.hram_cs_n(hram_cs_n),
-		.hram_rst_n(hram_rst_n),
-		.phy_ck_en(phy_ck_en),
-		.phy_rwds_in(phy_rwds_in),
-		.phy_rwds_out(phy_rwds_out),
-		.phy_rwds_oe(phy_rwds_oe),
-		.phy_dq_in(phy_dq_in),
-		.phy_dq_out(phy_dq_out),
-		.phy_dq_oe(phy_dq_oe),
-		.phy_cs_n(phy_cs_n),
-		.phy_rst_n(phy_rst_n),
-		.phy_cfg_wdata(phy_cfg_wdata),
-		.phy_cfg_rdata(phy_cfg_rdata),
-		.phy_cfg_stb(phy_cfg_stb),
-		.clk_rd_delay(pll_delay),
+	qspi_phy_ice40_4x #(
+		.N_CS(2),
+		.WITH_CLK(1)
+	) phy_I (
+		.pad_io(spi_io),
+		.pad_clk(spi_sck),
+		.pad_cs_n(spi_cs_n),
+		.phy_io_i(phy_io_i),
+		.phy_io_o(phy_io_o),
+		.phy_io_oe(phy_io_oe),
+		.phy_clk_o(phy_clk_o),
+		.phy_cs_o(phy_cs_o),
 		.clk_1x(clk_24m),
 		.clk_4x(clk_96m),
-		.clk_rd(clk_rd),
-		.sync_4x(sync_96m),
-		.sync_rd(sync_rd)
+		.clk_sync(sync_96m)
 	);
+
+	assign pll_delay = 4'h0;
 
 
 	// Warm Boot

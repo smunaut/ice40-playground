@@ -80,10 +80,13 @@ module sysmgr (
 	ice40_serdes_sync #(
 		.PHASE(2),
 		.NEG_EDGE(0),
-		.GLOBAL_BUF(1),
-		.BEL_GB("X12/Y31/gb"),
-		.BEL_COL("X12"),
-		.BEL_ROW("Y26")
+//		.GLOBAL_BUF(1),
+//		.BEL_GB("X13/Y31/gb"),
+//		.BEL_COL("X13"),
+//		.BEL_ROW("Y26")
+		.GLOBAL_BUF(0),
+		.BEL_COL("X20"),
+		.BEL_ROW("Y4")
 	) sync_96m_I (
 		.clk_slow(clk_24m),
 		.clk_fast(clk_96m),
@@ -91,11 +94,11 @@ module sysmgr (
 		.sync(sync_96m)
 	);
 
+/*
 	ice40_serdes_sync #(
 		.PHASE(2),
 		.NEG_EDGE(0),
-		.GLOBAL_BUF(1),
-		.BEL_GB("X13/Y31/gb"),
+		.GLOBAL_BUF(0),
 		.BEL_COL("X13"),
 		.BEL_ROW("Y26")
 	) sync_rd_I (
@@ -104,5 +107,7 @@ module sysmgr (
 		.rst(rst),
 		.sync(sync_rd)
 	);
+*/
+	assign sync_rd = 1'b0;
 
 endmodule

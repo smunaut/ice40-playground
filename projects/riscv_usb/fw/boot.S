@@ -22,6 +22,8 @@
 #define FLASH_APP_ADDR 0x00100000
 #endif
 
+#define BOOT_DEBUG
+
 	.section .text.start
 	.global _start
 _start:
@@ -31,147 +33,177 @@ _start:
 	li	a0, 0x81000004
 	li	a1, 22
 	sw	a1, 0(a0)
-
-	// Output 'a'
-	li	a0, 0x81000000
-	li	a1, 97
-	sw	a1, 0(a0)
 #endif
+
+	// Delay boot
+	li	t0, 0x00100000
+1:
+	addi	t0, t0, -1
+	bne	t0, zero, 1b
 
 	// SPI init
 	jal	spi_init
-
-#ifdef BOOT_DEBUG
-	// Output 'b'
-	li	a0, 0x81000000
-	li	a1, 98
-	sw	a1, 0(a0)
-#endif
-
-	li	a0, 0x00020000
-#ifdef SPRAM128K
-	li	a1, 0x00020000
-#else
-	li	a1, 0x00010000
-#endif
-	li	a2, FLASH_APP_ADDR
-	jal	spi_flash_read
-
-#ifdef BOOT_DEBUG
-	// Output 'c'
-	li	a0, 0x81000000
-	li	a1, 99
-	sw	a1, 0(a0)
-#endif
 
 	// Setup reboot code
 	li	t0, 0x0002006f
 	sw	t0, 0(zero)
 
 	// Jump to main code
-	j	0x00020000
-
+	li	ra, 0x400a0000
+	ret
 
 	.equ    SPI_BASE, 0x82000000
-	.equ    SPICR0,  4 * 0x08
-	.equ    SPICR1,  4 * 0x09
-	.equ    SPICR2,  4 * 0x0a
-	.equ    SPIBR,   4 * 0x0b
-	.equ    SPISR,   4 * 0x0c
-	.equ    SPITXDR, 4 * 0x0d
-	.equ    SPIRXDR, 4 * 0x0e
-	.equ    SPICSR,  4 * 0x0f
+	.equ    SPI_CSR,  4 * 0x00
+	.equ	SPI_RF,   4 * 0x03
 
 
 spi_init:
-	li	a0, SPI_BASE
+	// Save return address
+	// -------------------
 
-	li	a1, 0xff
-	sw	a1, SPICR0(a0)
+	mv	t6, ra
 
-	li	a1, 0x80
-	sw	a1, SPICR1(a0)
 
-	li	a1, 0xc0
-	sw	a1, SPICR2(a0)
+	// Flash QSPI enable
+	// -----------------
 
-	li	a1, 0x03
-	sw	a1, SPIBR(a0)
+	li	t5, SPI_BASE
 
-	li	a1, 0x0f
-	sw	a1, SPICSR(a0)
+	// Request external control
+	li	t0, 0x00000004
+	sw	t0, SPI_CSR(t5)
 
+	li	t0, 0x00000002
+	sw	t0, SPI_CSR(t5)
+
+	// Enable QSPI (0x38)
+	li	t0, 0x38000000
+	sw	t0, 0x40(t5)
+
+	// Read and discard response
+	lw	t0, SPI_RF(t5)
+
+	// Release external control
+	li	t0, 0x00000004
+	sw	t0, SPI_CSR(t5)
+
+
+	// Flash QSPI config
+	// -----------------
+
+	// Request external control
+	li	t0, 0x00000004
+	sw	t0, SPI_CSR(t5)
+
+	li	t0, 0x00000002
+	sw	t0, SPI_CSR(t5)
+
+	// Set QSPI parameters (dummy=6, wrap=64b)
+	li	t0, 0xc0230000
+	sw	t0, 0x74(t5)
+
+	// Release external control
+	li	t0, 0x00000004
+	sw	t0, SPI_CSR(t5)
+
+
+#ifdef BOOT_DEBUG
+	// Flash QSPI config
+	// -----------------
+
+	// Request external control
+	li	t0, 0x00000004
+	sw	t0, SPI_CSR(t5)
+
+	li	t0, 0x00000002
+	sw	t0, SPI_CSR(t5)
+
+	// Read command
+	li	t0, 0x0b0a0000
+	sw	t0, 0x7c(t5)
+
+	// 6 dummy clk
+	li	t0, 0x00000000
+	sw	t0, 0x58(t5)
+	lw	t0, SPI_RF(t5)
+
+	// Read one word
+	li	t0, 0x00000000
+	sw	t0, 0x5c(t5)
+
+	// Display read word
+	lw	a0, SPI_RF(t5)
+	call	print_hex
+
+	// Read one word
+	li	t0, 0x00000000
+	sw	t0, 0x5c(t5)
+
+	// Display read word
+	lw	a0, SPI_RF(t5)
+	call	print_hex
+
+	// Release external control
+	li	t0, 0x00000004
+	sw	t0, SPI_CSR(t5)
+#endif
+
+
+	// PSRAM init
+	// ----------
+
+	// Request external control
+	li	t0, 0x00000004
+	sw	t0, SPI_CSR(t5)
+
+	li	t0, 0x00000012
+	sw	t0, SPI_CSR(t5)
+
+	// Enable QSPI (0x35)
+	li	t0, 0x35000000
+	sw	t0, 0x40(t5)
+
+	// Read and discard response
+	lw	t0, SPI_RF(t5)
+
+	// Release external control
+	li	t0, 0x00000004
+	sw	t0, SPI_CSR(t5)
+
+
+	// Return
+	// ------
+
+	mv	ra, t6
 	ret
 
 
-// Params:
-//  a0 - destination pointer
-//  a1 - length (bytes)
-//  a2 - flash offset
-//
+// Agument in a0
+// Clobbers a0, t0-t3
+print_hex:
+	li	t0, 0x81000000
+	li	t1, 8
+	la	t2, hexchar
 
-spi_flash_read:
-	// Save params
-	mv	s0, a0
-	mv	s1, a1
-	mv	s2, ra
-
-	// Setup CS
-	li	t0, SPI_BASE
-	li	t1, 0x0e
-	sw	t1, SPICSR(t0)
-
-	// Send command
-	li	a0, 0x03
-	jal	_spi_do_one
-
-	srli	a0, a2, 16
-	and	a0, a0, 0xff
-	jal	_spi_do_one
-
-	srli	a0, a2, 8
-	and	a0, a0, 0xff
-	jal	_spi_do_one
-
-	and	a0, a2, 0xff
-	jal	_spi_do_one
-
-	// Read loop
-_spi_loop:
-	li	a0, 0x00
-	jal	_spi_do_one
-	sb	a0, 0(s0)
-	addi	s0, s0,  1
-	addi	s1, s1, -1
-	bne	s1, zero, _spi_loop
-
-	// Release CS
-	li	t0, SPI_BASE
-	li	t1, 0x0f
-	sw	t1, SPICSR(t0)
-
-	// Done
-	jr	s2
-
-
-// Params:  a0 - Data to TX
-// Returns: a0 - RX data
-// Clobbers t0, t1
-_spi_do_one:
-	li	t0, SPI_BASE
-	li	t1, 0x08
-
-	// Write TX data
-	sw	a0, SPITXDR(t0)
-
-	// Wait for RXRDY
 1:
-	lw	a0, SPISR(t0)
-	and	a0, a0, t1
-	bne	a0, t1, 1b
+	srli	t3, a0, 28
+	add	t3, t3, t2
+	lb	t3, 0(t3)
+	sw	t3, 0(t0)
 
-	// Read RX data
-	lw	a0, SPIRXDR(t0)
+	slli	a0, a0, 4
 
-	// Done
+	addi	t1, t1, -1
+	bne	zero, t1, 1b
+
+print_nl:
+	li	t0, 0x81000000
+	li	a0, '\r'
+	sw	a0, 0(t0)
+	li	a0, '\n'
+	sw	a0, 0(t0)
+
 	ret
+
+hexchar:
+	.ascii	"0123456789abcdef"

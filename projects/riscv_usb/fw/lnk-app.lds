@@ -1,6 +1,7 @@
 MEMORY
 {
-    SPRAM (xrw) : ORIGIN = 0x00020000, LENGTH = DEFINED(SPRAM128K) ? 0x20000 : 0x10000
+    ROM   (xr)  : ORIGIN = 0x400a0000, LENGTH = 0x60000
+    SPRAM (xrw) : ORIGIN = 0x00020000, LENGTH = 0x10000
     BRAM  (xrw) : ORIGIN = 0x00000010, LENGTH = 0x03f0
 }
 ENTRY(_start)
@@ -18,7 +19,7 @@ SECTIONS {
         . = ALIGN(4);
         _etext = .;
         _sidata = _etext;
-    } >SPRAM
+    } >ROM
     .data : AT ( _sidata )
     {
         . = ALIGN(4);

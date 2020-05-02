@@ -75,11 +75,40 @@ usb_dfu_rt_cb_reboot(void)
         boot_dfu();
 }
 
+
+void
+memtest()
+{
+#define	MAIN_RAM_BASE		0x41000000
+#define	MEMTEST_DATA_SIZE	(1 << 23)
+
+	volatile unsigned int *array = (unsigned int *)MAIN_RAM_BASE;
+	unsigned int x;
+	int i;
+
+	/* Write */
+	x = 0x600dc0de;
+	for (i=0; i<MEMTEST_DATA_SIZE/4;i++) {
+		x = (x << 1) ^ (x + 1);
+		array[i] = x;
+	}
+
+	/* Read */
+	x = 0x600dc0de;
+	for (i=0; i<MEMTEST_DATA_SIZE/4;i++) {
+		x = (x << 1) ^ (x + 1);
+		if (array[i] != x)
+			printf("Error 0x%08x\n", i);
+	}
+
+#undef MAIN_RAM_BASE
+#undef MEMTEST_DATA_SIZE
+}
+
 void
 membench()
 {
-#define	MAIN_RAM_BASE		0x40000000
-//#define	MAIN_RAM_BASE		0x00028000
+#define	MAIN_RAM_BASE		0x41000000
 #define	MEMTEST_DATA_SIZE	(1 << 15)
 #define CONFIG_CLOCK_FREQUENCY	24000000
 
@@ -109,25 +138,16 @@ membench()
 	printf("%d\n", end-start);
 
 	printf("Memspeed Writes: %dMbps Reads: %dMbps\n", write_speed, read_speed);
+
+#undef MAIN_RAM_BASE
+#undef MEMTEST_DATA_SIZE
+#undef CONFIG_CLOCK_FREQUENCY
 }
 
 
 void python()
 {
-	uint32_t flash_addr = 0x00100000;
-	uint8_t *hr_addr    = 0x40000000;
-	int i;
-
-
-	for (i=0; i<256*1024; i+=256)
-	{
-		flash_read(hr_addr, flash_addr, 256);
-
-		flash_addr += 256;
-		hr_addr += 256;
-	}
-
-	void (*foo)(void) = 0x40000000;
+	void (*foo)(void) = 0x40100000;
 	foo();
 }
 
@@ -147,10 +167,10 @@ void main()
 	led_state(true);
 
 	/* SPI */
-	spi_init();
+	//spi_init();
 
 	/* Enable USB directly */
-	serial_no_init();
+	//serial_no_init();
 	usb_init(&app_stack_desc);
 	usb_dfu_rt_init();
 
@@ -190,6 +210,9 @@ void main()
 				break;
 			case 't':
 				membench();
+				break;
+			case 'T':
+				memtest();
 				break;
 			case 'P':
 				python();

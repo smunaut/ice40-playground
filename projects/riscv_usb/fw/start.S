@@ -19,9 +19,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define BOOT_DEBUG
+
 	.section .text.start
 	.global _start
 _start:
+
+#ifdef BOOT_DEBUG
+	// Output '0'
+	li a0, 0x81000000
+	li a1, 48
+	sw a1, 0(a0)
+#endif
 
 	// zero-initialize register file
 	addi x1, zero, 0
@@ -57,12 +66,8 @@ _start:
 	addi x31, zero, 0
 
 #ifdef BOOT_DEBUG
-	// Set UART divisor
-	li a0, 0x81000000
-	li a1, 22
-	sw a1, 4(a0)
-
 	// Output '1'
+	li a0, 0x81000000
 	li a1, 49
 	sw a1, 0(a0)
 #endif

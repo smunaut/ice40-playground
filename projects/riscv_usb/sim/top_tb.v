@@ -38,10 +38,9 @@ module top_tb;
 	// Signals
 	// -------
 
-	wire spi_mosi;
-	wire spi_miso;
-	wire spi_flash_cs_n;
-	wire spi_clk;
+	wire [3:0] spi_io;
+	wire       spi_sck;
+	wire [1:0] spi_cs_n;
 
 	wire usb_dp;
 	wire usb_dn;
@@ -65,10 +64,9 @@ module top_tb;
 	// ---
 
 	top dut_I (
-		.spi_mosi(spi_mosi),
-		.spi_miso(spi_miso),
-		.spi_flash_cs_n(spi_flash_cs_n),
-		.spi_clk(spi_clk),
+		.spi_io(spi_io),
+		.spi_sck(spi_sck),
+		.spi_cs_n(spi_cs_n),
 		.usb_dp(usb_dp),
 		.usb_dn(usb_dn),
 		.usb_pu(usb_pu),
@@ -89,12 +87,12 @@ module top_tb;
 	pullup(uart_rx);
 
 	spiflash flash_I (
-		.csb(spi_flash_cs_n),
-		.clk(spi_clk),
-		.io0(spi_mosi),
-		.io1(spi_miso),
-		.io2(),
-		.io3()
+		.csb(spi_cs_n[0]),
+		.clk(spi_sck),
+		.io0(spi_io[0]),
+		.io1(spi_io[1]),
+		.io2(spi_io[2]),
+		.io3(spi_io[3])
 	);
 
 endmodule // top_tb

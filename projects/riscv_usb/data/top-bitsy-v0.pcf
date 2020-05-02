@@ -1,9 +1,11 @@
 # SPI
-set_io -nowarn spi_mosi 14
-set_io -nowarn spi_miso 17
-set_io -nowarn spi_clk 15
-set_io -nowarn spi_flash_cs_n 16
-set_io -nowarn spi_ram_cs_n 37
+set_io --warn-no-port             spi_sck   15
+set_io --warn-no-port -pullup no  spi_io[0] 14
+set_io --warn-no-port -pullup no  spi_io[1] 17
+set_io --warn-no-port -pullup no  spi_io[2] 12
+set_io --warn-no-port -pullup no  spi_io[3] 13
+set_io --warn-no-port -pullup yes spi_cs_n[0] 16
+set_io --warn-no-port -pullup yes spi_cs_n[1] 37
 
 # USB
 set_io -nowarn usb_dp 43
