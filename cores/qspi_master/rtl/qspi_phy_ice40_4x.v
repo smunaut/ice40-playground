@@ -46,7 +46,7 @@ module qspi_phy_ice40_4x #(
 	output wire [CL:0] pad_cs_n,
 
 	// PHY interface
-	output reg  [15:0] phy_io_i,
+	output wire [15:0] phy_io_i,
 	input  wire [15:0] phy_io_o,
 	input  wire [ 3:0] phy_io_oe,
 	input  wire [ 3:0] phy_clk_o,
