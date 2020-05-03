@@ -62,7 +62,7 @@ static void
 boot_dfu(void)
 {
 	/* Force re-enumeration */
-	usb_disconnect();
+//	usb_disconnect();
 
 	/* Boot firmware */
 	volatile uint32_t *boot = (void*)0x80000000;
@@ -171,8 +171,8 @@ void main()
 
 	/* Enable USB directly */
 	//serial_no_init();
-	usb_init(&app_stack_desc);
-	usb_dfu_rt_init();
+	//usb_init(&app_stack_desc);
+	//usb_dfu_rt_init();
 
 	/* Main loop */
 	while (1)
@@ -194,19 +194,19 @@ void main()
 			switch (cmd)
 			{
 			case 'p':
-				usb_debug_print();
+				//usb_debug_print();
 				break;
 			case 'b':
 				boot_dfu();
 				break;
 			case 'c':
-				usb_connect();
+				//usb_connect();
 				break;
 			case 'd':
-				usb_disconnect();
+				//usb_disconnect();
 				break;
 			case 'h':
-				hram_init();
+				//hram_init();
 				break;
 			case 't':
 				membench();
@@ -223,6 +223,6 @@ void main()
 		}
 
 		/* USB poll */
-		usb_poll();
+		//usb_poll();
 	}
 }

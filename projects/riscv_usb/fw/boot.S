@@ -30,13 +30,13 @@ _start:
 
 #ifdef BOOT_DEBUG
 	// Set UART divisor
-	li	a0, 0x81000004
+	li	a0, 0x82000004
 	li	a1, 22
 	sw	a1, 0(a0)
 #endif
 
 	// Delay boot
-	li	t0, 0x00100000
+	li	t0, 0x01000000
 1:
 	addi	t0, t0, -1
 	bne	t0, zero, 1b
@@ -48,11 +48,15 @@ _start:
 	li	t0, 0x0002006f
 	sw	t0, 0(zero)
 
+	li	ra, 0x400a0000
+	lw	a0, 0(ra)
+	call	print_hex
+
 	// Jump to main code
 	li	ra, 0x400a0000
 	ret
 
-	.equ    SPI_BASE, 0x82000000
+	.equ    SPI_BASE, 0x80000000
 	.equ    SPI_CSR,  4 * 0x00
 	.equ	SPI_RF,   4 * 0x03
 
@@ -181,7 +185,7 @@ spi_init:
 // Agument in a0
 // Clobbers a0, t0-t3
 print_hex:
-	li	t0, 0x81000000
+	li	t0, 0x82000000
 	li	t1, 8
 	la	t2, hexchar
 
@@ -197,7 +201,7 @@ print_hex:
 	bne	zero, t1, 1b
 
 print_nl:
-	li	t0, 0x81000000
+	li	t0, 0x82000000
 	li	a0, '\r'
 	sw	a0, 0(t0)
 	li	a0, '\n'

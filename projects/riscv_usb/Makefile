@@ -5,10 +5,10 @@ PROJ_DEPS := usb misc ice40 qspi_master mem_cache
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 	bridge.v \
 	dfu_helper.v \
-	picorv32.v \
 	soc_bram.v \
 	soc_spram.v \
 	sysmgr.v \
+	VexRiscv.v \
 )
 PROJ_SIM_SRCS := $(addprefix sim/, \
 	spiflash.v \

@@ -27,7 +27,7 @@ _start:
 
 #ifdef BOOT_DEBUG
 	// Output '0'
-	li a0, 0x81000000
+	li a0, 0x82000000
 	li a1, 48
 	sw a1, 0(a0)
 #endif
@@ -67,7 +67,7 @@ _start:
 
 #ifdef BOOT_DEBUG
 	// Output '1'
-	li a0, 0x81000000
+	li a0, 0x82000000
 	li a1, 49
 	sw a1, 0(a0)
 #endif
@@ -87,7 +87,7 @@ end_init_data:
 
 #ifdef BOOT_DEBUG
 	// Output '2'
-	li a0, 0x81000000
+	li a0, 0x82000000
 	li a1, 50
 	sw a1, 0(a0)
 #endif
@@ -104,12 +104,46 @@ end_init_bss:
 
 #ifdef BOOT_DEBUG
 	// Output '3'
-	li a0, 0x81000000
+	li a0, 0x82000000
 	li a1, 51
 	sw a1, 0(a0)
 #endif
+
+	li sp, 0x0400
 
 	// call main
 	call main
 loop:
 	j loop
+
+
+
+// Agument in a0
+// Clobbers a0, t0-t3
+print_hex:
+	li	t0, 0x82000000
+	li	t1, 8
+	la	t2, hexchar
+
+1:
+	srli	t3, a0, 28
+	add	t3, t3, t2
+	lb	t3, 0(t3)
+	sw	t3, 0(t0)
+
+	slli	a0, a0, 4
+
+	addi	t1, t1, -1
+	bne	zero, t1, 1b
+
+print_nl:
+	li	t0, 0x82000000
+	li	a0, '\r'
+	sw	a0, 0(t0)
+	li	a0, '\n'
+	sw	a0, 0(t0)
+
+	ret
+
+hexchar:
+	.ascii	"0123456789abcdef"

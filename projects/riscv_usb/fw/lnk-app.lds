@@ -1,8 +1,8 @@
 MEMORY
 {
-    ROM   (xr)  : ORIGIN = 0x400a0000, LENGTH = 0x60000
-    SPRAM (xrw) : ORIGIN = 0x00020000, LENGTH = 0x10000
-    BRAM  (xrw) : ORIGIN = 0x00000010, LENGTH = 0x03f0
+    ROM   (xr)  : ORIGIN = 0x400a0000, LENGTH = 0x60000		/*  384k */
+    PSRAM (xrw) : ORIGIN = 0x41000000, LENGTH = 0x800000	/* 8192k */
+    BRAM  (xrw) : ORIGIN = 0x00000010, LENGTH = 0x03f0		/*  ~ 1k */
 }
 ENTRY(_start)
 SECTIONS {
@@ -32,7 +32,7 @@ SECTIONS {
         *(.sdata*)
         . = ALIGN(4);
         _edata = .;
-    } >SPRAM
+    } >BRAM
     .bss :
     {
         . = ALIGN(4);
@@ -44,10 +44,10 @@ SECTIONS {
         *(COMMON)
         . = ALIGN(4);
         _ebss = .;
-    } >SPRAM
+    } >BRAM
     .heap :
     {
         . = ALIGN(4);
         _heap_start = .;
-    } >SPRAM
+    } >BRAM
 }
