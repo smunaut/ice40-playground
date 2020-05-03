@@ -530,6 +530,7 @@ module qspi_master #(
 	assign mi_spi_cmd = mi_rw ? CMD_READ[8*mi_addr_cs+:8] : CMD_WRITE[8*mi_addr_cs+:8];
 
 	// ROM for command fifo counter
+	(* mem2reg *)
 	reg [5:0] cmd_len_rom[0:15];
 
 	initial
