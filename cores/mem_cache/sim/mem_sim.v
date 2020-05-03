@@ -33,9 +33,15 @@
 
 `default_nettype none
 
-module mem_sim (
+module mem_sim #(
+	parameter INIT_FILE = "",
+	parameter integer AW = 20,
+
+	// auto
+	parameter integer AL = AW - 1
+)(
 	// Memory controller interface
-	input  wire [19:0] mi_addr,
+	input  wire [AL:0] mi_addr,
 	input  wire [ 6:0] mi_len,
 	input  wire        mi_rw,
 	input  wire        mi_valid,
@@ -64,7 +70,7 @@ module mem_sim (
 	// -------
 
 	// Memory array
-	reg [31:0] mem[0:(1<<20)-1];
+	reg [31:0] mem[0:(1<<AW)-1];
 
 	wire [19:0] mem_addr;
 	wire [31:0] mem_wdata;
@@ -88,8 +94,12 @@ module mem_sim (
 	begin : mem_init
 		integer a;
 
-		for (a=0; a<(1<<20)-1; a=a+1)
-			mem[a] = a;
+		if (INIT_FILE == "") begin
+			for (a=0; a<(1<<20)-1; a=a+1)
+				mem[a] = a;
+		end else begin
+			$readmemh(INIT_FILE, mem);
+		end
 	end
 
 	always @(posedge clk)
