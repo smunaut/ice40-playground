@@ -1,0 +1,26 @@
+# SPI
+set_io -nowarn spi_mosi 14
+set_io -nowarn spi_miso 17
+set_io -nowarn spi_clk 15
+set_io -nowarn spi_flash_cs_n 16
+set_io -nowarn spi_ram_cs_n 6
+
+# USB
+set_io -nowarn usb_dp 42
+set_io -nowarn usb_dn 38
+set_io -nowarn usb_pu 37
+
+# UART
+set_io -nowarn uart_rx 47
+set_io -nowarn uart_tx 44
+
+# Clock
+set_io -nowarn clk_in 35
+
+# Button
+set_io -nowarn btn 2
+
+# Leds
+set_io -nowarn rgb[0] 39
+set_io -nowarn rgb[1] 40
+set_io -nowarn rgb[2] 41
