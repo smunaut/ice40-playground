@@ -102,11 +102,11 @@ led_init(void)
 void
 led_color(uint8_t r, uint8_t g, uint8_t b)
 {
-#if defined(BOARD_icebreaker)
+#if defined(BOARD_ICEBREAKER)
 	led_regs->ip.pwrr = r;
 	led_regs->ip.pwrg = b;
 	led_regs->ip.pwrb = g;
-#elif defined(BOARD_bitsy)
+#elif defined(BOARD_BITSY)
 	led_regs->ip.pwrr = g;
 	led_regs->ip.pwrg = r;
 	led_regs->ip.pwrb = b;
