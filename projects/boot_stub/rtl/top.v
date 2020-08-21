@@ -46,10 +46,7 @@ module top (
 	// USB
 	output wire usb_dp,
 	output wire usb_dn,
-	output wire usb_pu,
-
-	// Clock
-	input  wire clk_in
+	output wire usb_pu
 );
 
 	// FSM
@@ -262,9 +259,12 @@ module top (
 
 	reg [7:0] cnt_reset;
 
-	SB_GB clk_gbuf_I (
-		.USER_SIGNAL_TO_GLOBAL_BUFFER(clk_in),
-		.GLOBAL_BUFFER_OUTPUT(clk)
+	SB_HFOSC #(
+		.CLKHF_DIV("0b10")	// 12 MHz
+	) osc_I (
+		.CLKHFPU(1'b1),
+		.CLKHFEN(1'b1),
+		.CLKHF(clk)
 	);
 
 	assign rst = ~cnt_reset[7];

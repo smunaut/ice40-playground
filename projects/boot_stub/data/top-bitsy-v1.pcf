@@ -3,9 +3,6 @@ set_io -nowarn usb_dp 42
 set_io -nowarn usb_dn 38
 set_io -nowarn usb_pu 37
 
-# Clock
-set_io -nowarn clk_in 35
-
 # Button
 set_io -nowarn btn 2
 
