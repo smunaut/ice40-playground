@@ -32,21 +32,27 @@
  */
 
 `default_nettype none
+`include "boards.vh"
 
 module top (
 	// Button
 	input  wire btn,
 
 	// LED
-	output wire ledr,
-	output wire ledg,
+`ifdef HAS_LEDS
+	output wire [1:0] led,
+`endif
 
+`ifdef HAS_RGB
 	output wire [2:0] rgb,
+`endif
 
 	// USB
+`ifdef HAS_USB
 	output wire usb_dp,
 	output wire usb_dn,
 	output wire usb_pu
+`endif
 );
 
 	// FSM
@@ -81,10 +87,6 @@ module top (
 	reg  [23:0] timer;
 	wire timer_tick;
 	wire timer_rst;
-
-	// LED
-	reg [3:0] dim;
-	wire [2:0] rgb_pwm;
 
 	// Clock / Reset
 	wire clk;
@@ -207,42 +209,60 @@ module top (
 	// LED
 	// ---
 
-	assign rgb_pwm[0] = dim[3] & ~boot_now & boot_sel[0];
-	assign rgb_pwm[1] = dim[3] &  boot_now;
-	assign rgb_pwm[2] = dim[3] & ~boot_now & boot_sel[1];
+	// Normal LEDs
+`ifdef HAS_LEDS
+	assign led = ~boot_sel;
+`endif
 
-	assign ledr = ~boot_sel[0];
-	assign ledg = ~boot_sel[1];
+	// RGB LEDs
+`ifdef HAS_RGB
+		// Signals
+	wire [2:0] rgb_pwm;
+	wire       dim;
+		// Dimming
+`ifdef RGB_DIM
+	reg  [`RGB_DIM:0] dim_cnt;
 
-	// Dimming
 	always @(posedge clk)
-		if (rst)
-			dim <= 4'h0;
+		if (dim[`RGB_DIM])
+			dim_cnt <= 0;
 		else
-			dim <= dim[3] ? 4'h0 : (dim + 1);
+			dim_cnt <= dim_cnt + 1;
 
-	// Driver
+	assign dim = dim[`RGB_DIM];
+`else
+	assign dim = 1'b1;
+`endif
+
+		// Color
+	assign rgb_pwm[0] = dim & ~boot_now & boot_sel[0];
+	assign rgb_pwm[1] = dim & ~boot_now & boot_sel[1];
+	assign rgb_pwm[2] = dim &  boot_now;
+
+		// Driver
 	SB_RGBA_DRV #(
-		.CURRENT_MODE("0b1"),
-		.RGB0_CURRENT("0b000001"),
-		.RGB1_CURRENT("0b000001"),
-		.RGB2_CURRENT("0b000001")
+		.CURRENT_MODE(`RGB_CURRENT_MODE),
+		.RGB0_CURRENT(`RGB0_CURRENT),
+		.RGB1_CURRENT(`RGB1_CURRENT),
+		.RGB2_CURRENT(`RGB2_CURRENT)
 	) rgb_drv_I (
 		.RGBLEDEN(1'b1),
-		.RGB0PWM(rgb_pwm[0]),
-		.RGB1PWM(rgb_pwm[1]),
-		.RGB2PWM(rgb_pwm[2]),
+		.RGB0PWM(rgb_pwm[(`RGB_MAP >> 0) & 3]),
+		.RGB1PWM(rgb_pwm[(`RGB_MAP >> 4) & 3]),
+		.RGB2PWM(rgb_pwm[(`RGB_MAP >> 8) & 3]),
 		.CURREN(1'b1),
 		.RGB0(rgb[0]),
 		.RGB1(rgb[1]),
 		.RGB2(rgb[2])
 	);
+`endif
 
 
 	// Dummy USB
 	// ---------
 	// (to avoid pullups triggering detection)
 
+`ifdef HAS_USB
 	SB_IO #(
 		.PIN_TYPE(6'b101000),
 		.PULLUP(1'b0),
@@ -252,6 +272,7 @@ module top (
 		.OUTPUT_ENABLE(1'b0),
 		.D_OUT_0(1'b0)
 	);
+`endif
 
 
 	// Clock / Reset

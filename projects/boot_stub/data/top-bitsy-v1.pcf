@@ -11,5 +11,5 @@ set_io -nowarn rgb[0] 39
 set_io -nowarn rgb[1] 40
 set_io -nowarn rgb[2] 41
 
-set_io -nowarn ledr 25
-set_io -nowarn ledg 6
+set_io -nowarn led[0] 25
+set_io -nowarn led[1]  6
