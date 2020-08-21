@@ -53,6 +53,22 @@
 	`define RGB_DIM 3
 	`define RGB_MAP 12'h012		// 41=Red, 40=Green, 39=Blue
 //	`define RGB_MAP 12'h120		// 41=Green, 40=Blue, 39=Red (Hacked v1.0b)
+`elsif BOARD_ICEPICK
+	// iCEpick
+	`define HAS_RGB
+	`define HAS_USB
+	`define RGB_MAP 12'h012		// 41=Red, 40=Green, 39=Blue
+//	`define RGB_MAP 12'h210		// 41=Blue, 40=Green, 39=Red (Alt RGB LED)
+`elsif BOARD_ICE1USB
+	// icE1usb
+	`define HAS_USB
+	`define HAS_RGB
+	`define RGB_MAP 12'h012		// 41=Red, 40=Green, 39=Blue
+`elsif BOARD_E1TRACER
+	// osmocom E1 tracer
+	`define HAS_USB
+	`define HAS_RGB
+	`define RGB_MAP 12'h012		// 41=Red, 40=Green, 39=Blue
 `endif
 
 // Defaults
