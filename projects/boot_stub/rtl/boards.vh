@@ -55,8 +55,9 @@
 //	`define RGB_MAP 12'h120		// 41=Green, 40=Blue, 39=Red (Hacked v1.0b)
 `elsif BOARD_ICEPICK
 	// iCEpick
-	`define HAS_RGB
+	`define HAS_VIO
 	`define HAS_USB
+	`define HAS_RGB
 	`define RGB_MAP 12'h012		// 41=Red, 40=Green, 39=Blue
 //	`define RGB_MAP 12'h210		// 41=Blue, 40=Green, 39=Red (Alt RGB LED)
 `elsif BOARD_ICE1USB
@@ -66,6 +67,7 @@
 	`define RGB_MAP 12'h012		// 41=Red, 40=Green, 39=Blue
 `elsif BOARD_E1TRACER
 	// osmocom E1 tracer
+	`define HAS_VIO				// Compatibility with icepick proto
 	`define HAS_USB
 	`define HAS_RGB
 	`define RGB_MAP 12'h012		// 41=Red, 40=Green, 39=Blue

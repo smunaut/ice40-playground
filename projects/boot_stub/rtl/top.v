@@ -35,6 +35,11 @@
 `include "boards.vh"
 
 module top (
+	// Special features
+`ifdef HAS_VIO
+	output reg vio_pdm,
+`endif
+
 	// Button
 	input  wire btn,
 
@@ -272,6 +277,17 @@ module top (
 		.OUTPUT_ENABLE(1'b0),
 		.D_OUT_0(1'b0)
 	);
+`endif
+
+
+	// Special features
+	// ----------------
+
+	// Output a 50% duty cycle VIO which should be ~ 1.65v, enough to
+	// read the button state
+`ifdef HAS_VIO
+	always @(posedge clk)
+		vio_pdm <= ~vio_pdm;
 `endif
 
 

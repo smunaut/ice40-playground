@@ -10,3 +10,6 @@ set_io -nowarn -pullup yes btn 25
 set_io -nowarn rgb[0] 39
 set_io -nowarn rgb[1] 40
 set_io -nowarn rgb[2] 41
+
+# Vio
+set_io -nowarn vio_pdm 19
