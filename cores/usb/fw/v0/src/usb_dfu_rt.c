@@ -25,9 +25,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "usb.h"
-#include "usb_dfu_rt.h"
-#include "usb_dfu_proto.h"
+#include <no2usb/usb.h>
+#include <no2usb/usb_dfu_rt.h>
+#include <no2usb/usb_dfu_proto.h>
 
 
 #define DFU_POLL_MS		250

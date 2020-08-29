@@ -25,10 +25,11 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <no2usb/usb.h>
+#include <no2usb/usb_dfu.h>
+#include <no2usb/usb_dfu_proto.h>
+
 #include "spi.h"
-#include "usb.h"
-#include "usb_dfu.h"
-#include "usb_dfu_proto.h"
 
 
 #define DFU_VENDOR_PROTO

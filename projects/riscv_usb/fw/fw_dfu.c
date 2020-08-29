@@ -29,8 +29,8 @@
 #include "led.h"
 #include "mini-printf.h"
 #include "spi.h"
-#include "usb.h"
-#include "usb_dfu.h"
+#include <no2usb/usb.h>
+#include <no2usb/usb_dfu.h>
 #include "utils.h"
 
 

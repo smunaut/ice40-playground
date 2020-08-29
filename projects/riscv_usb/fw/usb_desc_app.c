@@ -21,8 +21,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include "usb_proto.h"
-#include "usb.h"
+#include <no2usb/usb_proto.h>
+#include <no2usb/usb.h>
 
 #define NULL ((void*)0)
 #define num_elem(a) (sizeof(a) / sizeof(a[0]))

@@ -25,7 +25,8 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "usb.h"
+#include <no2usb/usb.h>
+
 #include "spi.h"
 
 

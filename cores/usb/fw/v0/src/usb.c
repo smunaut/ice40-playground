@@ -25,10 +25,11 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <no2usb/usb_hw.h>
+#include <no2usb/usb_priv.h>
+#include <no2usb/usb.h>
+
 #include "console.h"
-#include "usb_hw.h"
-#include "usb_priv.h"
-#include "usb.h"
 
 
 /* Main stack state */
