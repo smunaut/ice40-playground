@@ -71,7 +71,8 @@ struct usb_ep_pair {
 #define USB_EP_TYPE_CTRL	0x0006
 #define USB_EP_TYPE_HALTED	0x0001
 #define USB_EP_TYPE_IS_BCI(x)	(((x) & 6) != 0)
-#define USB_EP_TYPE(x)		((x) & 6)
+#define USB_EP_TYPE(x)		((x) & 7)
+#define USB_EP_TYPE_MSK		0x0007
 
 #define USB_EP_DT_BIT		0x0080
 #define USB_EP_BD_IDX		0x0040

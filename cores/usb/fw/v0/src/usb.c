@@ -275,7 +275,7 @@ usb_debug_print_ep(int ep, int dir)
 {
 	volatile struct usb_ep *ep_regs = dir ? &usb_ep_regs[ep].in : &usb_ep_regs[ep].out;
 
-	printf("EP%d %s", ep, dir ? "IN" : "OUT");
+	printf("EP%d %s\n", ep, dir ? "IN" : "OUT");
 	printf("\tS     %04x\n", ep_regs->status);
 	printf("\tBD0.0 %04x\n", ep_regs->bd[0].csr);
 	printf("\tBD0.1 %04x\n", ep_regs->bd[0].ptr);
@@ -318,6 +318,14 @@ usb_debug_print(void)
 /* Internal API */
 /* ------------ */
 
+static volatile struct usb_ep *
+_usb_hw_get_ep(uint8_t ep_addr)
+{
+	return (ep_addr & 0x80) ?
+		&usb_ep_regs[ep_addr & 0xf].in :
+		&usb_ep_regs[ep_addr & 0xf].out;
+}
+
 static void
 _usb_hw_reset_ep(volatile struct usb_ep *ep)
 {
@@ -347,6 +355,10 @@ usb_bus_reset(void)
 {
 	/* Reset hw */
 	_usb_hw_reset(true);
+
+	/* Reset memory alloc */
+	g_usb.ep_cfg.mem[0] = 0x80;	// 2 * 64b for EP0 OUT/SETUP
+	g_usb.ep_cfg.mem[1] = 0x40;	// 1 * 64b for EP0 IN
 
 	/* Reset EP0 */
 	usb_ep0_reset();
@@ -557,4 +569,114 @@ usb_ep_resume(uint8_t ep)
 		return false;
 	epr->status = s & ~(USB_EP_TYPE_HALTED | USB_EP_DT_BIT); /* DT bit clear needed by CLEAR_FEATURE */
 	return true;
+}
+
+
+
+static uint32_t
+_usb_alloc_buf(unsigned int size, bool in)
+{
+	uint32_t v = g_usb.ep_cfg.mem[in];
+	g_usb.ep_cfg.mem[in] += size;
+	return v;
+}
+
+static bool
+_usb_ep_conf(uint8_t ep_addr, const struct usb_ep_desc *ep)
+{
+	volatile struct usb_ep *ep_regs;
+	uint32_t csr, ml;
+
+	ep_regs = _usb_hw_get_ep(ep_addr);
+
+	csr = ep_regs->status;
+	csr &= USB_EP_BD_DUAL;
+
+	ml = 0;
+
+	if (ep) {
+		const uint8_t types[4] = {
+			USB_EP_TYPE_CTRL,
+			USB_EP_TYPE_ISOC,
+			USB_EP_TYPE_BULK,
+			USB_EP_TYPE_INT,
+		};
+		csr |= types[ep->bmAttributes & 3];
+		ml   = ep->wMaxPacketSize;
+	}
+
+	ep_regs->status = csr;
+	ep_regs->_rsvd[3] = ml;
+	ep_regs->bd[0].csr = 0;
+	ep_regs->bd[1].csr = 0;
+
+	return true;
+}
+
+bool
+usb_ep_reconf(const struct usb_intf_desc *intf, uint8_t ep_addr)
+{
+	const struct usb_conf_desc *conf = g_usb.conf;
+	const struct usb_ep_desc *ep;
+	const void *eod;
+
+	eod = ((uint8_t*)intf) + conf->wTotalLength;
+	ep = (void*) intf;
+
+	for (int i=0; i<intf->bNumEndpoints; i++) {
+		ep = usb_desc_find(usb_desc_next(ep), eod, USB_DT_EP);
+		if (ep->bEndpointAddress == ep_addr)
+			return _usb_ep_conf(ep_addr, ep);
+	}
+
+	return false;
+}
+
+bool
+usb_ep_boot(const struct usb_intf_desc *intf, uint8_t ep_addr, bool dual_bd)
+{
+	const struct usb_conf_desc *conf = g_usb.conf;
+	const struct usb_intf_desc *intf_alt;
+	const struct usb_ep_desc *ep, *ep_def = NULL;
+	const void *eod;
+	volatile struct usb_ep *ep_regs;
+	uint16_t wMaxPacketSize = 0;
+
+	/* Scan all alt config to find the max packet size for that EP */
+	eod = ((uint8_t*)intf) + conf->wTotalLength;
+
+	for (intf_alt=intf;
+		(intf_alt != NULL) && (intf_alt->bInterfaceNumber == intf->bInterfaceNumber);
+		intf_alt = usb_desc_find(usb_desc_next(intf_alt), eod, USB_DT_INTF))
+	{
+		ep = (void*) intf_alt;
+		for (int i=0; i<intf_alt->bNumEndpoints; i++) {
+			ep = usb_desc_find(usb_desc_next(ep), eod, USB_DT_EP);
+			if (ep->bEndpointAddress != ep_addr)
+				continue;
+			if (ep->wMaxPacketSize > wMaxPacketSize)
+				wMaxPacketSize = ep->wMaxPacketSize;
+			if (intf_alt->bAlternateSetting == 0)
+				ep_def = ep;
+			break;
+		}
+	}
+
+	if (!wMaxPacketSize)
+		return false;
+
+	/* Allocate and setup BDs */
+	ep_regs = _usb_hw_get_ep(ep_addr);
+
+	ep_regs->status = dual_bd ? USB_EP_BD_DUAL : 0;
+	ep_regs->_rsvd[2] = wMaxPacketSize;
+
+	for (int i=0; i<(dual_bd?2:1); i++) {
+		ep_regs->bd[i].csr = 0x0000;
+		ep_regs->bd[i].ptr = _usb_alloc_buf(wMaxPacketSize, (ep_addr & 0x80) ? true : false);
+		printf("%02x %d %x\n",ep_addr, i, ep_regs->bd[i].ptr);
+	}
+
+	/* Configure with the altsetting 0 config */
+	return _usb_ep_conf(ep_addr, ep_def);
 }
