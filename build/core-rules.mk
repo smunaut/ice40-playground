@@ -28,7 +28,8 @@ $(foreach core_dir, $(wildcard $(ROOT)/cores/*), $(eval include $(core_dir)/core
 
 # Resolve dependency tree for project and collect sources
 $(BUILD_TMP)/core-deps.mk: Makefile $(BUILD_TMP) $(BUILD_TMP)/deps-core-$(THIS_CORE)
-	@echo "include $(BUILD_TMP)/deps-core-*" > $@
+	@echo "SELF_DIR := \$$(dir \$$(lastword \$$(MAKEFILE_LIST)))" > $@
+	@echo "include \$$(SELF_DIR)deps-core-*" >> $@
 	@echo "CORE_ALL_DEPS := \$$(DEPS_SOLVE_TMP)" >> $@
 	@echo "CORE_ALL_RTL_SRCS := \$$(RTL_SRCS_SOLVE_TMP)" >> $@
 	@echo "CORE_ALL_SIM_SRCS := \$$(SIM_SRCS_SOLVE_TMP)" >> $@
