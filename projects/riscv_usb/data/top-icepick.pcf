@@ -1,0 +1,65 @@
+# IOs
+set_io -nowarn io_d_a[5] 43
+set_io -nowarn io_d_a[4] 42
+set_io -nowarn io_d_a[3] 38
+set_io -nowarn io_d_a[2] 34
+set_io -nowarn io_d_a[1] 32
+set_io -nowarn io_d_a[0] 31
+
+set_io -nowarn io_p_a[5] 37
+set_io -nowarn io_p_a[4] 36
+set_io -nowarn io_p_a[3] 35
+set_io -nowarn io_p_a[2] 28
+set_io -nowarn io_p_a[1] 27
+set_io -nowarn io_p_a[0] 26
+
+set_io -nowarn io_d_b[3] 47
+set_io -nowarn io_d_b[2] 46
+set_io -nowarn io_d_b[1] 45
+set_io -nowarn io_d_b[0] 44
+
+set_io -nowarn io_p_b[3] 4
+set_io -nowarn io_p_b[2] 3
+set_io -nowarn io_p_b[1] 2
+set_io -nowarn io_p_b[0] 48
+
+# Sense
+set_io -nowarn sense_ctrl 11
+set_io -nowarn sense_hi 12
+set_io -nowarn sense_lo 21
+
+set_io -nowarn sense_ena_n 13
+
+set_io -nowarn -pullup yes sense_mux[3] 18
+set_io -nowarn -pullup yes sense_mux[2] 14
+set_io -nowarn -pullup yes sense_mux[1] 17
+set_io -nowarn -pullup yes sense_mux[0] 15
+
+# Vio
+set_io -nowarn vio_pdm 19
+
+# USB
+set_io -nowarn usb_dp 10
+set_io -nowarn usb_dn 9
+set_io -nowarn usb_pu 6
+
+# UART (used for DFU debug)
+set_io -nowarn -pullup yes uart_rx 45
+set_io -nowarn uart_tx 44
+
+# Clock
+set_io -nowarn clk_in 20
+
+# Button
+set_io -nowarn -pullup yes btn 25
+
+# SPI
+set_io -nowarn -pullup yes spi_mosi 14
+set_io -nowarn -pullup yes spi_miso 17
+set_io -nowarn -pullup yes spi_clk 15
+set_io -nowarn -pullup yes spi_flash_cs_n 16
+
+# Leds
+set_io -nowarn rgb[0] 39
+set_io -nowarn rgb[1] 40
+set_io -nowarn rgb[2] 41

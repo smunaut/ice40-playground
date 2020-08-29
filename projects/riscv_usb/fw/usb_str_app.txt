@@ -1,6 +1,6 @@
 0000000000000000
 osmocom
-iCE40 USB Demo
+!{"bitsy-v0": "iCEBreaker bitsy v0.x", "bitsy-v1": "iCEBreaker bitsy v1.x", "e1tracer": "E1 tracer", "ice1usb": "icE1usb", "icebreaker": "iCEBreaker", "icepick": "iCEpick", "": "iCE40 USB Demo"}
 Main
 Console (control)
 Console (data)

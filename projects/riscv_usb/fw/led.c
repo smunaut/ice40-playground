@@ -103,14 +103,48 @@ void
 led_color(uint8_t r, uint8_t g, uint8_t b)
 {
 #if defined(BOARD_ICEBREAKER)
+/*	// iCEBreaker v1.0b tnt
 	led_regs->ip.pwrr = r;
 	led_regs->ip.pwrg = b;
 	led_regs->ip.pwrb = g;
-#elif defined(BOARD_BITSY_V0) || defined(BOARD_BITSY_V1)
+*/
+	// iCEBreaker v1.0c+
+	led_regs->ip.pwrr = b;
+	led_regs->ip.pwrg = g;
+	led_regs->ip.pwrb = r;
+#elif defined(BOARD_BITSY_V0)
+	// iCEBreaker bitsy v0 (RGB led 'hacked on')
 	led_regs->ip.pwrr = g;
 	led_regs->ip.pwrg = r;
 	led_regs->ip.pwrb = b;
+#elif defined(BOARD_BITSY_V1)
+	// iCEBreaker bitsy v1 (RGB led 'hacked on')
+	led_regs->ip.pwrr = r;
+	led_regs->ip.pwrg = g;
+	led_regs->ip.pwrb = b;
+#elif defined(BOARD_ICE1USB)
+	// icE1usb
+	led_regs->ip.pwrr = b;
+	led_regs->ip.pwrg = g;
+	led_regs->ip.pwrb = r;
+#elif defined(BOARD_ICEPICK)
+	// iCEpick with UHD-1110 LED
+	led_regs->ip.pwrr = b;
+	led_regs->ip.pwrg = g;
+	led_regs->ip.pwrb = r;
+
+/*	// iCEpick with alternate LED
+	led_regs->ip.pwrr = g;
+	led_regs->ip.pwrg = r;
+	led_regs->ip.pwrb = b;
+*/
+#elif defined(BOARD_E1TRACER)
+	// E1 tracer
+	led_regs->ip.pwrr = b;
+	led_regs->ip.pwrg = g;
+	led_regs->ip.pwrb = r;
 #else
+	// Default / Unknown
 	led_regs->ip.pwrr = r;
 	led_regs->ip.pwrg = g;
 	led_regs->ip.pwrb = b;

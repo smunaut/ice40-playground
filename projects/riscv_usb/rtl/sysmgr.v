@@ -32,6 +32,7 @@
  */
 
 `default_nettype none
+`include "boards.vh"
 
 module sysmgr (
 	input  wire clk_in,
@@ -51,11 +52,15 @@ module sysmgr (
 	reg [3:0] rst_cnt;
 
 	// PLL instance
+`ifdef PLL_CORE
+	SB_PLL40_2F_CORE #(
+`else
 	SB_PLL40_2F_PAD #(
-		.DIVR(4'b0000),
-		.DIVF(7'b0111111),
-		.DIVQ(3'b100),
-		.FILTER_RANGE(3'b001),
+`endif
+		.DIVR(`PLL_DIVR),
+		.DIVF(`PLL_DIVF),
+		.DIVQ(`PLL_DIVQ),
+		.FILTER_RANGE(`PLL_FILTER_RANGE),
 		.FEEDBACK_PATH("SIMPLE"),
 		.DELAY_ADJUSTMENT_MODE_FEEDBACK("FIXED"),
 		.FDA_FEEDBACK(4'b0000),
@@ -65,7 +70,11 @@ module sysmgr (
 		.ENABLE_ICEGATE_PORTA(1'b0),
 		.ENABLE_ICEGATE_PORTB(1'b0)
 	) pll_I (
+`ifdef PLL_CORE
+		.REFERENCECLK(clk_in),
+`else
 		.PACKAGEPIN(clk_in),
+`endif
 		.PLLOUTCOREA(),
 		.PLLOUTGLOBALA(clk_48m_i),
 		.PLLOUTCOREB(),

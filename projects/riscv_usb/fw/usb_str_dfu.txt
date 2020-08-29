@@ -1,6 +1,6 @@
 0000000000000000
 osmocom
-!{"bitsy": "iCEBreaker-bitsy (DFU)", "": "iCE40 USB Device (DFU)"}
+!{"bitsy-v0": "iCEBreaker bitsy v0.x (DFU)", "bitsy-v1": "iCEBreaker bitsy v1.x (DFU)", "e1tracer": "E1 tracer (DFU)", "ice1usb": "icE1usb (DFU)", "icebreaker": "iCEBreaker (DFU)", "icepick": "iCEpick (DFU)", "": "iCE40 USB Device (DFU)"}
 DFU
 iCE40 bitstream
 RISC-V firmware
