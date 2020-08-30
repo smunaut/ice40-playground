@@ -1,8 +1,8 @@
-CORE := usb
+CORE := no2usb
 
-DEPS_usb := misc
+DEPS_no2usb := misc
 
-RTL_SRCS_usb := $(addprefix rtl/, \
+RTL_SRCS_no2usb := $(addprefix rtl/, \
 	usb.v \
 	usb_crc.v \
 	usb_ep_buf.v \
@@ -15,20 +15,20 @@ RTL_SRCS_usb := $(addprefix rtl/, \
 	usb_tx_pkt.v \
 )
 
-PREREQ_usb = \
-	$(CORE_usb_DIR)/rtl/usb_defs.vh \
+PREREQ_no2usb = \
+	$(CORE_no2usb_DIR)/rtl/usb_defs.vh \
 	$(BUILD_TMP)/usb_trans_mc.hex \
 	$(BUILD_TMP)/usb_ep_status.hex
 
-TESTBENCHES_usb := \
+TESTBENCHES_no2usb := \
 	usb_ep_buf_tb \
 	usb_tb \
 	usb_tx_tb
 
 include $(NO2BUILD_DIR)/core-magic.mk
 
-$(BUILD_TMP)/usb_trans_mc.hex: $(CORE_usb_DIR)/utils/microcode.py
-	$(CORE_usb_DIR)/utils/microcode.py > $@
+$(BUILD_TMP)/usb_trans_mc.hex: $(CORE_no2usb_DIR)/utils/microcode.py
+	$(CORE_no2usb_DIR)/utils/microcode.py > $@
 
-$(BUILD_TMP)/usb_ep_status.hex: $(CORE_usb_DIR)/data/usb_ep_status.hex
+$(BUILD_TMP)/usb_ep_status.hex: $(CORE_no2usb_DIR)/data/usb_ep_status.hex
 	cp -a $< $@
