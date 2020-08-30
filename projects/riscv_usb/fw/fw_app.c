@@ -36,6 +36,7 @@
 #include "usb.h"
 #include "usb_dfu_rt.h"
 #include "utils.h"
+#include "usb_e1.h"
 
 
 extern const struct usb_stack_descriptors app_stack_desc;
