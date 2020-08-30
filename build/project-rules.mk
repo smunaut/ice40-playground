@@ -23,8 +23,14 @@ ICE40_LIBS ?= $(shell yosys-config --datdir/ice40/cells_sim.v)
 # Must be first rule and call it 'all' by convention
 all: synth
 
-# Root directory
-ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
+# Base directories
+ifeq ($(origin NO2BUILD_DIR), undefined)
+NO2BUILD_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+endif
+
+ifeq ($(origin NO2CORES_DIR), undefined)
+NO2CORES_DIR := $(abspath $(NO2BUILD_DIR)/../cores)
+endif
 
 # Temporary build-directory
 BUILD_TMP := $(abspath build-tmp)
@@ -33,7 +39,7 @@ $(BUILD_TMP):
 	mkdir -p $(BUILD_TMP)
 
 # Discover all cores
-$(foreach core_dir, $(wildcard $(ROOT)/cores/*), $(eval include $(core_dir)/core.mk))
+$(foreach core_def, $(wildcard $(NO2CORES_DIR)/*/no2core.mk), $(eval include $(core_def)))
 
 # Resolve dependency tree for project and collect sources
 $(BUILD_TMP)/proj-deps.mk: Makefile $(BUILD_TMP) $(addprefix $(BUILD_TMP)/deps-core-,$(PROJ_DEPS))
@@ -62,8 +68,8 @@ PROJ_ALL_SIM_SRCS += $(PROJ_SIM_SRCS)
 PROJ_ALL_PREREQ += $(PROJ_PREREQ)
 
 # Include path
-PROJ_SYNTH_INCLUDES := -I$(abspath rtl/) $(addsuffix /rtl/, $(addprefix -I$(ROOT)/cores/, $(PROJ_ALL_DEPS)))
-PROJ_SIM_INCLUDES   := -I$(abspath sim/) $(addsuffix /sim/, $(addprefix -I$(ROOT)/cores/, $(PROJ_ALL_DEPS)))
+PROJ_SYNTH_INCLUDES := -I$(abspath rtl/) $(addsuffix /rtl/, $(addprefix -I$(NO2CORES_DIR)/, $(PROJ_ALL_DEPS)))
+PROJ_SIM_INCLUDES   := -I$(abspath sim/) $(addsuffix /sim/, $(addprefix -I$(NO2CORES_DIR)/, $(PROJ_ALL_DEPS)))
 
 
 # Synthesis & Place-n-route rules

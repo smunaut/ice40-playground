@@ -25,7 +25,7 @@ TESTBENCHES_hub75 := \
 PREREQ_hub75 := \
 	$(BUILD_TMP)/gamma_table.hex
 
-include $(ROOT)/build/core-magic.mk
+include $(NO2BUILD_DIR)/core-magic.mk
 
 $(BUILD_TMP)/gamma_table.hex: $(CORE_hub75_DIR)/sw/mkgamma.py
 	$(CORE_hub75_DIR)/sw/mkgamma.py > $@

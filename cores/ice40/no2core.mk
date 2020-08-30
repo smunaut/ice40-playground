@@ -14,4 +14,4 @@ TESTBENCHES_ice40 := \
 	ice40_ebr_tb \
 	$(NULL)
 
-include $(ROOT)/build/core-magic.mk
+include $(NO2BUILD_DIR)/core-magic.mk

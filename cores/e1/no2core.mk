@@ -23,4 +23,4 @@ TESTBENCHES_e1 := \
 	e1_tx_framer_tb \
 	hdb3_tb \
 
-include $(ROOT)/build/core-magic.mk
+include $(NO2BUILD_DIR)/core-magic.mk

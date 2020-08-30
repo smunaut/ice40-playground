@@ -15,8 +15,8 @@ RTL_SRCS_usb := $(addprefix rtl/, \
 	usb_tx_pkt.v \
 )
 
-PREREQ_usb := \
-	$(ROOT)/cores/usb/rtl/usb_defs.vh \
+PREREQ_usb = \
+	$(CORE_usb_DIR)/rtl/usb_defs.vh \
 	$(BUILD_TMP)/usb_trans_mc.hex \
 	$(BUILD_TMP)/usb_ep_status.hex
 
@@ -25,10 +25,10 @@ TESTBENCHES_usb := \
 	usb_tb \
 	usb_tx_tb
 
-$(BUILD_TMP)/usb_trans_mc.hex: $(ROOT)/cores/usb/utils/microcode.py
-	$(ROOT)/cores/usb/utils/microcode.py > $@
+include $(NO2BUILD_DIR)/core-magic.mk
 
-$(BUILD_TMP)/usb_ep_status.hex: $(ROOT)/cores/usb/data/usb_ep_status.hex
+$(BUILD_TMP)/usb_trans_mc.hex: $(CORE_usb_DIR)/utils/microcode.py
+	$(CORE_usb_DIR)/utils/microcode.py > $@
+
+$(BUILD_TMP)/usb_ep_status.hex: $(CORE_usb_DIR)/data/usb_ep_status.hex
 	cp -a $< $@
-
-include $(ROOT)/build/core-magic.mk

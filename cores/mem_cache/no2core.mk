@@ -19,4 +19,4 @@ TESTBENCHES_mem_cache := \
 	mem_sim_tb \
 	$(NULL)
 
-include $(ROOT)/build/core-magic.mk
+include $(NO2BUILD_DIR)/core-magic.mk

@@ -10,4 +10,4 @@ TESTBENCHES_hyperram := \
 	hram_top_tb \
 	$(NULL)
 
-include $(ROOT)/build/core-magic.mk
+include $(NO2BUILD_DIR)/core-magic.mk

@@ -11,4 +11,4 @@ TESTBENCHES_spi_slave := \
 	spi_fast_core_tb \
 	spi_tb
 
-include $(ROOT)/build/core-magic.mk
+include $(NO2BUILD_DIR)/core-magic.mk

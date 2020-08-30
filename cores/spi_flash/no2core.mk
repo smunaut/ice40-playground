@@ -7,4 +7,4 @@ RTL_SRCS_spi_flash := $(addprefix rtl/, \
 TESTBENCHES_spi_flash := \
 	spi_flash_reader_tb
 
-include $(ROOT)/build/core-magic.mk
+include $(NO2BUILD_DIR)/core-magic.mk

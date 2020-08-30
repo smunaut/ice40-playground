@@ -11,4 +11,4 @@ RTL_SRCS_video := $(addprefix rtl/, \
 	vid_tgen.v \
 )
 
-include $(ROOT)/build/core-magic.mk
+include $(NO2BUILD_DIR)/core-magic.mk
