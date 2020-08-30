@@ -1,6 +1,6 @@
 CORE := hub75
 
-DEPS_hub75 := misc
+DEPS_hub75 := no2misc
 
 RTL_SRCS_hub75 := $(addprefix rtl/, \
 	hub75_bcm.v \

@@ -1,6 +1,6 @@
-CORE := misc
+CORE := no2misc
 
-RTL_SRCS_misc = $(addprefix rtl/, \
+RTL_SRCS_no2misc = $(addprefix rtl/, \
 	delay.v \
 	fifo_sync_ram.v \
 	fifo_sync_shift.v \
@@ -16,7 +16,7 @@ RTL_SRCS_misc = $(addprefix rtl/, \
 	xclk_wb.v \
 )
 
-TESTBENCHES_misc := \
+TESTBENCHES_no2misc := \
 	fifo_tb \
 	pdm_tb \
 	uart_tb \

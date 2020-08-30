@@ -1,7 +1,7 @@
 # Project config
 PROJ = boot_stub
 
-PROJ_DEPS := misc
+PROJ_DEPS := no2misc
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 )
 PROJ_TOP_SRC := rtl/top.v

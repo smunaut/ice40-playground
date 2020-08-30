@@ -1,6 +1,6 @@
 CORE := mem_cache
 
-DEPS_mem_cache := misc ice40
+DEPS_mem_cache := no2misc ice40
 
 RTL_SRCS_mem_cache := $(addprefix rtl/, \
 	mc_bus_wb.v \

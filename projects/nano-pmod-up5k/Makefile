@@ -1,7 +1,7 @@
 # Project config
 PROJ = nano-pmod-up5k
 
-PROJ_DEPS := misc spi_slave
+PROJ_DEPS := no2misc spi_slave
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 	nano_dsi_clk.v \
 	nano_dsi_data.v \

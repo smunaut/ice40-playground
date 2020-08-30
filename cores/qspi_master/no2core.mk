@@ -1,6 +1,6 @@
 CORE := qspi_master
 
-DEPS_qspi_master = misc ice40
+DEPS_qspi_master = no2misc ice40
 
 RTL_SRCS_qspi_master := $(addprefix rtl/, \
 	qspi_master.v \

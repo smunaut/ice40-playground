@@ -1,6 +1,6 @@
 CORE := video
 
-DEPS_video := misc
+DEPS_video := no2misc
 
 RTL_SRCS_video := $(addprefix rtl/, \
 	hdmi_phy_2x.v \
