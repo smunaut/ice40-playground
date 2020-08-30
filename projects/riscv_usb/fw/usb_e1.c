@@ -164,32 +164,6 @@ refill:
 	}
 }
 
-static const struct usb_intf_desc *
-_find_intf(const struct usb_conf_desc *conf, uint8_t idx)
-{
-	const struct usb_intf_desc *intf = NULL;
-	const void *sod, *eod;
-
-	if (!conf)
-		return NULL;
-
-	sod = conf;
-	eod = sod + conf->wTotalLength;
-
-	while (1) {
-		sod = usb_desc_find(sod, eod, USB_DT_INTF);
-		if (!sod)
-			break;
-
-		intf = (void*)sod;
-		if (intf->bInterfaceNumber == idx)
-			return intf;
-
-		sod = usb_desc_next(sod);
-	}
-
-	return NULL;
-}
 enum usb_fnd_resp
 _e1_set_conf(const struct usb_conf_desc *conf)
 {
@@ -199,7 +173,7 @@ _e1_set_conf(const struct usb_conf_desc *conf)
 	if (!conf)
 		return USB_FND_SUCCESS;
 
-	intf = _find_intf(conf, 0);
+	intf = usb_desc_find_intf(conf, 0, 0, NULL);
 	if (!intf)
 		return USB_FND_ERROR;
 
