@@ -61,12 +61,12 @@ module pdm_tb;
 	// DUT
 	pdm #(
 		.WIDTH(12),
-		.PHY("ICE40"),
-		.DITHER("ON")
+		.DITHER("ON"),
+		.PHY("ICE40")
 	) dut_I (
-		.in({data[7:4],data}),
 		.pdm(pdm),
-		.oe(1'b1),
+		.cfg_val({data[7:4],data}),
+		.cfg_oe(1'b1),
 		.clk(clk),
 		.rst(rst)
 	);
