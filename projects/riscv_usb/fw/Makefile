@@ -9,7 +9,7 @@ BOARD_DEFINE=BOARD_$(shell echo $(BOARD) | tr a-z\- A-Z_)
 CFLAGS=-Wall -Os -march=rv32i -mabi=ilp32 -ffreestanding -flto -nostartfiles -fomit-frame-pointer -Wl,--gc-section --specs=nano.specs -D$(BOARD_DEFINE) -I.
 
 NO2USB_FW_VERSION=0
-include ../../../cores/usb/fw/fw.mk
+include ../../../cores/no2usb/fw/fw.mk
 CFLAGS += $(INC_no2usb)
 
 HEADERS_common=\
