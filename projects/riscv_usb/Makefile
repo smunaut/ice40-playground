@@ -1,7 +1,7 @@
 # Project config
 PROJ = riscv_usb
 
-PROJ_DEPS := no2usb no2misc ice40
+PROJ_DEPS := no2usb no2misc no2ice40
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 	bridge.v \
 	dfu_helper.v \
