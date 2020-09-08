@@ -10,3 +10,6 @@
 [submodule "cores/no2ice40"]
 	path = cores/no2ice40
 	url = https://github.com/no2fpga/no2ice40.git
+[submodule "cores/no2hub75"]
+	path = cores/no2hub75
+	url = https://github.com/no2fpga/no2hub75.git
