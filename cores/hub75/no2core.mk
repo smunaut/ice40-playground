@@ -1,8 +1,8 @@
-CORE := hub75
+CORE := no2hub75
 
-DEPS_hub75 := no2misc
+DEPS_no2hub75 := no2misc
 
-RTL_SRCS_hub75 := $(addprefix rtl/, \
+RTL_SRCS_no2hub75 := $(addprefix rtl/, \
 	hub75_bcm.v \
 	hub75_blanking.v \
 	hub75_colormap.v \
@@ -19,13 +19,13 @@ RTL_SRCS_hub75 := $(addprefix rtl/, \
 	hub75_top.v \
 )
 
-TESTBENCHES_hub75 := \
+TESTBENCHES_no2hub75 := \
 	hub75_init_inject_tb \
 
-PREREQ_hub75 := \
+PREREQ_no2hub75 := \
 	$(BUILD_TMP)/gamma_table.hex
 
 include $(NO2BUILD_DIR)/core-magic.mk
 
-$(BUILD_TMP)/gamma_table.hex: $(CORE_hub75_DIR)/sw/mkgamma.py
-	$(CORE_hub75_DIR)/sw/mkgamma.py > $@
+$(BUILD_TMP)/gamma_table.hex: $(CORE_no2hub75_DIR)/sw/mkgamma.py
+	$(CORE_no2hub75_DIR)/sw/mkgamma.py > $@
