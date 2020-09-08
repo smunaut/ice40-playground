@@ -7,3 +7,6 @@
 [submodule "cores/no2usb"]
 	path = cores/no2usb
 	url = https://github.com/no2fpga/no2usb.git
+[submodule "cores/no2ice40"]
+	path = cores/no2ice40
+	url = https://github.com/no2fpga/no2ice40.git
