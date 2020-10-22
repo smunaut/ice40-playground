@@ -44,16 +44,13 @@ module top (
 	inout  wire spi_ram_cs_n,
 `endif
 
-
 	// USB
 	inout  wire usb_dp,
 	inout  wire usb_dn,
 	output wire usb_pu,
 
 	// Debug UART
-`ifndef BOARD_E1TRACER
 	input  wire uart_rx,
-`endif
 	output wire uart_tx,
 
 	// Button
@@ -61,11 +58,6 @@ module top (
 
 	// LED
 	output wire [2:0] rgb,
-
-`ifdef HAS_VIO
-	// Vio
-	output wire vio_pdm,
-`endif
 
 	// Clock
 	input  wire clk_in
@@ -262,10 +254,6 @@ module top (
 
 	// UART
 	// ----
-
-`ifdef BOARD_E1TRACER
-	wire uart_rx = 1'b1;
-`endif
 
 	uart_wb #(
 		.DIV_WIDTH(12),
@@ -529,14 +517,6 @@ module top (
 		.clk(clk_24m),
 		.rst(rst)
 	);
-
-
-	// Vio
-	// ----
-
-`ifdef HAS_VIO
-	assign vio_pdm = 1'b1;
-`endif
 
 
 	// Clock / Reset

@@ -40,23 +40,6 @@
 `elsif BOARD_ICEBREAKER
 	// 1bitsquared iCEbreaker
 	`define HAS_PSRAM
-`elsif BOARD_ICEPICK
-	// iCEpick
-	`define PLL_CORE
-	`define HAS_VIO
-`elsif BOARD_ICE1USB
-	// icE1usb
-		// 30.72M input, 48M output
-	`define PLL_CORE
-	`define PLL_CUSTOM
-	`define PLL_DIVR 4'b0000
-	`define PLL_DIVF 7'b0011000
-	`define PLL_DIVQ 3'b100
-	`define PLL_FILTER_RANGE 3'b011
-`elsif BOARD_E1TRACER
-	// osmocom E1 tracer
-	`define PLL_CORE
-	`define HAS_VIO
 `endif
 
 
