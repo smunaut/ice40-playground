@@ -62,7 +62,7 @@ prog: fw_app.bin
 
 dfuprog: fw_app.bin
 ifeq ($(DFU_SERIAL),)
-	@echo "[!] DFU_SERIAL not defined"
+	$(DFU_UTIL) -R -a 1 -D $<
 else
 	$(DFU_UTIL) -R -S $(DFU_SERIAL) -a 1 -D $<
 endif
