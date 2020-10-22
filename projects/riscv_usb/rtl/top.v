@@ -519,11 +519,7 @@ module top (
 	dfu_helper #(
 		.TIMER_WIDTH(24),
 		.BTN_MODE(3),
-`ifdef DFU
-		.DFU_MODE(1)
-`else
 		.DFU_MODE(0)
-`endif
 	) dfu_helper_I (
 		.boot_now(boot_now),
 		.boot_sel(boot_sel),
