@@ -63,24 +63,6 @@ module top (
 	wire             wb_we;
 	wire [WB_N -1:0] wb_ack;
 
-	// USB Core
-		// EP Buffer
-	wire [ 8:0] ep_tx_addr_0;
-	wire [31:0] ep_tx_data_0;
-	wire ep_tx_we_0;
-
-	wire [ 8:0] ep_rx_addr_0;
-	wire [31:0] ep_rx_data_1;
-	wire ep_rx_re_0;
-
-		// Bus interface
-	wire [11:0] ub_addr;
-	wire [15:0] ub_wdata;
-	wire [15:0] ub_rdata;
-	wire ub_cyc;
-	wire ub_we;
-	wire ub_ack;
-
 	// WarmBoot
 	reg boot_now;
 	reg [1:0] boot_sel;
@@ -187,73 +169,27 @@ module top (
 	);
 
 
-	// USB Core
-	// --------
+	// USB [4 & 5]
+	// ---
 
-	// Core
-	usb #(
-		.EPDW(32)
+	soc_usb #(
+		.DW(WB_DW)
 	) usb_I (
-		.pad_dp(usb_dp),
-		.pad_dn(usb_dn),
-		.pad_pu(usb_pu),
-		.ep_tx_addr_0(ep_tx_addr_0),
-		.ep_tx_data_0(ep_tx_data_0),
-		.ep_tx_we_0(ep_tx_we_0),
-		.ep_rx_addr_0(ep_rx_addr_0),
-		.ep_rx_data_1(ep_rx_data_1),
-		.ep_rx_re_0(ep_rx_re_0),
-		.ep_clk(clk_24m),
-		.wb_addr(ub_addr),
-		.wb_rdata(ub_rdata),
-		.wb_wdata(ub_wdata),
-		.wb_we(ub_we),
-		.wb_cyc(ub_cyc),
-		.wb_ack(ub_ack),
-		.clk(clk_48m),
-		.rst(rst)
+		.usb_dp   (usb_dp),
+		.usb_dn   (usb_dn),
+		.usb_pu   (usb_pu),
+		.wb_addr  (wb_addr[11:0]),
+		.wb_rdata (wb_rdata[4]),
+		.wb_wdata (wb_wdata),
+		.wb_we    (wb_we),
+		.wb_cyc   (wb_cyc[5:4]),
+		.wb_ack   (wb_ack[5:4]),
+		.clk_sys  (clk_24m),
+		.clk_48m  (clk_48m),
+		.rst      (rst)
 	);
 
-	// Cross clock bridge
-	xclk_wb #(
-		.DW(16),
-		.AW(12)
-	)  wb_48m_xclk_I (
-		.s_addr(wb_addr[11:0]),
-		.s_wdata(wb_wdata[15:0]),
-		.s_rdata(wb_rdata[4][15:0]),
-		.s_cyc(wb_cyc[4]),
-		.s_ack(wb_ack[4]),
-		.s_we(wb_we),
-		.s_clk(clk_24m),
-		.m_addr(ub_addr),
-		.m_wdata(ub_wdata),
-		.m_rdata(ub_rdata),
-		.m_cyc(ub_cyc),
-		.m_ack(ub_ack),
-		.m_we(ub_we),
-		.m_clk(clk_48m),
-		.rst(rst)
-	);
-
-	assign wb_rdata[4][31:16] = 16'h0000;
-
-	// EP buffer interface
-	reg wb_ack_ep;
-
-	always @(posedge clk_24m)
-		wb_ack_ep <= wb_cyc[5] & ~wb_ack_ep;
-
-	assign wb_ack[5] = wb_ack_ep;
-
-	assign ep_tx_addr_0 = wb_addr[8:0];
-	assign ep_tx_data_0 = wb_wdata;
-	assign ep_tx_we_0   = wb_cyc[5] & ~wb_ack[5] & wb_we;
-
-	assign ep_rx_addr_0 = wb_addr[8:0];
-	assign ep_rx_re_0   = 1'b1;
-
-	assign wb_rdata[5] = wb_cyc[5] ? ep_rx_data_1 : 32'h00000000;
+	assign wb_rdata[5] = 0;
 
 
 	// Warm Boot

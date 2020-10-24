@@ -10,6 +10,7 @@ PROJ_RTL_SRCS := $(addprefix rtl/, \
 	soc_picorv32_base.v \
 	soc_picorv32_bridge.v \
 	soc_spram.v \
+	soc_usb.v \
 	sysmgr.v \
 )
 PROJ_SIM_SRCS := $(addprefix sim/, \
