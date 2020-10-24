@@ -22,10 +22,9 @@
  */
 
 #include <no2usb/usb_proto.h>
+#include <no2usb/usb_cdc_proto.h>
+#include <no2usb/usb_dfu_proto.h>
 #include <no2usb/usb.h>
-
-#define NULL ((void*)0)
-#define num_elem(a) (sizeof(a) / sizeof(a[0]))
 
 
 static const struct {
@@ -35,10 +34,10 @@ static const struct {
 	/* CDC */
 	struct {
 		struct usb_intf_desc intf_ctl;
-		struct usb_cs_intf_hdr_desc cs_intf_hdr;
-		struct usb_cs_intf_acm_desc cs_intf_acm;
-		struct usb_cs_intf_union_desc cs_intf_union;
-		uint8_t cs_intf_union_slave;
+		struct usb_cdc_hdr_desc cdc_hdr;
+		struct usb_cdc_acm_desc cdc_acm;
+		struct usb_cdc_union_desc cdc_union;
+		uint8_t cdc_union_slave;
 		struct usb_ep_desc ep_ctl;
 		struct usb_intf_desc intf_data;
 		struct usb_ep_desc ep_data_out;
@@ -48,7 +47,7 @@ static const struct {
 	/* DFU Runtime */
 	struct {
 		struct usb_intf_desc intf;
-		struct usb_dfu_desc func;
+		struct usb_dfu_func_desc func;
 	} __attribute__ ((packed)) dfu;
 } __attribute__ ((packed)) _app_conf_desc = {
 	.conf = {
@@ -73,25 +72,25 @@ static const struct {
 			.bInterfaceProtocol	= 0x00,
 			.iInterface		= 5,
 		},
-		.cs_intf_hdr = {
-			.bLength		= sizeof(struct usb_cs_intf_hdr_desc),
-			.bDescriptorType	= USB_DT_CS_INTF,
+		.cdc_hdr = {
+			.bLength		= sizeof(struct usb_cdc_hdr_desc),
+			.bDescriptorType	= USB_CS_DT_INTF,
 			.bDescriptorsubtype	= 0x00,
 			.bcdCDC			= 0x0110,
 		},
-		.cs_intf_acm = {
-			.bLength		= sizeof(struct usb_cs_intf_acm_desc),
-			.bDescriptorType	= USB_DT_CS_INTF,
+		.cdc_acm = {
+			.bLength		= sizeof(struct usb_cdc_acm_desc),
+			.bDescriptorType	= USB_CS_DT_INTF,
 			.bDescriptorsubtype	= 0x02,
 			.bmCapabilities		= 0x02,
 		},
-		.cs_intf_union = {
-			.bLength		= sizeof(struct usb_cs_intf_union_desc) + 1,
-			.bDescriptorType	= USB_DT_CS_INTF,
+		.cdc_union = {
+			.bLength		= sizeof(struct usb_cdc_union_desc) + 1,
+			.bDescriptorType	= USB_CS_DT_INTF,
 			.bDescriptorsubtype	= 0x06,
 			.bMasterInterface	= 0,
 		},
-		.cs_intf_union_slave = 1,
+		.cdc_union_slave = 1,
 		.ep_ctl = {
 			.bLength		= sizeof(struct usb_ep_desc),
 			.bDescriptorType	= USB_DT_EP,
@@ -141,8 +140,8 @@ static const struct {
 			.iInterface		= 7,
 		},
 		.func = {
-			.bLength		= sizeof(struct usb_dfu_desc),
-			.bDescriptorType	= USB_DT_DFU,
+			.bLength		= sizeof(struct usb_dfu_func_desc),
+			.bDescriptorType	= USB_DFU_DT_FUNC,
 			.bmAttributes		= 0x0d,
 			.wDetachTimeOut		= 1000,
 			.wTransferSize		= 4096,

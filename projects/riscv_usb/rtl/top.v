@@ -438,12 +438,12 @@ module top (
 		.ep_rx_data_1(ep_rx_data_1),
 		.ep_rx_re_0(ep_rx_re_0),
 		.ep_clk(clk_24m),
-		.bus_addr(ub_addr),
-		.bus_din(ub_wdata),
-		.bus_dout(ub_rdata),
-		.bus_cyc(ub_cyc),
-		.bus_we(ub_we),
-		.bus_ack(ub_ack),
+		.wb_addr(ub_addr),
+		.wb_rdata(ub_rdata),
+		.wb_wdata(ub_wdata),
+		.wb_we(ub_we),
+		.wb_cyc(ub_cyc),
+		.wb_ack(ub_ack),
 		.clk(clk_48m),
 		.rst(rst)
 	);
