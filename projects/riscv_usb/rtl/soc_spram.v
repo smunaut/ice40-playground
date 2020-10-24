@@ -13,11 +13,11 @@ module soc_spram #(
 	parameter integer AW = 14
 )(
 	input  wire [AW-1:0] addr,
-	output wire [31:0] rdata,
-	input  wire [31:0] wdata,
-	input  wire [ 3:0] wmsk,
-	input  wire we,
-	input  wire clk
+	output wire   [31:0] rdata,
+	input  wire   [31:0] wdata,
+	input  wire   [ 3:0] wmsk,
+	input  wire          we,
+	input  wire          clk
 );
 
 	wire [7:0] msk_nibble = {
