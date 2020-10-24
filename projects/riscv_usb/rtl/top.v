@@ -15,9 +15,9 @@ module top (
 	inout  wire spi_mosi,
 	inout  wire spi_miso,
 	inout  wire spi_clk,
-	inout  wire spi_flash_cs_n,
+	output wire spi_flash_cs_n,
 `ifdef HAS_PSRAM
-	inout  wire spi_ram_cs_n,
+	output wire spi_ram_cs_n,
 `endif
 
 	// USB
@@ -81,25 +81,6 @@ module top (
 	wire ub_we;
 	wire ub_ack;
 
-	// SPI
-	wire [7:0] sb_addr;
-	wire [7:0] sb_di;
-	wire [7:0] sb_do;
-	wire sb_rw;
-	wire sb_stb;
-	wire sb_ack;
-	wire sb_irq;
-	wire sb_wkup;
-
-	wire sio_miso_o, sio_miso_oe, sio_miso_i;
-	wire sio_mosi_o, sio_mosi_oe, sio_mosi_i;
-	wire sio_clk_o,  sio_clk_oe,  sio_clk_i;
-	wire [3:0] sio_csn_o, sio_csn_oe;
-
-	// LEDs
-	reg  [4:0] led_ctrl;
-	wire [2:0] rgb_pwm;
-
 	// WarmBoot
 	reg boot_now;
 	reg [1:0] boot_sel;
@@ -134,7 +115,6 @@ module top (
 		assign wb_rdata_flat[i*WB_DW+:WB_DW] = wb_rdata[i];
 
 
-
 	// UART [1]
 	// ----
 
@@ -155,153 +135,56 @@ module top (
 	);
 
 
-	// SPI
+	// SPI [2]
 	// ---
 
-	// Hard-IP
-`ifndef SIM
-	SB_SPI #(
-		.BUS_ADDR74("0b0000")
-	) spi_I (
-		.SBCLKI(clk_24m),
-		.SBRWI(sb_rw),
-		.SBSTBI(sb_stb),
-		.SBADRI7(sb_addr[7]),
-		.SBADRI6(sb_addr[6]),
-		.SBADRI5(sb_addr[5]),
-		.SBADRI4(sb_addr[4]),
-		.SBADRI3(sb_addr[3]),
-		.SBADRI2(sb_addr[2]),
-		.SBADRI1(sb_addr[1]),
-		.SBADRI0(sb_addr[0]),
-		.SBDATI7(sb_di[7]),
-		.SBDATI6(sb_di[6]),
-		.SBDATI5(sb_di[5]),
-		.SBDATI4(sb_di[4]),
-		.SBDATI3(sb_di[3]),
-		.SBDATI2(sb_di[2]),
-		.SBDATI1(sb_di[1]),
-		.SBDATI0(sb_di[0]),
-		.MI(sio_miso_i),
-		.SI(sio_mosi_i),
-		.SCKI(sio_clk_i),
-		.SCSNI(1'b1),
-		.SBDATO7(sb_do[7]),
-		.SBDATO6(sb_do[6]),
-		.SBDATO5(sb_do[5]),
-		.SBDATO4(sb_do[4]),
-		.SBDATO3(sb_do[3]),
-		.SBDATO2(sb_do[2]),
-		.SBDATO1(sb_do[1]),
-		.SBDATO0(sb_do[0]),
-		.SBACKO(sb_ack),
-		.SPIIRQ(sb_irq),
-		.SPIWKUP(sb_wkup),
-		.SO(sio_miso_o),
-		.SOE(sio_miso_oe),
-		.MO(sio_mosi_o),
-		.MOE(sio_mosi_oe),
-		.SCKO(sio_clk_o),
-		.SCKOE(sio_clk_oe),
-		.MCSNO3(sio_csn_o[3]),
-		.MCSNO2(sio_csn_o[2]),
-		.MCSNO1(sio_csn_o[1]),
-		.MCSNO0(sio_csn_o[0]),
-		.MCSNOE3(sio_csn_oe[3]),
-		.MCSNOE2(sio_csn_oe[2]),
-		.MCSNOE1(sio_csn_oe[1]),
-		.MCSNOE0(sio_csn_oe[0])
-	);
-`else
-	reg [3:0] sim;
-
-	assign sb_ack = sb_stb;
-	assign sb_do = { sim, 4'h8 };
-
-	always @(posedge clk_24m)
-		if (rst)
-			sim <= 0;
-		else if (sb_ack & sb_rw)
-			sim <= sim + 1;
-`endif
-
-	// IO pads
-	SB_IO #(
-		.PIN_TYPE(6'b101001),
-		.PULLUP(1'b1)
-	) spi_io_I[2:0] (
-		.PACKAGE_PIN  ({spi_mosi,    spi_miso,    spi_clk   }),
-		.OUTPUT_ENABLE({sio_mosi_oe, sio_miso_oe, sio_clk_oe}),
-		.D_OUT_0      ({sio_mosi_o,  sio_miso_o,  sio_clk_o }),
-		.D_IN_0       ({sio_mosi_i,  sio_miso_i,  sio_clk_i })
-	);
-
-		// Bypass OE for CS_n lines
-	assign spi_flash_cs_n = sio_csn_o[0];
+	ice40_spi_wb #(
 `ifdef HAS_PSRAM
-	assign spi_ram_cs_n   = sio_csn_o[1];
+		.N_CS(2),
+`else
+		.N_CS(1),
 `endif
-
-	// Bus interface
-	assign sb_addr = { 4'h0, wb_addr[3:0] };
-	assign sb_di   = wb_wdata[7:0];
-	assign sb_rw   = wb_we;
-	assign sb_stb  = wb_cyc[2];
-
-	assign wb_rdata[2] = { {(WB_DW-8){1'b0}}, wb_cyc[2] ? sb_do : 8'h00 };
-	assign wb_ack[2] = sb_ack;
-
-
-	// LEDs
-	// ----
-
-	SB_LEDDA_IP led_I (
-		.LEDDCS(wb_addr[4] & wb_we),
-		.LEDDCLK(clk_24m),
-		.LEDDDAT7(wb_wdata[7]),
-		.LEDDDAT6(wb_wdata[6]),
-		.LEDDDAT5(wb_wdata[5]),
-		.LEDDDAT4(wb_wdata[4]),
-		.LEDDDAT3(wb_wdata[3]),
-		.LEDDDAT2(wb_wdata[2]),
-		.LEDDDAT1(wb_wdata[1]),
-		.LEDDDAT0(wb_wdata[0]),
-		.LEDDADDR3(wb_addr[3]),
-		.LEDDADDR2(wb_addr[2]),
-		.LEDDADDR1(wb_addr[1]),
-		.LEDDADDR0(wb_addr[0]),
-		.LEDDDEN(wb_cyc[3]),
-		.LEDDEXE(led_ctrl[1]),
-		.PWMOUT0(rgb_pwm[0]),
-		.PWMOUT1(rgb_pwm[1]),
-		.PWMOUT2(rgb_pwm[2]),
-		.LEDDON()
+		.WITH_IOB(1),
+		.UNIT(0)
+	) spi_I (
+		.pad_mosi (spi_mosi),
+		.pad_miso (spi_miso),
+		.pad_clk  (spi_clk),
+`ifdef HAS_PSRAM
+		.pad_csn  ({spi_ram_cs_n, spi_flash_cs_n}),
+`else
+		.pad_csn  (spi_flash_cs_n),
+`endif
+		.wb_addr  (wb_addr[3:0]),
+		.wb_rdata (wb_rdata[2]),
+		.wb_wdata (wb_wdata),
+		.wb_we    (wb_we),
+		.wb_cyc   (wb_cyc[2]),
+		.wb_ack   (wb_ack[2]),
+		.clk      (clk_24m),
+		.rst      (rst)
 	);
 
-	SB_RGBA_DRV #(
+
+	// RGB LEDs [3]
+	// --------
+
+	ice40_rgb_wb #(
 		.CURRENT_MODE("0b1"),
 		.RGB0_CURRENT("0b000001"),
 		.RGB1_CURRENT("0b000001"),
 		.RGB2_CURRENT("0b000001")
-	) rgb_drv_I (
-		.RGBLEDEN(led_ctrl[2]),
-		.RGB0PWM(rgb_pwm[0]),
-		.RGB1PWM(rgb_pwm[1]),
-		.RGB2PWM(rgb_pwm[2]),
-		.CURREN(led_ctrl[3]),
-		.RGB0(rgb[0]),
-		.RGB1(rgb[1]),
-		.RGB2(rgb[2])
+	) rgb_I (
+		.pad_rgb    (rgb),
+		.wb_addr    (wb_addr[4:0]),
+		.wb_rdata   (wb_rdata[3]),
+		.wb_wdata   (wb_wdata),
+		.wb_we      (wb_we),
+		.wb_cyc     (wb_cyc[3]),
+		.wb_ack     (wb_ack[3]),
+		.clk        (clk_24m),
+		.rst        (rst)
 	);
-
-	always @(posedge clk_24m or posedge rst)
-		if (rst)
-			led_ctrl <= 0;
-		else if (wb_cyc[3] & ~wb_addr[4] & wb_we)
-			led_ctrl <= wb_wdata[4:0];
-
-	assign wb_rdata[3] = { WB_DW{1'b0} };
-	assign wb_ack[3] = wb_cyc[3];
 
 
 	// USB Core
