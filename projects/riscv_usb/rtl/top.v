@@ -261,12 +261,12 @@ module top (
 	) uart_I (
 		.uart_tx(uart_tx),
 		.uart_rx(uart_rx),
-		.bus_addr(wb_addr[1:0]),
-		.bus_wdata(wb_wdata),
-		.bus_rdata(wb_rdata[1]),
-		.bus_cyc(wb_cyc[1]),
-		.bus_ack(wb_ack[1]),
-		.bus_we(wb_we),
+		.wb_addr(wb_addr[1:0]),
+		.wb_rdata(wb_rdata[1]),
+		.wb_we(wb_we),
+		.wb_wdata(wb_wdata),
+		.wb_cyc(wb_cyc[1]),
+		.wb_ack(wb_ack[1]),
 		.clk(clk_24m),
 		.rst(rst)
 	);

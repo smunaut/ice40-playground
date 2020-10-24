@@ -95,8 +95,7 @@ module dfu_helper #(
 	glitch_filter #(
 		.L(4)
 	) btn_flt_I (
-		.pin_iob_reg(btn_iob ^ BTN_MODE[0]),
-		.cond(1'b1),
+		.in(btn_iob ^ BTN_MODE[0]),
 		.val(btn_v),
 		.rise(btn_r),
 		.fall(btn_f),
