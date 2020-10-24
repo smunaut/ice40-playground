@@ -1,6 +1,19 @@
-The files in this repository are either licensed under :
+This repository contains a variety of cores and examples and they are
+licensed under a wide variete of licenses :
 
- - the BSD 3-clause license (see LICENSE.bsd)
- - GNU Lesser General Public License v3 (LICENSE.lgpl3)
+ - MIT license
+ - BSD 3-clause license
+ - GNU General Public License v3
+ - GNU Lesser General Public License v3
+ - CERN OpenHardware License (one of the 3 variants)
 
-Each file has the applicable license in its header.
+ Full license text for those is available in the doc/ directory.
+
+Each file/project/core has the applicable license in its header.
+
+This repository also contains submodules that are licensed under their
+own licenses.
+
+In general I target the CERN-OHL for the HDL and MIT or GPL/LGPL for the
+software. It's however possible some have not been migrated yet. If you
+want some of the code here under a different license, feel free to ask.
