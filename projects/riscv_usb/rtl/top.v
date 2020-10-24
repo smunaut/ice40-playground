@@ -164,7 +164,7 @@ module top (
 	);
 
 	// Bus interface
-	bridge #(
+	soc_picorv32_bridge #(
 		.WB_N(WB_N),
 		.WB_DW(WB_DW),
 		.WB_AW(WB_AW),

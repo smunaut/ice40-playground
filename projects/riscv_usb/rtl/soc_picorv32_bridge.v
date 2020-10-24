@@ -1,28 +1,28 @@
 /*
- * bridge.v
+ * soc_picorv32_bridge.v
  *
  * vim: ts=4 sw=4
  *
- * Copyright (C) 2019-2020  Sylvain Munaut <tnt@246tNt.com>
+ * Copyright (C) 2020  Sylvain Munaut <tnt@246tNt.com>
  * SPDX-License-Identifier: CERN-OHL-P-2.0
  */
 
 `default_nettype none
 
-module bridge #(
-	parameter integer WB_N  =  8,
-	parameter integer WB_DW = 32,
-	parameter integer WB_AW = 16,
-	parameter integer WB_AI =  2,
-	parameter integer WB_REG = 0	// [0] = cyc / [1] = addr/wdata/wstrb / [2] = ack/rdata
+module soc_picorv32_bridge #(
+	parameter integer WB_N   =  8,
+	parameter integer WB_DW  = 32,
+	parameter integer WB_AW  = 16,
+	parameter integer WB_AI  =  2,
+	parameter integer WB_REG =  0	// [0] = cyc / [1] = addr/wdata/wstrb / [2] = ack/rdata
 )(
 	/* PicoRV32 bus */
 	input  wire [31:0] pb_addr,
 	output wire [31:0] pb_rdata,
 	input  wire [31:0] pb_wdata,
 	input  wire [ 3:0] pb_wstrb,
-	input  wire pb_valid,
-	output wire pb_ready,
+	input  wire        pb_valid,
+	output wire        pb_ready,
 
 	/* BRAM */
 	output wire [ 7:0] bram_addr,
@@ -39,13 +39,13 @@ module bridge #(
 	output wire        spram_we,
 
 	/* Wishbone buses */
-	output wire [WB_AW-1:0] wb_addr,
-	output wire [WB_DW-1:0] wb_wdata,
-	output wire [(WB_DW/8)-1:0] wb_wmsk,
+	output wire [WB_AW-1:0]        wb_addr,
 	input  wire [(WB_DW*WB_N)-1:0] wb_rdata,
-	output wire [WB_N-1:0] wb_cyc,
-	output wire wb_we,
-	input  wire [WB_N-1:0] wb_ack,
+	output wire [WB_DW-1:0]        wb_wdata,
+	output wire [(WB_DW/8)-1:0]    wb_wmsk,
+	output wire                    wb_we,
+	output wire [WB_N-1:0]         wb_cyc,
+	input  wire [WB_N-1:0]         wb_ack,
 
 	/* Clock / Reset */
 	input  wire clk,
@@ -183,4 +183,4 @@ module bridge #(
 	assign pb_rdata = ram_rdata | wb_rdata_out;
 	assign pb_ready = ram_rdy | wb_rdy;
 
-endmodule // bridge
+endmodule // soc_picorv32_bridge
