@@ -11,7 +11,7 @@
 
 module dfu_helper #(
 	parameter integer TIMER_WIDTH = 24,
-	parameter integer BTN_MODE = 3,		// [1] Include IO buffer, [0] Invert
+	parameter integer BTN_MODE = 3,		// [2] Use btn_tick, [1] Include IO buffer, [0] Invert (active-low)
 	parameter integer DFU_MODE = 0		// 0 = For user app, 1 = For bootloader
 )(
 	// External control
@@ -20,6 +20,7 @@ module dfu_helper #(
 
 	// Button
 	input  wire btn_pad,
+	input  wire btn_tick,
 
 	// Outputs
 	output wire btn_val,
@@ -53,34 +54,41 @@ module dfu_helper #(
 	// Button logic
 	// ------------
 
+	// IOB
 	generate
 		if (BTN_MODE[1])
 			SB_IO #(
-				.PIN_TYPE(6'b000000),
+				.PIN_TYPE(6'b000000),	// Reg input, no output
 				.PULLUP(1'b1),
 				.IO_STANDARD("SB_LVCMOS")
 			) btn_iob_I (
 				.PACKAGE_PIN(btn_pad),
-				.INPUT_CLK(clk),
-				.D_IN_0(btn_iob)
+				.INPUT_CLK  (clk),
+				.D_IN_0     (btn_iob)
 			);
 		else
 			assign btn_iob = btn_pad;
 	endgenerate
 
+	// Deglitch
 	glitch_filter #(
-		.L(4)
+		.L(BTN_MODE[2] ? 2 : 4),
+		.RST_VAL(BTN_MODE[0]),
+		.WITH_SYNCHRONIZER(1),
+		.WITH_SAMP_COND(BTN_MODE[2])
 	) btn_flt_I (
-		.in(btn_iob ^ BTN_MODE[0]),
-		.val(btn_v),
-		.rise(btn_r),
-		.fall(btn_f),
-		.clk(clk),
+		.in       (btn_iob ^ BTN_MODE[0]),
+		.samp_cond(btn_tick),
+		.val      (btn_v),
+		.rise     (btn_r),
+		.fall     (btn_f),
+		.clk      (clk),
 `ifdef SIM
-		.rst(rst)
+		.rst      (rst)
 `else
-		.rst(1'b0)	// Ensure the glitch filter has settled
-					// before logic here engages
+		// Don't reset so we let the filter settle before
+		// the rest of the logic engages
+		.rst      (1'b0)
 `endif
 	);
 
