@@ -6,6 +6,7 @@ PROJ_RTL_SRCS := $(addprefix rtl/, \
 	bridge.v \
 	dfu_helper.v \
 	picorv32.v \
+	picorv32_ice40_regs.v \
 	soc_bram.v \
 	soc_spram.v \
 	sysmgr.v \

@@ -43,7 +43,7 @@
 `endif
 
 // uncomment this for register file in extra module
-// `define PICORV32_REGS picorv32_regs
+`define PICORV32_REGS picorv32_ice40_regs
 
 // this macro can be used to check if the verilog files in your
 // design are read in the correct order.
