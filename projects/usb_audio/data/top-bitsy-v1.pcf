@@ -1,0 +1,60 @@
+# SPI
+set_io -nowarn spi_mosi 14
+set_io -nowarn spi_miso 17
+set_io -nowarn spi_clk 15
+set_io -nowarn spi_flash_cs_n 16
+set_io -nowarn spi_ram_cs_n 6
+
+# USB
+set_io -nowarn usb_dp 42
+set_io -nowarn usb_dn 38
+set_io -nowarn usb_pu 37
+
+# UART
+set_io -nowarn uart_rx 47
+set_io -nowarn uart_tx 44
+
+# Clock
+set_io -nowarn clk_in 35
+
+# Button
+set_io -nowarn btn 2
+
+# Leds
+set_io -nowarn rgb[0] 39
+set_io -nowarn rgb[1] 40
+set_io -nowarn rgb[2] 41
+
+# PCM Audio
+  # PMOD 1
+set_io -nowarn audio[0]  9
+set_io -nowarn audio[1] 10
+
+  # PMOD 2
+#set_io -nowarn audio[0] 28
+#set_io -nowarn audio[1] 34
+
+  # PMOD 3
+#set_io -nowarn audio[0] 11
+#set_io -nowarn audio[1] 46
+
+  # tnt's prototype
+set_io -nowarn audio[0] 43
+set_io -nowarn audio[1] 36
+
+# MIDI
+  # PMOD 1
+#set_io -nowarn -pullup yes midi_rx 9
+#set_io -nowarn midi_tx 10
+
+  # PMOD 2
+set_io -nowarn -pullup yes midi_rx 28
+set_io -nowarn midi_tx 34
+
+  # PMOD 3
+#set_io -nowarn -pullup yes midi_rx 11
+#set_io -nowarn midi_tx 46
+
+  # tnt's prototype
+#set_io -nowarn -pullup yes midi_rx 31
+#set_io -nowarn midi_tx 32

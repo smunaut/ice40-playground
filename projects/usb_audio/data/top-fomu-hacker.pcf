@@ -1,0 +1,35 @@
+## pkg: uwg30
+  
+# SPI
+set_io -nowarn spi_mosi F1
+set_io -nowarn spi_miso E1
+set_io -nowarn spi_clk D1
+set_io -nowarn spi_flash_cs_n C1
+
+# USB
+set_io -nowarn usb_dp A4
+set_io -nowarn usb_dn A2
+set_io -nowarn usb_pu D5
+
+# UART
+set_io -nowarn -pullup yes uart_rx E3	# Tied up
+set_io -nowarn uart_tx B1		# N/C
+
+# Clock
+set_io -nowarn clk_in F5
+
+# Button
+set_io -nowarn -pullup yes btn F4       # Pin 1
+
+# Leds
+set_io -nowarn rgb[0] A5
+set_io -nowarn rgb[1] B5
+set_io -nowarn rgb[2] C5
+
+# PCM Audio
+set_io -nowarn audio[0] E5		# Pin 2
+set_io -nowarn audio[1] E4		# Pin 3
+
+# MIDI
+set_io -nowarn -pullup yes midi_rx C3	# Tied up
+set_io -nowarn midi_tx F2		# Pin 4

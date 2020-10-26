@@ -1,0 +1,12 @@
+0000000000000000
+osmocom
+!{"bitsy-v0": "iCEBreaker bitsy v0.x Audio demo", "bitsy-v1": "iCEBreaker bitsy v1.x Audio Demo", "icebreaker": "iCEBreaker Audio Demo", "": "iCE40 USB Audio Demo"}
+Main
+DFU runtime
+bitsy Audio Control
+One Ear
+Other Ear
+USB Stream
+PMOD Jack
+bitsy Audio Stream (off)
+bitsy Audio Stream (on)

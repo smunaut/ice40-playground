@@ -1,0 +1,5 @@
+*.bin
+*.elf
+*.hex
+*.o
+*.gen.h
