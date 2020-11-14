@@ -45,6 +45,11 @@ module soc_usb #(
 	wire        ub_we;
 	wire        ub_ack;
 
+	// IOs
+	wire pad_dp_i, pad_dp_o, pad_dp_oe;
+	wire pad_dn_i, pad_dn_o, pad_dn_oe;
+	wire pad_pu_i, pad_pu_o, pad_pu_oe;
+
 	// EP Buffer
 	wire [ 8:0] ep_tx_addr_0;
 	wire [31:0] ep_tx_data_0;
@@ -92,9 +97,14 @@ module soc_usb #(
 	usb #(
 		.EPDW(32)
 	) usb_I (
-		.pad_dp       (usb_dp),
-		.pad_dn       (usb_dn),
-		.pad_pu       (usb_pu),
+		.pad_dp_i     (pad_dp_i),
+		.pad_dp_o     (pad_dp_o),
+		.pad_dp_oe    (pad_dp_oe),
+		.pad_dn_i     (pad_dn_i),
+		.pad_dn_o     (pad_dn_o),
+		.pad_dn_oe    (pad_dn_oe),
+		.pad_pu_o     (pad_pu_o),
+		.pad_pu_oe    (pad_pu_oe),
 		.ep_tx_addr_0 (ep_tx_addr_0),
 		.ep_tx_data_0 (ep_tx_data_0),
 		.ep_tx_we_0   (ep_tx_we_0),
@@ -110,6 +120,22 @@ module soc_usb #(
 		.wb_ack       (ub_ack),
 		.clk          (clk_48m),
 		.rst          (rst)
+	);
+
+
+	// IOs
+	// ---
+
+	SB_IO #(
+		.PIN_TYPE(6'b101001),
+		.PULLUP(1'b0),
+		.NEG_TRIGGER(1'b0),
+		.IO_STANDARD("SB_LVCMOS")
+	) io_I[2:0] (
+		.PACKAGE_PIN  ({usb_dp,    usb_dn,    usb_pu}),
+		.OUTPUT_ENABLE({pad_dp_oe, pad_dn_oe, pad_pu_oe}),
+		.D_OUT_0      ({pad_dp_o,  pad_dn_o,  pad_pu_o}),
+		.D_IN_0       ({pad_dp_i,  pad_dn_i,  pad_pu_i})
 	);
 
 
