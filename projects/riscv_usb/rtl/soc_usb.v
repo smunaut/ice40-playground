@@ -51,11 +51,11 @@ module soc_usb #(
 	wire pad_pu_i, pad_pu_o, pad_pu_oe;
 
 	// EP Buffer
-	wire [ 8:0] ep_tx_addr_0;
+	wire [ 7:0] ep_tx_addr_0;
 	wire [31:0] ep_tx_data_0;
 	wire        ep_tx_we_0;
 
-	wire [ 8:0] ep_rx_addr_0;
+	wire [ 7:0] ep_rx_addr_0;
 	wire [31:0] ep_rx_data_1;
 	wire        ep_rx_re_0;
 
@@ -142,8 +142,8 @@ module soc_usb #(
 	// EP data
 	// -------
 
-	assign ep_tx_addr_0 = wb_addr[8:0];
-	assign ep_rx_addr_0 = wb_addr[8:0];
+	assign ep_tx_addr_0 = wb_addr[7:0];
+	assign ep_rx_addr_0 = wb_addr[7:0];
 
 	assign ep_tx_data_0 = wb_wdata;
 	assign wb_rdata_i[1] = ack_ep ? ep_rx_data_1 : 32'h00000000;
