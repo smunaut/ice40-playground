@@ -12,6 +12,7 @@ PROJ_RTL_SRCS := $(addprefix rtl/, \
 	soc_spram.v \
 	soc_usb.v \
 	sysmgr.v \
+	sram_1rw1r_32_256_8_sky130.v \
 )
 PROJ_SIM_SRCS := $(addprefix sim/, \
 	spiflash.v \
