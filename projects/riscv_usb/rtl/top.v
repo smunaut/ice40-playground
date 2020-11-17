@@ -40,7 +40,7 @@ module top (
 );
 
 	localparam integer SPRAM_AW = 14; /* 14 => 64k, 15 => 128k */
-	localparam integer WB_N  =  6;
+	localparam integer WB_N  =  5;
 
 	localparam integer WB_DW = 32;
 	localparam integer WB_AW = 16;
@@ -169,7 +169,7 @@ module top (
 	);
 
 
-	// USB [4 & 5]
+	// USB [4]
 	// ---
 
 	soc_usb #(
@@ -178,18 +178,16 @@ module top (
 		.usb_dp   (usb_dp),
 		.usb_dn   (usb_dn),
 		.usb_pu   (usb_pu),
-		.wb_addr  (wb_addr[11:0]),
+		.wb_addr  (wb_addr[13:0]),
 		.wb_rdata (wb_rdata[4]),
 		.wb_wdata (wb_wdata),
 		.wb_we    (wb_we),
-		.wb_cyc   (wb_cyc[5:4]),
-		.wb_ack   (wb_ack[5:4]),
+		.wb_cyc   (wb_cyc[4]),
+		.wb_ack   (wb_ack[4]),
 		.clk_sys  (clk_24m),
 		.clk_48m  (clk_48m),
 		.rst      (rst)
 	);
-
-	assign wb_rdata[5] = 0;
 
 
 	// Warm Boot
