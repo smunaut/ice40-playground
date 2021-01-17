@@ -107,16 +107,14 @@ module qspi_phy_ice40_1x #(
 	generate
 		if (N_CS)
 			SB_IO #(
-				.PIN_TYPE(6'b110111),
-				.PULLUP(1'b1),
+				.PIN_TYPE(6'b0101_11),
+				.PULLUP(1'b0),
 				.NEG_TRIGGER(1'b0),
 				.IO_STANDARD("SB_LVCMOS")
 			) iob_cs_I[N_CS-1:0] (
 				.PACKAGE_PIN(pad_cs_n),
-				.CLOCK_ENABLE(1'b1),
 				.OUTPUT_CLK(clk),
-				.OUTPUT_ENABLE(~phy_cs_o),
-				.D_OUT_0(1'b0)
+				.D_OUT_0(phy_cs_o)
 			);
 	endgenerate
 

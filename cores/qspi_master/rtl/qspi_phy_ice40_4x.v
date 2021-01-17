@@ -64,7 +64,7 @@ module qspi_phy_ice40_4x #(
 	wire [ 3:0] iob_io_oe;
 	wire [ 3:0] iob_io_o;
 	wire [ 3:0] iob_io_i;
-	reg  [CL:0] iob_cs_oe;
+	reg  [CL:0] iob_cs_o;
 
 
 	// IOs
@@ -177,21 +177,21 @@ module qspi_phy_ice40_4x #(
 
 	generate
 		if (N_CS) begin
-			// Simple register
+			// Delay to match serdes delay
 			always @(posedge clk_1x)
-				iob_cs_oe <= ~phy_cs_o;
+				iob_cs_o <= phy_cs_o;
 
-			// IOB: Chip select
+			// Because of potential conflict with IO site, we don't register
+			// the CS signal at all and rely on the fact it's held low a bit longer
+			// than needed by the controller.
 			SB_IO #(
-				.PIN_TYPE(6'b 1101_01),	// Out:SDRwOE, In:n/a
+				.PIN_TYPE(6'b0110_11),
 				.PULLUP(1'b1),
 				.NEG_TRIGGER(1'b0),
 				.IO_STANDARD("SB_LVCMOS")
 			) iob_spi_cs_I[N_CS-1:0] (
 				.PACKAGE_PIN(pad_cs_n),
-				.OUTPUT_ENABLE(iob_cs_oe),
-				.D_OUT_0(1'b0),
-				.OUTPUT_CLK(clk_4x)
+				.D_OUT_0(iob_cs_o)
 			);
 		end
 	endgenerate
