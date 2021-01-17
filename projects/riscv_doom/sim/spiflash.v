@@ -1,0 +1,1 @@
+../../riscv_usb/sim/spiflash.v
