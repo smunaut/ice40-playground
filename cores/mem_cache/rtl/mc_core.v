@@ -49,7 +49,7 @@ module mc_core #(
 
 	input  wire        req_write,
 	input  wire [31:0] req_wdata,
-	input  wire [ 3:0] req_wmask,
+	input  wire [ 3:0] req_wmsk,
 
 	// Response output (1 cycle later)
 	output reg         resp_ack,
@@ -179,8 +179,8 @@ module mc_core #(
 	wire [31:0] dm_rdata;
 	reg         dm_re;
 	reg  [31:0] dm_wdata;
-	wire [ 7:0] dm_wmask_nibble;
-	reg  [ 3:0] dm_wmask;
+	wire [ 7:0] dm_wmsk_nibble;
+	reg  [ 3:0] dm_wmsk;
 	reg         dm_we;
 
 
@@ -483,17 +483,17 @@ module mc_core #(
 		.rd_data(dm_rdata),
 		.rd_ena(dm_re),
 		.wr_data(dm_wdata),
-		.wr_mask(dm_wmask_nibble),
+		.wr_mask(dm_wmsk_nibble),
 		.wr_ena(dm_we),
 		.clk(clk)
 	);
 
 	// Extend mask to nibbles
-	assign dm_wmask_nibble = {
-		dm_wmask[3], dm_wmask[3],
-		dm_wmask[2], dm_wmask[2],
-		dm_wmask[1], dm_wmask[1],
-		dm_wmask[0], dm_wmask[0]
+	assign dm_wmsk_nibble = {
+		dm_wmsk[3], dm_wmsk[3],
+		dm_wmsk[2], dm_wmsk[2],
+		dm_wmsk[1], dm_wmsk[1],
+		dm_wmsk[0], dm_wmsk[0]
 	};
 
 	// Muxing
@@ -504,14 +504,14 @@ module mc_core #(
 			dm_addr  = { lu_hit_way, req_addr_idx, req_addr_ofs };
 			dm_re    = 1'b1;
 			dm_wdata = req_wdata;
-			dm_wmask = req_wmask;
+			dm_wmsk  = req_wmsk;
 			dm_we    = req_write & lu_hit;
 		end else begin
 			// Read or Write access to/from memory interface
 			dm_addr  = { ev_way_r, req_addr_idx, cnt_ofs };
 			dm_re    = cnt_ofs_inc;
 			dm_wdata = mi_rdata;
-			dm_wmask = 4'h0;
+			dm_wmsk  = 4'h0;
 			dm_we    = mi_rstb;
 		end
 	end

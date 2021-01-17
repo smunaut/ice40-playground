@@ -42,7 +42,7 @@ module mc_wb_tb;
 	// Wishbone bus
 	reg  [19:0] wb_addr;
 	reg  [31:0] wb_wdata;
-	reg  [ 3:0] wb_wmask;
+	reg  [ 3:0] wb_wmsk;
 	wire [31:0] wb_rdata;
 	reg         wb_cyc;
 	reg         wb_we;
@@ -54,7 +54,7 @@ module mc_wb_tb;
 	wire        req_valid;
 	wire        req_write;
 	wire [31:0] req_wdata;
-	wire [ 3:0] req_wmask;
+	wire [ 3:0] req_wmsk;
 
 	wire        resp_ack;
 	wire        resp_nak;
@@ -117,7 +117,7 @@ module mc_wb_tb;
 		.req_valid(req_valid),
 		.req_write(req_write),
 		.req_wdata(req_wdata),
-		.req_wmask(req_wmask),
+		.req_wmsk(req_wmsk),
 		.resp_ack(resp_ack),
 		.resp_nak(resp_nak),
 		.resp_rdata(resp_rdata),
@@ -141,7 +141,7 @@ module mc_wb_tb;
 	) bus_adapt_I (
 		.wb_addr(wb_addr),
 		.wb_wdata(wb_wdata),
-		.wb_wmask(wb_wmask),
+		.wb_wmsk(wb_wmsk),
 		.wb_rdata(wb_rdata),
 		.wb_cyc(wb_cyc),
 		.wb_we(wb_we),
@@ -150,7 +150,7 @@ module mc_wb_tb;
 		.req_valid(req_valid),
 		.req_write(req_write),
 		.req_wdata(req_wdata),
-		.req_wmask(req_wmask),
+		.req_wmsk(req_wmsk),
 		.resp_ack(resp_ack),
 		.resp_nak(resp_nak),
 		.resp_rdata(resp_rdata),
@@ -188,7 +188,7 @@ module mc_wb_tb;
 		begin
 			wb_addr  <= addr;
 			wb_wdata <= data;
-			wb_wmask <= 4'h0;
+			wb_wmsk  <= 4'h0;
 			wb_we    <= 1'b1;
 			wb_cyc   <= 1'b1;
 
@@ -198,7 +198,7 @@ module mc_wb_tb;
 
 			wb_addr  <= 4'hx;
 			wb_wdata <= 32'hxxxxxxxx;
-			wb_wmask <= 4'hx;
+			wb_wmsk  <= 4'hx;
 			wb_we    <= 1'bx;
 			wb_cyc   <= 1'b0;
 		end
@@ -225,7 +225,7 @@ module mc_wb_tb;
 		// Defaults
 		wb_addr  <= 4'hx;
 		wb_wdata <= 32'hxxxxxxxx;
-		wb_wmask <= 4'hx;
+		wb_wmsk  <= 4'hx;
 		wb_we    <= 1'bx;
 		wb_cyc   <= 1'b0;
 

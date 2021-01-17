@@ -44,12 +44,12 @@ module mc_core_tb;
 	reg         req_valid_pre;
 	reg         req_write_pre;
 	reg  [31:0] req_wdata_pre;
-	reg  [ 3:0] req_wmask_pre;
+	reg  [ 3:0] req_wmsk_pre;
 
 	reg         req_valid;
 	reg         req_write;
 	reg  [31:0] req_wdata;
-	reg  [ 3:0] req_wmask;
+	reg  [ 3:0] req_wmsk;
 
 	wire        resp_ack;
 	wire        resp_nak;
@@ -112,7 +112,7 @@ module mc_core_tb;
 		.req_valid(req_valid),
 		.req_write(req_write),
 		.req_wdata(req_wdata),
-		.req_wmask(req_wmask),
+		.req_wmsk(req_wmsk),
 		.resp_ack(resp_ack),
 		.resp_nak(resp_nak),
 		.resp_rdata(resp_rdata),
@@ -159,20 +159,20 @@ module mc_core_tb;
 	task mc_req_write;
 		input [20:0] addr;
 		input [31:0] data;
-		input [ 3:0] mask;
+		input [ 3:0] msk;
 		begin
 			req_addr_pre <= addr;
 			req_valid_pre <= 1'b1;
 			req_write_pre <= 1'b1;
 			req_wdata_pre <= data;
-			req_wmask_pre <= mask;
+			req_wmsk_pre  <= msk;
 			@(posedge clk);
 
 			req_addr_pre  <= 20'hxxxxx;
 			req_valid_pre <= 1'b0;
 			req_write_pre <= 1'bx;
 			req_wdata_pre <= 32'hxxxxxxxx;
-			req_wmask_pre <=  4'hx;
+			req_wmsk_pre  <=  4'hx;
 		end
 	endtask
 
@@ -196,7 +196,7 @@ module mc_core_tb;
 		req_valid_pre <= 1'b0;
 		req_write_pre <= 1'bx;
 		req_wdata_pre <= 32'hxxxxxxxx;
-		req_wmask_pre <=  4'hx;
+		req_wmsk_pre  <=  4'hx;
 
 		@(negedge rst);
 		@(posedge clk);
@@ -242,7 +242,7 @@ module mc_core_tb;
 		req_valid <= req_valid_pre;
 		req_write <= req_write_pre;
 		req_wdata <= req_wdata_pre;
-		req_wmask <= req_wmask_pre;
+		req_wmsk  <= req_wmsk_pre;
 	end
 
 

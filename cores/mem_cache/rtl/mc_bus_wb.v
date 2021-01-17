@@ -42,7 +42,7 @@ module mc_bus_wb #(
 	// Wishbone bus
 	input  wire [BL:0] wb_addr,
 	input  wire [31:0] wb_wdata,
-	input  wire [ 3:0] wb_wmask,
+	input  wire [ 3:0] wb_wmsk,
 	output wire [31:0] wb_rdata,
 	input  wire        wb_cyc,
 	input  wire        wb_we,
@@ -55,7 +55,7 @@ module mc_bus_wb #(
 
 	output wire        req_write,
 	output wire [31:0] req_wdata,
-	output wire [ 3:0] req_wmask,
+	output wire [ 3:0] req_wmsk,
 
 	// Response input
 	input  wire        resp_ack,
@@ -87,7 +87,7 @@ module mc_bus_wb #(
 	// Write path
 	assign req_write = wb_we;
 	assign req_wdata = wb_wdata;
-	assign req_wmask = wb_wmask;
+	assign req_wmsk  = wb_wmsk;
 
 	// Read path
 	assign wb_rdata  = resp_rdata;
