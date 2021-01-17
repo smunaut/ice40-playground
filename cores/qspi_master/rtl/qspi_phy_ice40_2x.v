@@ -79,7 +79,6 @@ module qspi_phy_ice40_2x #(
 		.IO_STANDARD("SB_LVCMOS")
 	) iob_io_I[3:0] (
 		.PACKAGE_PIN(pad_io),
-		.CLOCK_ENABLE(1'b1),
 		.INPUT_CLK(clk_1x),
 		.OUTPUT_CLK(clk_1x),
 		.OUTPUT_ENABLE(phy_io_oe),
@@ -123,15 +122,13 @@ module qspi_phy_ice40_2x #(
 			assign clk_out = (clk_toggle == clk_toggle_r) ? clk_active[0] : clk_active[1];
 
 			SB_IO #(
-				.PIN_TYPE(6'b110011),
+				.PIN_TYPE(6'b0100_11),
 				.PULLUP(1'b1),
 				.NEG_TRIGGER(1'b0),
 				.IO_STANDARD("SB_LVCMOS")
 			) iob_clk_I (
 				.PACKAGE_PIN(pad_clk),
-				.CLOCK_ENABLE(1'b1),
 				.OUTPUT_CLK(clk_2x),
-				.OUTPUT_ENABLE(1'b1),
 				.D_OUT_0(clk_out),
 				.D_OUT_1(1'b0)
 			);

@@ -124,7 +124,7 @@ module qspi_phy_ice40_4x #(
 
 	// IOB
 	SB_IO #(
-		.PIN_TYPE(6'b 1101_00),	// Out:SDRwOE, In:DDR
+		.PIN_TYPE(6'b1101_00),	// Out:SDRwOE, In:DDR
 		.PULLUP(1'b0),
 		.NEG_TRIGGER(1'b0),
 		.IO_STANDARD("SB_LVCMOS")
@@ -158,7 +158,7 @@ module qspi_phy_ice40_4x #(
 
 			// IOB
 			SB_IO #(
-				.PIN_TYPE(6'b 0100_01),	// Out:DDR, In:n/a
+				.PIN_TYPE(6'b0100_11),	// Out:DDR, In:n/a
 				.PULLUP(1'b0),
 				.NEG_TRIGGER(1'b0),
 				.IO_STANDARD("SB_LVCMOS")
