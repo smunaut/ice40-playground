@@ -3,6 +3,7 @@ CORE := mem_cache
 DEPS_mem_cache := no2misc no2ice40
 
 RTL_SRCS_mem_cache := $(addprefix rtl/, \
+	mc_bus_vex.v \
 	mc_bus_wb.v \
 	mc_core.v \
 	mc_tag_match.v \
