@@ -34,7 +34,10 @@
  */
 
 `default_nettype none
+
+`ifndef SIM
 `define FORCE_REG		// Yosys fuckery workaround :/
+`endif
 
 module vid_tgen #(
 	parameter integer H_WIDTH  = 12,
