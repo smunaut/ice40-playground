@@ -70,10 +70,9 @@ module hdmi_phy_4x #(
 	// -----
 
 	SB_IO #(
-		.PIN_TYPE(6'b1100_01)
+		.PIN_TYPE(6'b0100_11)
 	) io_clk_I (
 		.PACKAGE_PIN(hdmi_clk),
-		.OUTPUT_ENABLE(1'b1),
 		.D_OUT_0(1'b0),
 		.D_OUT_1(1'b1),
 		.OUTPUT_CLK(clk_4x)
@@ -108,12 +107,11 @@ module hdmi_phy_4x #(
 	endgenerate
 
 	SB_IO #(
-		.PIN_TYPE(6'b 1101_01)
+		.PIN_TYPE(6'b 0101_11)
 	) io_ctrl_I[2:0] (
 		.PACKAGE_PIN(ctrl_pad),
-		.OUTPUT_ENABLE(1'b1),
 		.D_OUT_0(ctrl_iob_o),
-		.OUTPUT_CLK(clk_4x),
+		.OUTPUT_CLK(clk_4x)
 	);
 
 	assign hdmi_hsync = ctrl_pad[2];
@@ -152,12 +150,11 @@ module hdmi_phy_4x #(
 	endgenerate
 
 	SB_IO #(
-		.PIN_TYPE(6'b 1101_01)
+		.PIN_TYPE(6'b 0101_11)
 	) io_data_I[DW-1:0] (
 		.PACKAGE_PIN(data_pad),
-		.OUTPUT_ENABLE(1'b1),
 		.D_OUT_0(data_iob_o),
-		.OUTPUT_CLK(clk_4x),
+		.OUTPUT_CLK(clk_4x)
 	);
 
 	assign hdmi_data = data_pad;

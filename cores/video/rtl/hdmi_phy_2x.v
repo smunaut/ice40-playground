@@ -64,76 +64,41 @@ module hdmi_phy_2x #(
 		in_data1d <= in_data1;
 
 	// Data bits
-	genvar i;
-	generate
-		for (i=0; i<DW; i=i+1)
-		begin : bit
-			SB_IO #(
-				.PIN_TYPE(6'b010000),
-				.PULLUP(1'b0),
-				.NEG_TRIGGER(1'b0),
-				.IO_STANDARD("SB_LVCMOS")
-			) iob_hdmi_data_I (
-				.PACKAGE_PIN(hdmi_data[i]),
-				.CLOCK_ENABLE(1'b1),
-				.OUTPUT_CLK(clk_1x),
-				.D_OUT_0(in_data0[i]),
-				.D_OUT_1(in_data1d[i])
-			);
-		end
-	endgenerate
-
-	// H-Sync
 	SB_IO #(
-		.PIN_TYPE(6'b010100),
-		.PULLUP(1'b0),
-		.NEG_TRIGGER(1'b0),
-		.IO_STANDARD("SB_LVCMOS")
-	) iob_hdmi_hsync_I (
-		.PACKAGE_PIN(hdmi_hsync),
-		.CLOCK_ENABLE(1'b1),
-		.OUTPUT_CLK(clk_1x),
-		.D_OUT_0(in_hsync)
+		.PIN_TYPE    (6'b0100_11),
+		.PULLUP      (1'b0),
+		.NEG_TRIGGER (1'b0),
+		.IO_STANDARD ("SB_LVCMOS")
+	) iob_hdmi_data_I[DW-1:0] (
+		.PACKAGE_PIN (hdmi_data),
+		.OUTPUT_CLK  (clk_1x),
+		.D_OUT_0     (in_data0),
+		.D_OUT_1     (in_data1d)
 	);
 
-	// V-Sync
+	// H-Sync / V-Sync / DE
 	SB_IO #(
-		.PIN_TYPE(6'b010100),
-		.PULLUP(1'b0),
-		.NEG_TRIGGER(1'b0),
-		.IO_STANDARD("SB_LVCMOS")
-	) iob_hdmi_vsync_I (
-		.PACKAGE_PIN(hdmi_vsync),
-		.CLOCK_ENABLE(1'b1),
-		.OUTPUT_CLK(clk_1x),
-		.D_OUT_0(in_vsync)
-	);
-
-	// DE
-	SB_IO #(
-		.PIN_TYPE(6'b010100),
-		.PULLUP(1'b0),
-		.NEG_TRIGGER(1'b0),
-		.IO_STANDARD("SB_LVCMOS")
-	) iob_hdmi_de_I (
-		.PACKAGE_PIN(hdmi_de),
-		.CLOCK_ENABLE(1'b1),
-		.OUTPUT_CLK(clk_1x),
-		.D_OUT_0(in_de)
+		.PIN_TYPE    (6'b0101_11),
+		.PULLUP      (1'b0),
+		.NEG_TRIGGER (1'b0),
+		.IO_STANDARD ("SB_LVCMOS")
+	) iob_hdmi_ctrl_I (
+		.PACKAGE_PIN ({hdmi_hsync, hdmi_vsync, hdmi_de}),
+		.OUTPUT_CLK  (clk_1x),
+		.D_OUT_0     ({in_hsync,   in_vsync,   in_de})
 	);
 
 	// Clock
 	SB_IO #(
-		.PIN_TYPE(6'b010000),
-		.PULLUP(1'b0),
-		.NEG_TRIGGER(1'b0),
-		.IO_STANDARD("SB_LVCMOS")
+		.PIN_TYPE    (6'b0100_11),
+		.PULLUP      (1'b0),
+		.NEG_TRIGGER (1'b0),
+		.IO_STANDARD ("SB_LVCMOS")
 	) iob_hdmi_clk_I (
-		.PACKAGE_PIN(hdmi_clk),
-		.CLOCK_ENABLE(1'b1),
-		.OUTPUT_CLK(clk_2x),
-		.D_OUT_0(1'b0),
-		.D_OUT_1(1'b1)
+		.PACKAGE_PIN (hdmi_clk),
+		.OUTPUT_CLK  (clk_2x),
+		.D_OUT_0     (1'b0),
+		.D_OUT_1     (1'b1)
 	);
 
 endmodule // hdmi_phy_2x
