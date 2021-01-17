@@ -182,7 +182,7 @@ module vgen #(
 	// Latch request for prev / next frame
 	always @(posedge clk)
 		if (~mode)
-			frame_sel <= cnt_rep_last ? 2'b10 : 2'b00;
+			frame_sel <= cnt_rep_last ? 2'b11 : 2'b00;
 		else if ((fsm_state == ST_ROW_WAIT) && fbw_row_rdy)
 			frame_sel <= 2'b00;
 		else if (ui_up)
