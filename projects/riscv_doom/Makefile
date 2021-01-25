@@ -26,8 +26,10 @@ BOARD ?= icebreaker
 DEVICE = up5k
 PACKAGE = sg48
 
+SEED ?= 4
+
 YOSYS_SYNTH_ARGS = -dffe_min_ce_use 4 -abc9 -device u -dsp
-NEXTPNR_ARGS = --pre-pack data/clocks.py --pre-place $(CORE_no2ice40_DIR)/sw/serdes-nextpnr-place.py --seed 4
+NEXTPNR_ARGS = --pre-pack data/clocks.py --pre-place $(CORE_no2ice40_DIR)/sw/serdes-nextpnr-place.py --seed $(SEED)
 
 # Include default rules
 include ../../build/project-rules.mk
