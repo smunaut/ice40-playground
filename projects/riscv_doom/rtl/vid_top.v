@@ -14,6 +14,10 @@
 /* Use 640x480 60 Hz video and not original 640x400 70 Hz mode */
 `define COMPAT_MODE
 
+/* Enable dithering */
+`define DITHER
+
+
 module vid_top (
 	// Video output
 	output wire [3:0] hdmi_r,
@@ -82,6 +86,11 @@ module vid_top (
 
 	reg         pp_data_load_2;
 	reg  [31:0] pp_data_3;
+
+	wire        pp_dither_ena_4;
+	wire        pp_dither_r_4;
+	wire        pp_dither_g_4;
+	wire        pp_dither_b_4;
 
 	wire [11:0] pp_data_4;
 	wire        pp_hsync_4;
@@ -246,11 +255,23 @@ module vid_top (
 			pp_data_3 <= pp_data_load_2 ? fb_v_data_1 : { 8'h00, pp_data_3[31:8] };
 
 	// Palette fetch
+`ifdef DITHERING
+	assign pp_dither_ena_4 = pp_xdbl_1 ^ pp_ydbl_1;
+	assign pp_dither_r_4 = (pal_r_data_1[11] & pp_dither_ena) &~& pal_r_data_1[15:14];
+	assign pp_dither_g_4 = (pal_r_data_1[ 6] & pp_dither_ena) &~& pal_r_data_1[10: 9];
+	assign pp_dither_b_4 = (pal_r_data_1[ 0] & pp_dither_ena) &~& pal_r_data_1[ 4: 3];
+`else
+	assign pp_dither_ena_4 = 1'b0;
+	assign pp_dither_r_4   = 1'b0;
+	assign pp_dither_g_4   = 1'b0;
+	assign pp_dither_b_4   = 1'b0;
+`endif
+
 	assign pal_r_addr_0 = pp_data_3[7:0];
 	assign pp_data_4 = {
-		pal_r_data_1[15:12],	// R[15:11]
-		pal_r_data_1[10: 7],	// G[10: 5]
-		pal_r_data_1[4:1]		// B[ 4: 0]
+		pal_r_data_1[15:12] + pp_dither_r_4,	// R[15:11]
+		pal_r_data_1[10: 7] + pp_dither_g_4,	// G[10: 5]
+		pal_r_data_1[4:1]   + pp_dither_b_4		// B[ 4: 0]
 	};
 
 	// Sync signals
