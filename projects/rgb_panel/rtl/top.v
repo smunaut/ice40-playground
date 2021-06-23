@@ -315,24 +315,21 @@ module top (
 
 	// UI
 	glitch_filter #( .L(8) ) gf_down_I (
-		.pin_iob_reg(pmod_btn[0]),
-		.cond(1'b1),
+		.in(pmod_btn[0]),
 		.rise(btn_down),
 		.clk(clk),
 		.rst(rst)
 	);
 
 	glitch_filter #( .L(8) ) gf_mode_I (
-		.pin_iob_reg(pmod_btn[1]),
-		.cond(1'b1),
+		.in(pmod_btn[1]),
 		.rise(btn_mode),
 		.clk(clk),
 		.rst(rst)
 	);
 
 	glitch_filter #( .L(8) ) gf_up_I (
-		.pin_iob_reg(pmod_btn[2]),
-		.cond(1'b1),
+		.in(pmod_btn[2]),
 		.rise(btn_up),
 		.clk(clk),
 		.rst(rst)
