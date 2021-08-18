@@ -34,7 +34,7 @@ ifeq ($(MEM),spi)
 	PROJ_DEPS += qspi_master
 endif
 ifeq ($(MEM),hyperram)
-	PROJ_DEPS += hyperram
+	PROJ_DEPS += no2hyperbus
 endif
 
 ifneq ($(VIDEO),none)

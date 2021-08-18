@@ -305,7 +305,7 @@ module top (
 	wire        phy_cfg_stb;
 
 	// Controller
-	hram_top hram_ctrl_I (
+	hbus_memctrl hram_ctrl_I (
 		.phy_ck_en(phy_ck_en),
 		.phy_rwds_in(phy_rwds_in),
 		.phy_rwds_out(phy_rwds_out),
@@ -341,12 +341,12 @@ module top (
 	);
 
 	// PHY
-	hram_phy_ice40 hram_phy_I (
-		.hram_dq(hram_dq),
-		.hram_rwds(hram_rwds),
-		.hram_ck(hram_ck),
-		.hram_cs_n(hram_cs_n),
-		.hram_rst_n(hram_rst_n),
+	hbus_phy_ice40 hram_phy_I (
+		.hbus_dq(hram_dq),
+		.hbus_rwds(hram_rwds),
+		.hbus_ck(hram_ck),
+		.hbus_cs_n(hram_cs_n),
+		.hbus_rst_n(hram_rst_n),
 		.phy_ck_en(phy_ck_en),
 		.phy_rwds_in(phy_rwds_in),
 		.phy_rwds_out(phy_rwds_out),
