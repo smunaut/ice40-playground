@@ -31,7 +31,7 @@ VIDEO ?= none
 YOSYS_READ_ARGS += -DMEM_$(MEM)=1 -DVIDEO_$(VIDEO)=1
 
 ifeq ($(MEM),spi)
-	PROJ_DEPS += qspi_master
+	PROJ_DEPS += no2qpimem
 endif
 ifeq ($(MEM),hyperram)
 	PROJ_DEPS += no2hyperbus

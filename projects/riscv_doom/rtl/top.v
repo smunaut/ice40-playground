@@ -290,7 +290,7 @@ module top (
 	mem_sim #(
 		.INIT_FILE("firmware.hex"),
 		.AW(20)
-	) qspi_sim (
+	) qpi_sim (
 		.mi_addr  ({mi_addr[22], mi_addr[18:0]}),
 		.mi_len   (mi_len),
 		.mi_rw    (mi_rw),
@@ -309,7 +309,7 @@ module top (
 	assign wb_ack[0] = wb_cyc[0];
 `else
 	// Controller
-	qspi_master #(
+	qpi_memctrl #(
 		.CMD_READ   (16'hEB0B),
 		.CMD_WRITE  (16'h0202),
 		.DUMMY_CLK  (6),
@@ -348,7 +348,7 @@ module top (
 	);
 
 	// PHY
-	qspi_phy_ice40_4x #(
+	qpi_phy_ice40_4x #(
 		.N_CS(2),
 		.WITH_CLK(1)
 	) phy_I (

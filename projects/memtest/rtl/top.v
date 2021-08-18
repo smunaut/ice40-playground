@@ -185,7 +185,7 @@ module top (
 	wire [ 1:0] phy_cs_o;
 
 	// Controller
-	qspi_master #(
+	qpi_memctrl #(
 		.CMD_READ(16'hEBEB),
 		.CMD_WRITE(16'h0202),
 		.DUMMY_CLK(6),
@@ -226,7 +226,7 @@ module top (
 	// PHY
 	generate
 		if (PHY_SPEED == 1)
-			qspi_phy_ice40_1x #(
+			qpi_phy_ice40_1x #(
 				.N_CS(2),
 				.WITH_CLK(1),
 				.NEG_IN(0)
@@ -243,7 +243,7 @@ module top (
 			);
 
 		else if (PHY_SPEED == 2)
-			qspi_phy_ice40_2x #(
+			qpi_phy_ice40_2x #(
 				.N_CS(2),
 				.WITH_CLK(1),
 			) phy_I (
@@ -260,7 +260,7 @@ module top (
 			);
 
 		else if (PHY_SPEED == 4)
-			qspi_phy_ice40_4x #(
+			qpi_phy_ice40_4x #(
 				.N_CS(2),
 				.WITH_CLK(1),
 			) phy_I (

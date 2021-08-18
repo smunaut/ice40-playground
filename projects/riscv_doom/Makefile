@@ -1,7 +1,7 @@
 # Project config
 PROJ = riscv_doom
 
-PROJ_DEPS := no2usb no2misc no2ice40 qspi_master mem_cache video
+PROJ_DEPS := no2usb no2misc no2ice40 no2qpimem mem_cache video
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 	vid_top.v \
 	vid_palette.v \
