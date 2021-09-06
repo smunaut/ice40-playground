@@ -28,18 +28,18 @@ module hdmi_buf (
 	generate
 		for (i=0; i<4; i=i+1)
 			ice40_ebr #(
-				.READ_MODE(2),
-				.WRITE_MODE(1)
+				.READ_MODE  (2),	// 1024x4
+				.WRITE_MODE (1)		//  512x8
 			) ebr_wrap_I (
-				.wr_addr(waddr),
-				.wr_data({wdata[i*4+:4], wdata[16+i*4+:4]}),
-				.wr_mask(8'h00),
-				.wr_ena(wren),
-				.wr_clk(clk),
-				.rd_addr(raddr),
-				.rd_data(rdata[i*4+:4]),
-				.rd_ena(1'b1),
-				.rd_clk(clk)
+				.wr_addr (waddr),
+				.wr_data ({wdata[i*4+:4], wdata[16+i*4+:4]}),
+				.wr_mask (8'h00),
+				.wr_ena  (wren),
+				.wr_clk  (clk),
+				.rd_addr (raddr),
+				.rd_data (rdata[i*4+:4]),
+				.rd_ena  (1'b1),
+				.rd_clk  (clk)
 			);
 	endgenerate
 

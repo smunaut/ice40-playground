@@ -86,26 +86,26 @@ module memtest #(
 		.AWIDTH(8),
 		.DWIDTH(32)
 	) buf_wr_I (
-		.wr_addr(bw_waddr),
-		.wr_data(bw_wdata),
-		.wr_ena(bw_wren),
-		.rd_addr(bw_raddr),
-		.rd_data(bw_rdata),
-		.rd_ena(bw_rden),
-		.clk(clk)
+		.wr_addr (bw_waddr),
+		.wr_data (bw_wdata),
+		.wr_ena  (bw_wren),
+		.rd_addr (bw_raddr),
+		.rd_data (bw_rdata),
+		.rd_ena  (bw_rden),
+		.clk     (clk)
 	);
 
 	ram_sdp #(
 		.AWIDTH(8),
 		.DWIDTH(32)
 	) buf_rd_I (
-		.wr_addr(br_waddr),
-		.wr_data(br_wdata),
-		.wr_ena(br_wren),
-		.rd_addr(br_raddr),
-		.rd_data(br_rdata),
-		.rd_ena(br_rden),
-		.clk(clk)
+		.wr_addr (br_waddr),
+		.wr_data (br_wdata),
+		.wr_ena  (br_wren),
+		.rd_addr (br_raddr),
+		.rd_data (br_rdata),
+		.rd_ena  (br_rden),
+		.clk     (clk)
 	);
 
 

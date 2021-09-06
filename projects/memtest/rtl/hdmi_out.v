@@ -146,8 +146,8 @@ module hdmi_out #(
 
 		// Standard 1080p60
 	vid_tgen #(
-		.H_WIDTH(12),
-		.V_WIDTH(12),
+		.H_WIDTH  (12),
+		.V_WIDTH  (12),
 		.H_FP     (  88 / 4),
 		.H_SYNC   (  44 / 4),
 		.H_BP     ( 148 / 4),
@@ -157,15 +157,15 @@ module hdmi_out #(
 		.V_BP     (  36),
 		.V_ACTIVE (1080)
 	) hdmi_tgen_I (
-		.vid_hsync(vt_hsync),
-		.vid_vsync(vt_vsync),
-		.vid_active(vt_de),
-		.vid_h_first(vt_hfirst),
-		.vid_h_last(),
-		.vid_v_first(vt_vfirst),
-		.vid_v_last(vt_vlast),
-		.clk(clk_1x),
-		.rst(rst)
+		.vid_hsync   (vt_hsync),
+		.vid_vsync   (vt_vsync),
+		.vid_active  (vt_de),
+		.vid_h_first (vt_hfirst),
+		.vid_h_last  (),
+		.vid_v_first (vt_vfirst),
+		.vid_v_last  (vt_vlast),
+		.clk         (clk_1x),
+		.rst         (rst)
 	);
 
 	assign vt_trig = vt_de & vt_hfirst;
@@ -226,12 +226,12 @@ module hdmi_out #(
 
 	// Memory
 	hdmi_buf line_I (
-		.waddr({vb_pingpong, vb_waddr}),
-		.wdata(vb_wdata),
-		.wren (vb_wren),
-		.raddr({~vb_pingpong, vb_raddr}),
-		.rdata(vb_rdata),
-		.clk(clk_1x)
+		.waddr ({vb_pingpong, vb_waddr}),
+		.wdata (vb_wdata),
+		.wren  (vb_wren),
+		.raddr ({~vb_pingpong, vb_raddr}),
+		.rdata (vb_rdata),
+		.clk   (clk_1x)
 	);
 
 
@@ -257,42 +257,42 @@ module hdmi_out #(
 				.AWIDTH(6),
 				.DWIDTH(DW)
 			) pal_I (
-				.wr_addr(pal_waddr),
-				.wr_data(pal_wdata),
-				.wr_ena(pal_wren),
-				.rd_addr({frame_cnt, vb_rdata[(3-i)*4+:4]}),
-				.rd_data(vo_data[i]),
-				.rd_ena(1'b1),
-				.clk(clk_1x)
+				.wr_addr (pal_waddr),
+				.wr_data (pal_wdata),
+				.wr_ena  (pal_wren),
+				.rd_addr ({frame_cnt, vb_rdata[(3-i)*4+:4]}),
+				.rd_data (vo_data[i]),
+				.rd_ena  (1'b1),
+				.clk     (clk_1x)
 			);
 	endgenerate
 
 	// Control delay
 	delay_bus #(3, 3) dly_vs_I (
-		.d({vt_hsync, vt_vsync, vt_de}),
-		.q({vo_hsync, vo_vsync, vo_de}),
-		.clk(clk_1x)
+		.d   ({vt_hsync, vt_vsync, vt_de}),
+		.q   ({vo_hsync, vo_vsync, vo_de}),
+		.clk (clk_1x)
 	);
 
 	// PHY
 	hdmi_phy_4x #(
 		.DW(DW)
 	) phy_I (
-		.hdmi_data(hdmi_data),
-		.hdmi_hsync(hdmi_hsync),
-		.hdmi_vsync(hdmi_vsync),
-		.hdmi_de(hdmi_de),
-		.hdmi_clk(hdmi_clk),
-		.in_data0(vo_data[0]),
-		.in_data1(vo_data[1]),
-		.in_data2(vo_data[2]),
-		.in_data3(vo_data[3]),
-		.in_hsync(vo_hsync),
-		.in_vsync(vo_vsync),
-		.in_de(vo_de),
-		.clk_1x(clk_1x),
-		.clk_4x(clk_4x),
-		.clk_sync(sync_4x)
+		.hdmi_data  (hdmi_data),
+		.hdmi_hsync (hdmi_hsync),
+		.hdmi_vsync (hdmi_vsync),
+		.hdmi_de    (hdmi_de),
+		.hdmi_clk   (hdmi_clk),
+		.in_data0   (vo_data[0]),
+		.in_data1   (vo_data[1]),
+		.in_data2   (vo_data[2]),
+		.in_data3   (vo_data[3]),
+		.in_hsync   (vo_hsync),
+		.in_vsync   (vo_vsync),
+		.in_de      (vo_de),
+		.clk_1x     (clk_1x),
+		.clk_4x     (clk_4x),
+		.clk_sync   (sync_4x)
 	);
 
 endmodule

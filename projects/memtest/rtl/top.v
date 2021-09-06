@@ -127,18 +127,18 @@ module top (
 	uart2wb #(
 		.WB_N(3)
 	) if_I (
-		.uart_rx(uart_rx),
-		.uart_tx(uart_tx),
-		.uart_div(8'd16),
-		.wb_wdata(wb_wdata),
-		.wb_rdata(wb_rdata),
-		.wb_addr(wb_addr),
-		.wb_we(wb_we),
-		.wb_cyc(wb_cyc),
-		.wb_ack(wb_ack),
-		.aux_csr(aux_csr),
-		.clk(clk_1x),
-		.rst(rst)
+		.uart_rx  (uart_rx),
+		.uart_tx  (uart_tx),
+		.uart_div (8'd16),
+		.wb_wdata (wb_wdata),
+		.wb_rdata (wb_rdata),
+		.wb_addr  (wb_addr),
+		.wb_we    (wb_we),
+		.wb_cyc   (wb_cyc),
+		.wb_ack   (wb_ack),
+		.aux_csr  (aux_csr),
+		.clk      (clk_1x),
+		.rst      (rst)
 	);
 
 	assign dma_run = aux_csr[0];
@@ -162,95 +162,95 @@ module top (
 
 	// Controller
 	qpi_memctrl #(
-		.CMD_READ(16'hEBEB),
-		.CMD_WRITE(16'h0202),
-		.DUMMY_CLK(6),
-		.PAUSE_CLK(8),
-		.FIFO_DEPTH(1),
-		.N_CS(2),
-		.PHY_SPEED(PHY_SPEED),
-		.PHY_WIDTH(1),
-		.PHY_DELAY((PHY_SPEED == 1) ? 2 : ((PHY_SPEED == 2) ? 3 : 4))
+		.CMD_READ   (16'hEBEB),
+		.CMD_WRITE  (16'h0202),
+		.DUMMY_CLK  (6),
+		.PAUSE_CLK  (8),
+		.FIFO_DEPTH (1),
+		.N_CS       (2),
+		.PHY_SPEED  (PHY_SPEED),
+		.PHY_WIDTH  (1),
+		.PHY_DELAY  ((PHY_SPEED == 1) ? 2 : ((PHY_SPEED == 2) ? 3 : 4))
 	) memctrl_I (
-		.phy_io_i(phy_io_i),
-		.phy_io_o(phy_io_o),
-		.phy_io_oe(phy_io_oe),
-		.phy_clk_o(phy_clk_o),
-		.phy_cs_o(phy_cs_o),
-		.mi_addr_cs(mi_addr[31:30]),
-		.mi_addr({mi_addr[21:0], 2'b00 }),	/* 32 bits aligned */
-		.mi_len(mi_len),
-		.mi_rw(mi_rw),
-		.mi_valid(mi_valid),
-		.mi_ready(mi_ready),
-		.mi_wdata(mi_wdata),
-		.mi_wack(mi_wack),
-		.mi_wlast(mi_wlast),
-		.mi_rdata(mi_rdata),
-		.mi_rstb(mi_rstb),
-		.mi_rlast(mi_rlast),
-		.wb_wdata(wb_wdata),
-		.wb_rdata(wb_rdata[31:0]),
-		.wb_addr(wb_addr[4:0]),
-		.wb_we(wb_we),
-		.wb_cyc(wb_cyc[0]),
-		.wb_ack(wb_ack[0]),
-		.clk(clk_1x),
-		.rst(rst)
+		.phy_io_i   (phy_io_i),
+		.phy_io_o   (phy_io_o),
+		.phy_io_oe  (phy_io_oe),
+		.phy_clk_o  (phy_clk_o),
+		.phy_cs_o   (phy_cs_o),
+		.mi_addr_cs (mi_addr[31:30]),
+		.mi_addr    ({mi_addr[21:0], 2'b00 }),	/* 32 bits aligned */
+		.mi_len     (mi_len),
+		.mi_rw      (mi_rw),
+		.mi_valid   (mi_valid),
+		.mi_ready   (mi_ready),
+		.mi_wdata   (mi_wdata),
+		.mi_wack    (mi_wack),
+		.mi_wlast   (mi_wlast),
+		.mi_rdata   (mi_rdata),
+		.mi_rstb    (mi_rstb),
+		.mi_rlast   (mi_rlast),
+		.wb_wdata   (wb_wdata),
+		.wb_rdata   (wb_rdata[31:0]),
+		.wb_addr    (wb_addr[4:0]),
+		.wb_we      (wb_we),
+		.wb_cyc     (wb_cyc[0]),
+		.wb_ack     (wb_ack[0]),
+		.clk        (clk_1x),
+		.rst        (rst)
 	);
 
 	// PHY
 	generate
 		if (PHY_SPEED == 1)
 			qpi_phy_ice40_1x #(
-				.N_CS(2),
-				.WITH_CLK(1),
-				.NEG_IN(0)
+				.N_CS     (2),
+				.WITH_CLK (1),
+				.NEG_IN   (0)
 			) phy_I (
-				.pad_io(spi_io),
-				.pad_clk(spi_sck),
-				.pad_cs_n(spi_cs_n),
-				.phy_io_i(phy_io_i),
-				.phy_io_o(phy_io_o),
-				.phy_io_oe(phy_io_oe),
-				.phy_clk_o(phy_clk_o),
-				.phy_cs_o(phy_cs_o),
-				.clk(clk_1x)
+				.pad_io    (spi_io),
+				.pad_clk   (spi_sck),
+				.pad_cs_n  (spi_cs_n),
+				.phy_io_i  (phy_io_i),
+				.phy_io_o  (phy_io_o),
+				.phy_io_oe (phy_io_oe),
+				.phy_clk_o (phy_clk_o),
+				.phy_cs_o  (phy_cs_o),
+				.clk       (clk_1x)
 			);
 
 		else if (PHY_SPEED == 2)
 			qpi_phy_ice40_2x #(
-				.N_CS(2),
-				.WITH_CLK(1),
+				.N_CS     (2),
+				.WITH_CLK (1),
 			) phy_I (
-				.pad_io(spi_io),
-				.pad_clk(spi_sck),
-				.pad_cs_n(spi_cs_n),
-				.phy_io_i(phy_io_i),
-				.phy_io_o(phy_io_o),
-				.phy_io_oe(phy_io_oe),
-				.phy_clk_o(phy_clk_o),
-				.phy_cs_o(phy_cs_o),
-				.clk_1x(clk_1x),
-				.clk_2x(clk_2x)
+				.pad_io    (spi_io),
+				.pad_clk   (spi_sck),
+				.pad_cs_n  (spi_cs_n),
+				.phy_io_i  (phy_io_i),
+				.phy_io_o  (phy_io_o),
+				.phy_io_oe (phy_io_oe),
+				.phy_clk_o (phy_clk_o),
+				.phy_cs_o  (phy_cs_o),
+				.clk_1x    (clk_1x),
+				.clk_2x    (clk_2x)
 			);
 
 		else if (PHY_SPEED == 4)
 			qpi_phy_ice40_4x #(
-				.N_CS(2),
-				.WITH_CLK(1),
+				.N_CS     (2),
+				.WITH_CLK (1),
 			) phy_I (
-				.pad_io(spi_io),
-				.pad_clk(spi_sck),
-				.pad_cs_n(spi_cs_n),
-				.phy_io_i(phy_io_i),
-				.phy_io_o(phy_io_o),
-				.phy_io_oe(phy_io_oe),
-				.phy_clk_o(phy_clk_o),
-				.phy_cs_o(phy_cs_o),
-				.clk_1x(clk_1x),
-				.clk_4x(clk_4x),
-				.clk_sync(sync_4x)
+				.pad_io    (spi_io),
+				.pad_clk   (spi_sck),
+				.pad_cs_n  (spi_cs_n),
+				.phy_io_i  (phy_io_i),
+				.phy_io_o  (phy_io_o),
+				.phy_io_oe (phy_io_oe),
+				.phy_clk_o (phy_clk_o),
+				.phy_cs_o  (phy_cs_o),
+				.clk_1x    (clk_1x),
+				.clk_4x    (clk_4x),
+				.clk_sync  (sync_4x)
 			);
 	endgenerate
 
@@ -282,65 +282,65 @@ module top (
 
 	// Controller
 	hbus_memctrl hram_ctrl_I (
-		.phy_ck_en(phy_ck_en),
-		.phy_rwds_in(phy_rwds_in),
-		.phy_rwds_out(phy_rwds_out),
-		.phy_rwds_oe(phy_rwds_oe),
-		.phy_dq_in(phy_dq_in),
-		.phy_dq_out(phy_dq_out),
-		.phy_dq_oe(phy_dq_oe),
-		.phy_cs_n(phy_cs_n),
-		.phy_rst_n(phy_rst_n),
-		.phy_cfg_wdata(phy_cfg_wdata),
-		.phy_cfg_rdata(phy_cfg_rdata),
-		.phy_cfg_stb(phy_cfg_stb),
-		.mi_addr_cs(mi_addr[31:30]),
-		.mi_addr({1'b0, mi_addr[29:0], 1'b0}),	/* 32b aligned */
-		.mi_len(mi_len),
-		.mi_rw(mi_rw),
-		.mi_linear(1'b0),
-		.mi_valid(mi_valid),
-		.mi_ready(mi_ready),
-		.mi_wdata(mi_wdata),
-		.mi_wmsk(4'h0),
-		.mi_wack(mi_wack),
-		.mi_rdata(mi_rdata),
-		.mi_rstb(mi_rstb),
-		.wb_wdata(wb_wdata),
-		.wb_rdata(wb_rdata[31:0]),
-		.wb_addr(wb_addr[3:0]),
-		.wb_we(wb_we),
-		.wb_cyc(wb_cyc[0]),
-		.wb_ack(wb_ack[0]),
-		.clk(clk_1x),
-		.rst(rst)
+		.phy_ck_en     (phy_ck_en),
+		.phy_rwds_in   (phy_rwds_in),
+		.phy_rwds_out  (phy_rwds_out),
+		.phy_rwds_oe   (phy_rwds_oe),
+		.phy_dq_in     (phy_dq_in),
+		.phy_dq_out    (phy_dq_out),
+		.phy_dq_oe     (phy_dq_oe),
+		.phy_cs_n      (phy_cs_n),
+		.phy_rst_n     (phy_rst_n),
+		.phy_cfg_wdata (phy_cfg_wdata),
+		.phy_cfg_rdata (phy_cfg_rdata),
+		.phy_cfg_stb   (phy_cfg_stb),
+		.mi_addr_cs    (mi_addr[31:30]),
+		.mi_addr       ({1'b0, mi_addr[29:0], 1'b0}),	/* 32b aligned */
+		.mi_len        (mi_len),
+		.mi_rw         (mi_rw),
+		.mi_linear     (1'b0),
+		.mi_valid      (mi_valid),
+		.mi_ready      (mi_ready),
+		.mi_wdata      (mi_wdata),
+		.mi_wmsk       (4'h0),
+		.mi_wack       (mi_wack),
+		.mi_rdata      (mi_rdata),
+		.mi_rstb       (mi_rstb),
+		.wb_wdata      (wb_wdata),
+		.wb_rdata      (wb_rdata[31:0]),
+		.wb_addr       (wb_addr[3:0]),
+		.wb_we         (wb_we),
+		.wb_cyc        (wb_cyc[0]),
+		.wb_ack        (wb_ack[0]),
+		.clk           (clk_1x),
+		.rst           (rst)
 	);
 
 	// PHY
 	hbus_phy_ice40 hram_phy_I (
-		.hbus_dq(hram_dq),
-		.hbus_rwds(hram_rwds),
-		.hbus_ck(hram_ck),
-		.hbus_cs_n(hram_cs_n),
-		.hbus_rst_n(hram_rst_n),
-		.phy_ck_en(phy_ck_en),
-		.phy_rwds_in(phy_rwds_in),
-		.phy_rwds_out(phy_rwds_out),
-		.phy_rwds_oe(phy_rwds_oe),
-		.phy_dq_in(phy_dq_in),
-		.phy_dq_out(phy_dq_out),
-		.phy_dq_oe(phy_dq_oe),
-		.phy_cs_n(phy_cs_n),
-		.phy_rst_n(phy_rst_n),
-		.phy_cfg_wdata(phy_cfg_wdata),
-		.phy_cfg_rdata(phy_cfg_rdata),
-		.phy_cfg_stb(phy_cfg_stb),
-		.clk_rd_delay(clk_rd_delay),
-		.clk_1x(clk_1x),
-		.clk_4x(clk_4x),
-		.clk_rd(clk_rd),
-		.sync_4x(sync_4x),
-		.sync_rd(sync_rd)
+		.hbus_dq       (hram_dq),
+		.hbus_rwds     (hram_rwds),
+		.hbus_ck       (hram_ck),
+		.hbus_cs_n     (hram_cs_n),
+		.hbus_rst_n    (hram_rst_n),
+		.phy_ck_en     (phy_ck_en),
+		.phy_rwds_in   (phy_rwds_in),
+		.phy_rwds_out  (phy_rwds_out),
+		.phy_rwds_oe   (phy_rwds_oe),
+		.phy_dq_in     (phy_dq_in),
+		.phy_dq_out    (phy_dq_out),
+		.phy_dq_oe     (phy_dq_oe),
+		.phy_cs_n      (phy_cs_n),
+		.phy_rst_n     (phy_rst_n),
+		.phy_cfg_wdata (phy_cfg_wdata),
+		.phy_cfg_rdata (phy_cfg_rdata),
+		.phy_cfg_stb   (phy_cfg_stb),
+		.clk_rd_delay  (clk_rd_delay),
+		.clk_1x        (clk_1x),
+		.clk_4x        (clk_4x),
+		.clk_rd        (clk_rd),
+		.sync_4x       (sync_4x),
+		.sync_rd       (sync_rd)
 	);
 `endif
 
@@ -351,23 +351,23 @@ module top (
 	memtest #(
 		.ADDR_WIDTH(32)
 	) memtest_I (
-		.mi_addr(mi0_addr),
-		.mi_len(mi0_len),
-		.mi_rw(mi0_rw),
-		.mi_valid(mi0_valid),
-		.mi_ready(mi0_ready),
-		.mi_wdata(mi0_wdata),
-		.mi_wack(mi0_wack),
-		.mi_rdata(mi0_rdata),
-		.mi_rstb(mi0_rstb),
-		.wb_wdata(wb_wdata),
-		.wb_rdata(wb_rdata[63:32]),
-		.wb_addr(wb_addr[8:0]),
-		.wb_we(wb_we),
-		.wb_cyc(wb_cyc[1]),
-		.wb_ack(wb_ack[1]),
-		.clk(clk_1x),
-		.rst(rst)
+		.mi_addr  (mi0_addr),
+		.mi_len   (mi0_len),
+		.mi_rw    (mi0_rw),
+		.mi_valid (mi0_valid),
+		.mi_ready (mi0_ready),
+		.mi_wdata (mi0_wdata),
+		.mi_wack  (mi0_wack),
+		.mi_rdata (mi0_rdata),
+		.mi_rstb  (mi0_rstb),
+		.wb_wdata (wb_wdata),
+		.wb_rdata (wb_rdata[63:32]),
+		.wb_addr  (wb_addr[8:0]),
+		.wb_we    (wb_we),
+		.wb_cyc   (wb_cyc[1]),
+		.wb_ack   (wb_ack[1]),
+		.clk      (clk_1x),
+		.rst      (rst)
 	);
 
 
@@ -407,30 +407,30 @@ module top (
 		.DW(12)
 `endif
 	) hdmi_I (
-		.hdmi_data(hdmi_data),
-		.hdmi_hsync(hdmi_hsync),
-		.hdmi_vsync(hdmi_vsync),
-		.hdmi_de(hdmi_de),
-		.hdmi_clk(hdmi_clk),
-		.wb_wdata(wb_wdata),
-		.wb_rdata(wb_rdata[95:64]),
-		.wb_addr(wb_addr[6:0]),
-		.wb_we(wb_we),
-		.wb_cyc(wb_cyc[2]),
-		.wb_ack(wb_ack[2]),
-		.mi_addr(mi1_addr),
-		.mi_len(mi1_len),
-		.mi_rw(mi1_rw),
-		.mi_valid(mi1_valid),
-		.mi_ready(mi1_ready),
-		.mi_wdata(mi1_wdata),
-		.mi_wack(mi1_wack),
-		.mi_rdata(mi1_rdata),
-		.mi_rstb(mi1_rstb),
-		.clk_1x(clk_1x),
-		.clk_4x(clk_4x),
-		.sync_4x(sync_4x),
-		.rst(rst)
+		.hdmi_data  (hdmi_data),
+		.hdmi_hsync (hdmi_hsync),
+		.hdmi_vsync (hdmi_vsync),
+		.hdmi_de    (hdmi_de),
+		.hdmi_clk   (hdmi_clk),
+		.wb_wdata   (wb_wdata),
+		.wb_rdata   (wb_rdata[95:64]),
+		.wb_addr    (wb_addr[6:0]),
+		.wb_we      (wb_we),
+		.wb_cyc     (wb_cyc[2]),
+		.wb_ack     (wb_ack[2]),
+		.mi_addr    (mi1_addr),
+		.mi_len     (mi1_len),
+		.mi_rw      (mi1_rw),
+		.mi_valid   (mi1_valid),
+		.mi_ready   (mi1_ready),
+		.mi_wdata   (mi1_wdata),
+		.mi_wack    (mi1_wack),
+		.mi_rdata   (mi1_rdata),
+		.mi_rstb    (mi1_rstb),
+		.clk_1x     (clk_1x),
+		.clk_4x     (clk_4x),
+		.sync_4x    (sync_4x),
+		.rst        (rst)
 	);
 `else
 	// Dummy wishbone
@@ -450,15 +450,15 @@ module top (
 	// -------------
 
 	sysmgr sysmgr_I (
-		.delay(clk_rd_delay),
-		.clk_in(clk_in),
-		.clk_1x(clk_1x),
-		.clk_2x(clk_2x),
-		.clk_4x(clk_4x),
-		.clk_rd(clk_rd),
-		.sync_4x(sync_4x),
-		.sync_rd(sync_rd),
-		.rst(rst)
+		.delay   (clk_rd_delay),
+		.clk_in  (clk_in),
+		.clk_1x  (clk_1x),
+		.clk_2x  (clk_2x),
+		.clk_4x  (clk_4x),
+		.clk_rd  (clk_rd),
+		.sync_4x (sync_4x),
+		.sync_rd (sync_rd),
+		.rst     (rst)
 	);
 
 endmodule
