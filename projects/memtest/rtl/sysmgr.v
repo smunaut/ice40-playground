@@ -1,5 +1,5 @@
 /*
- * sys_mgr.v
+ * sysmgr.v
  *
  * vim: ts=4 sw=4
  *
@@ -33,7 +33,7 @@
 
 `default_nettype none
 
-module sys_mgr (
+module sysmgr (
 	input  wire [3:0] delay,
 	input  wire clk_in,
 	output wire clk_1x,
@@ -150,4 +150,4 @@ module sys_mgr (
 	);
 `endif
 
-endmodule
+endmodule // sysmgr

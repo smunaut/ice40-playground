@@ -473,7 +473,7 @@ module top (
 	// Clock / Reset
 	// -------------
 
-	sys_mgr sys_mgr_I (
+	sysmgr sysmgr_I (
 		.delay(clk_rd_delay),
 		.clk_in(clk_in),
 		.clk_1x(clk_1x),

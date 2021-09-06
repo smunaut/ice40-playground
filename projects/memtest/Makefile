@@ -4,7 +4,7 @@ PROJ = memtest
 PROJ_DEPS := no2misc no2ice40
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 	memtest.v \
-	sys_mgr.v \
+	sysmgr.v \
 )
 PROJ_TESTBENCHES := \
 	$(NULL)
