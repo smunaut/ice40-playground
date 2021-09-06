@@ -1,7 +1,7 @@
 # Project config
 PROJ = memtest
 
-PROJ_DEPS := no2misc no2ice40
+PROJ_DEPS := no2misc no2ice40 no2muacm
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 	memtest.v \
 	sysmgr.v \

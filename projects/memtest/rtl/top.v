@@ -8,6 +8,7 @@
  */
 
 `default_nettype none
+`include "boards.vh"
 
 module top (
 	// SPI
@@ -42,9 +43,18 @@ module top (
 	output wire hdmi_clk,
 `endif
 
+`ifdef HAS_UART
 	// UART
 	input  wire uart_rx,
 	output wire uart_tx,
+`endif
+
+`ifdef HAS_USB
+	// USB
+	inout  wire usb_dp,
+	inout  wire usb_dn,
+	output wire usb_pu,
+`endif
 
 	// Clock (12M)
 	input  wire clk_in
@@ -120,16 +130,33 @@ module top (
 	wire sync_rd;
 	wire rst;
 
+	wire clk_usb;
+	wire rst_usb;
+	wire bootloader;
+
 
 	// Host interface
 	// --------------
 
+`ifdef HAS_UART
 	uart2wb #(
+`elsif HAS_USB
+	muacm2wb #(
+`endif
 		.WB_N(3)
 	) if_I (
+`ifdef HAS_UART
 		.uart_rx  (uart_rx),
 		.uart_tx  (uart_tx),
 		.uart_div (8'd16),
+`elsif HAS_USB
+		.usb_dp   (usb_dp),
+		.usb_dn   (usb_dn),
+		.usb_pu   (usb_pu),
+		.usb_clk  (clk_usb),
+		.usb_rst  (rst_usb),
+		.bootloader (bootloader),
+`endif
 		.wb_wdata (wb_wdata),
 		.wb_rdata (wb_rdata),
 		.wb_addr  (wb_addr),
@@ -142,6 +169,14 @@ module top (
 	);
 
 	assign dma_run = aux_csr[0];
+
+`ifdef HAS_USB
+	SB_WARMBOOT warmboot (
+		.BOOT (bootloader),
+		.S0   (1'b1),
+		.S1   (1'b0)
+	);
+`endif
 
 
 	// QSPI Controller
@@ -458,7 +493,9 @@ module top (
 		.clk_rd  (clk_rd),
 		.sync_4x (sync_4x),
 		.sync_rd (sync_rd),
-		.rst     (rst)
+		.rst     (rst),
+		.clk_usb (clk_usb),
+		.rst_usb (rst_usb)
 	);
 
 endmodule

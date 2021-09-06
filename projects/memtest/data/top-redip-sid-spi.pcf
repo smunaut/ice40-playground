@@ -1,0 +1,8 @@
+# SPI
+set_io --warn-no-port             spi_sck   15
+set_io --warn-no-port -pullup no  spi_io[0] 14
+set_io --warn-no-port -pullup no  spi_io[1] 17
+set_io --warn-no-port -pullup no  spi_io[2] 18
+set_io --warn-no-port -pullup no  spi_io[3] 19
+set_io --warn-no-port -pullup yes spi_cs_n[0] 16
+set_io --warn-no-port -pullup yes spi_cs_n[1] 37

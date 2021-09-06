@@ -1,0 +1,10 @@
+# Clock
+set_io --warn-no-port clk_in 35
+
+# USB
+set_io -nowarn usb_dp 43
+set_io -nowarn usb_dn 42
+set_io -nowarn usb_pu 38
+
+# Button
+set_io -nowarn btn 2

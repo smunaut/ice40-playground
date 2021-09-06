@@ -8,53 +8,53 @@
  */
 
 `default_nettype none
+`include "boards.vh"
 
 module sysmgr (
+	// Memory clocks
 	input  wire [3:0] delay,
-	input  wire clk_in,
-	output wire clk_1x,
-	output wire clk_2x,
-	output wire clk_4x,
-	output wire clk_rd,
-	output wire sync_4x,
-	output wire sync_rd,
-	output wire rst
+	input  wire       clk_in,
+	output wire       clk_1x,
+	output wire       clk_2x,
+	output wire       clk_4x,
+	output wire       clk_rd,
+	output wire       sync_4x,
+	output wire       sync_rd,
+	output wire       rst,
+
+	// USB
+	output wire       clk_usb,
+	output wire       rst_usb
 );
 
+	// Memory clocks / reset
+	// ---------------------
+
+	// Signals
 	wire       pll_lock;
 
+	// PLL
+`ifdef PLL_CORE
+	SB_PLL40_2F_CORE #(
+`else
 	SB_PLL40_2F_PAD #(
+`endif
 		.FEEDBACK_PATH                  ("SIMPLE"),
-		.DIVR                           (4'b0000),
-
-	// 48
-//		.DIVF                           (7'b0111111),
-//		.DIVQ                           (3'b100),
-
-	// 96
-//		.DIVF                           (7'b0111111),
-//		.DIVQ                           (3'b011),
-
-	// 144
-//		.DIVF                           (7'b0101111),
-//		.DIVQ                           (3'b010),
-
-	// 147
-		.DIVF                           (7'b0110000),
-		.DIVQ                           (3'b010),
-
-	// 200
-//		.DIVF                           (7'b1000010),
-//		.DIVQ                           (3'b010),
-
-		.FILTER_RANGE                   (3'b001),
+		.FILTER_RANGE                   (`PLL_FILTER_RANGE),
+		.DIVR                           (`PLL_DIVR),
+		.DIVF                           (`PLL_DIVF),
+		.DIVQ                           (`PLL_DIVQ),
 		.DELAY_ADJUSTMENT_MODE_RELATIVE ("DYNAMIC"),
 		.FDA_RELATIVE                   (15),
 		.SHIFTREG_DIV_MODE              (0),
 		.PLLOUT_SELECT_PORTA            ("GENCLK"),
 		.PLLOUT_SELECT_PORTB            ("GENCLK")
 	) pll_I (
+`ifdef PLL_CORE
+		.REFERENCECLK  (clk_in),
+`else
 		.PACKAGEPIN    (clk_in),
+`endif
 		.DYNAMICDELAY  ({delay, 4'h0}),
 		.PLLOUTGLOBALA (clk_rd),
 		.PLLOUTGLOBALB (clk_4x),
@@ -62,6 +62,7 @@ module sysmgr (
 		.LOCK          (pll_lock)
 	);
 
+	// Fabric derived clocks
 	ice40_serdes_crg #(
 		.NO_CLOCK_2X(0)
 	) crg_I (
@@ -72,6 +73,7 @@ module sysmgr (
 		.rst      (rst)
 	);
 
+	// SPI - Sync signals
 `ifdef MEM_spi
 	ice40_serdes_sync #(
 		.PHASE      (2),
@@ -79,7 +81,7 @@ module sysmgr (
 `ifdef VIDEO_none
 		.GLOBAL_BUF (0),
 		.LOCAL_BUF  (0),
-		.BEL_COL    ("X22"),
+		.BEL_COL    ("X21"),
 		.BEL_ROW    ("Y4"),
 `else
 		.GLOBAL_BUF (0),
@@ -96,6 +98,7 @@ module sysmgr (
 	assign sync_rd = 1'b0;
 `endif
 
+	// HyperRAM - Sync signals
 `ifdef MEM_hyperram
 	ice40_serdes_sync #(
 		.PHASE      (2),
@@ -125,5 +128,37 @@ module sysmgr (
 		.sync     (sync_rd)
 	);
 `endif
+
+
+	// USB clock / reset
+	// -----------------
+
+	// Signals
+	reg       rst_usb_i;
+	reg [3:0] rst_usb_cnt;
+
+	// 48 MHz source
+	SB_HFOSC #(
+		.TRIM_EN   ("0b0"),
+		.CLKHF_DIV ("0b00")	// 48 MHz
+	) osc_I (
+		.CLKHFPU (1'b1),
+		.CLKHFEN (1'b1),
+		.CLKHF   (clk_usb)
+	);
+
+	// Logic reset generation
+	always @(posedge clk_usb or negedge pll_lock)
+		if (~pll_lock)
+			rst_usb_cnt <= 4'h8;
+		else if (rst_usb_i)
+			rst_usb_cnt <= rst_usb_cnt + 1;
+
+	assign rst_usb_i = rst_usb_cnt[3];
+
+	SB_GB rst_gbuf_I (
+		.USER_SIGNAL_TO_GLOBAL_BUFFER (rst_usb_i),
+		.GLOBAL_BUFFER_OUTPUT         (rst_usb)
+	);
 
 endmodule // sysmgr
