@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+#
+# memtest-spi.py
+#
+# Control software for testing the SPI PSRAM
+#
+# Copyright (C) 2020-2021  Sylvain Munaut <tnt@246tNt.com>
+# SPDX-License-Identifier: MIT
+#
+
 import binascii
 import random
 import sys

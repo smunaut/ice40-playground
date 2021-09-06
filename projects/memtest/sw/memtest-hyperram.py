@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+#
+# memtest-hyperram.py
+#
+# Control software for testing the HyperRAM
+#
+# Copyright (C) 2020-2021  Sylvain Munaut <tnt@246tNt.com>
+# SPDX-License-Identifier: MIT
+#
+
 import sys
 
 from memtest import WishboneInterface, MemoryTester, HDMIOutput

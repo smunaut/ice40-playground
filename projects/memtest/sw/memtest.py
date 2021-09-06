@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+#
+# memtest.py
+#
+# Base utiity/driver classes for the various control software variants
+#
+# Copyright (C) 2020-2021  Sylvain Munaut <tnt@246tNt.com>
+# SPDX-License-Identifier: MIT
+#
+
 import binascii
 import random
 import serial
