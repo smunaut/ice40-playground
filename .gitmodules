@@ -22,3 +22,6 @@
 [submodule "cores/no2memcache"]
 	path = cores/no2memcache
 	url = https://github.com/no2fpga/no2memcache.git
+[submodule "cores/no2muacm/bin"]
+	path = cores/no2muacm/bin
+	url = https://github.com/no2fpga/no2muacm-bin.git
