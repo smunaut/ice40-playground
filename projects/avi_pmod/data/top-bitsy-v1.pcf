@@ -1,0 +1,56 @@
+# Analog Video In PMOD on PMOD_3
+set_io -nowarn avip_d[0]	12	# PMOD3_2
+set_io -nowarn avip_d[1]	13	# PMOD3_3
+set_io -nowarn avip_d[2]	11	# PMOD3_4
+set_io -nowarn avip_d[3]	21	# PMOD3_8
+set_io -nowarn avip_d[4]	46	# PMOD3_10
+
+set_io -nowarn avip_clk		20	# PMOD3_9
+set_frequency avip_clk 54
+
+set_io -nowarn avip_i2c_sda	23	# PMOD3_1
+set_io -nowarn avip_i2c_scl	25	# PMOD3_7
+
+# HDMI 24bpp PMOD on PMOD_1 & PMOD_2
+set_io -nowarn hdmi_data[0]	31	# PMOD2_8
+set_io -nowarn hdmi_data[1]	32	# PMOD2_2
+set_io -nowarn hdmi_data[2]	36	# PMOD2_7
+set_io -nowarn hdmi_data[3]	43	# PMOD2_1
+set_io -nowarn hdmi_data[4]	10	# PMOD1_10
+set_io -nowarn hdmi_data[5]	 9	# PMOD1_4
+set_io -nowarn hdmi_data[6]	 3	# PMOD1_9
+set_io -nowarn hdmi_data[7]	 4	# PMOD1_3
+set_io -nowarn hdmi_data[8]	45	# PMOD1_8
+set_io -nowarn hdmi_data[9]	48	# PMOD1_2
+set_io -nowarn hdmi_data[10]	44	# PMOD1_7
+set_io -nowarn hdmi_data[11]	47	# PMOD1_1
+set_io -nowarn hdmi_hsync	28	# PMOD2_3
+set_io -nowarn hdmi_vsync	34	# PMOD2_10
+set_io -nowarn hdmi_de		27	# PMOD2_9
+set_io -nowarn hdmi_clk		26	# PMOD2_3
+
+# SPI
+set_io --warn-no-port             spi_sck     15
+set_io --warn-no-port -pullup no  spi_io[0]   14
+set_io --warn-no-port -pullup no  spi_io[1]   17
+set_io --warn-no-port -pullup no  spi_io[2]   18
+set_io --warn-no-port -pullup no  spi_io[3]   19
+set_io --warn-no-port -pullup yes spi_cs_n[0] 16
+set_io --warn-no-port -pullup yes spi_cs_n[1]  6
+
+# USB
+set_io -nowarn usb_dp 42
+set_io -nowarn usb_dn 38
+set_io -nowarn usb_pu 37
+
+# Button
+set_io -nowarn btn 2
+
+# Clock
+set_io -nowarn clk_in	35
+set_frequency clk_in 12
+
+# Leds
+set_io -nowarn rgb[0] 39
+set_io -nowarn rgb[1] 40
+set_io -nowarn rgb[2] 41
