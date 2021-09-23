@@ -48,10 +48,11 @@ module vid_ycbcr2rgb (
 	// Signals
 	// -------
 
-	wire  [7:0] y_0;
+	wire        y0_0_under;
+	wire        y1_0_under;
+	wire        y_under_0;
 
-	reg         y_under_1;
-	reg         y_under_2;
+	wire  [7:0] y_0;
 
 	reg  [ 7:0] cb_2;
 	reg  [ 7:0] cb_3;
@@ -100,7 +101,7 @@ module vid_ycbcr2rgb (
 		.CE        (1'b1),
 		.IRSTTOP   (1'b0),
 		.IRSTBOT   (1'b0),
-		.ORSTTOP   (y_under_2),
+		.ORSTTOP   (1'b0),
 		.ORSTBOT   (1'b0),
 		.AHOLD     (1'b0),
 		.BHOLD     (1'b0),
@@ -164,15 +165,12 @@ module vid_ycbcr2rgb (
 	// Fabric data path
 	// ----------------
 
-	// Mux Y0/Y1
-	assign y_0 = phase_0 ? y1_0 : y0_0;
+	// Mux Y0/Y1 with underflow
+	assign y0_0_under = ~|y0_0[7:4];
+	assign y1_0_under = ~|y1_0[7:4];
+	assign y_under_0  =  phase_0 ? y1_0_under : y0_0_under;
 
-	// Detect Y underflow
-	always @(posedge clk)
-	begin
-		y_under_1 <= ~|y_0[7:4];
-		y_under_2 <= y_under_1;
-	end
+	assign y_0 = y_under_0 ? 8'h10 : (phase_0 ? y1_0 : y0_0);
 
 	// Delay match Cb (and do the -128)
 	// (using the fact is only changes ever 2 clk to save one register)
