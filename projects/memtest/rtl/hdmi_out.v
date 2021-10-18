@@ -77,7 +77,7 @@ module hdmi_out #(
 	// DMA runtime
 	reg  [31:0] dma_addr;
 	reg  [ 7:0] dma_cnt;
-	wire        dma_last;
+	reg         dma_last;
 	wire        dma_valid;
 
 	// Video Buffer
@@ -175,8 +175,6 @@ module hdmi_out #(
 	// ---
 
 	// DMA requests
-	assign dma_last = (dma_cnt[6:0] == 4'h0);
-
 	always @(posedge clk_1x)
 	begin
 		if (~dma_run)
@@ -186,6 +184,12 @@ module hdmi_out #(
 		else if (mi_ready & mi_valid)
 			dma_cnt <= dma_cnt - 1;
 	end
+
+	always @(posedge clk_1x)
+		if (vt_trig)
+			dma_last <= (dma_cfg_bn_cnt[6:0] == 6'h00);
+		else if (mi_ready & mi_valid)
+			dma_last <= (dma_cnt[6:0] == 6'h01);
 
 	assign dma_valid = dma_cnt[7];
 
