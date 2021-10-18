@@ -16,8 +16,9 @@ BOARD ?= icebreaker
 DEVICE = up5k
 PACKAGE = sg48
 
+SEED ?= 0
 PIN_DEF = $(BUILD_TMP)/$(PROJ_TOP_MOD).pcf
-NEXTPNR_ARGS = --no-promote-globals --timing-allow-fail --pre-pack data/clocks.py --pre-place $(CORE_no2ice40_DIR)/sw/serdes-nextpnr-place.py
+NEXTPNR_ARGS = --no-promote-globals --timing-allow-fail --pre-pack data/clocks.py --pre-place $(CORE_no2ice40_DIR)/sw/serdes-nextpnr-place.py --seed $(SEED)
 
 PCFS = $(abspath data/$(PROJ_TOP_MOD)-$(BOARD).pcf) $(abspath data/$(PROJ_TOP_MOD)-$(BOARD)-$(MEM).pcf)
 
