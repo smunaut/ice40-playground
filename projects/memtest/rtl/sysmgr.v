@@ -134,7 +134,7 @@ module sysmgr (
 	// -----------------
 
 	// Signals
-	reg       rst_usb_i;
+	wire      rst_usb_i;
 	reg [3:0] rst_usb_cnt;
 
 	// 48 MHz source
