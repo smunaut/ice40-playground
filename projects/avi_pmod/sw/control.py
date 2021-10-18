@@ -259,13 +259,13 @@ class I2CMaster(object):
 		self.stop()
 
 	def read_reg(self, reg):
-		i2c.start()
-		i2c.write(dev)
-		i2c.write(reg)
-		i2c.start()
-		i2c.write(dev|1)
-		v = i2c.read()
-		i2c.stop()
+		self.start()
+		self.write(dev)
+		self.write(reg)
+		self.start()
+		self.write(dev|1)
+		v = self.read(False)
+		self.stop()
 		return v
 
 
@@ -275,7 +275,7 @@ class I2CMaster(object):
 def hexdump(x):
 	return binascii.b2a_hex(x).decode('utf-8')
 
-def adv_init(i2c, test_mode=None):
+def adv_init(i2c, test_mode=None, port='cvbs'):
 	# Reset
 	i2c.write_reg(0x40, 0x0f, 0x80)
 	time.sleep(10e-3)
@@ -297,12 +297,20 @@ def adv_init(i2c, test_mode=None):
 
 		i2c.write_reg(0x40, 0x14, 0x11) # Set Free-run pattern to 100% color bars
 
-	else:
+	elif port == 'cvbs':
 		# CVBS
 		i2c.write_reg(0x40, 0x00, 0x00) # CVBS in on AIN1
 		i2c.write_reg(0x40, 0x0e, 0x80) # ADI Required Write
 		i2c.write_reg(0x40, 0x9c, 0x00) # Reset Current Clamp Circuitry [step1]
 		i2c.write_reg(0x40, 0x9c, 0xff) # Reset Current Clamp Circuitry [step2]
+		i2c.write_reg(0x40, 0x0e, 0x00) # Enter User Sub Map
+
+	elif port == 'svideo':
+		i2c.write_reg(0x40, 0x53, 0xce) # ADI Required Write [Ibias]
+		i2c.write_reg(0x40, 0x00, 0x08) # INSEL = YC, Y - Ain1, C - Ain2
+		i2c.write_reg(0x40, 0x0e, 0x80) # ADI Required Write
+		i2c.write_reg(0x40, 0x9c, 0x00) # Reset Coarse Clamp Circuitry [step1]
+		i2c.write_reg(0x40, 0x9c, 0xff) # Reset Coarse Clamp Circuitry [step2]
 		i2c.write_reg(0x40, 0x0e, 0x00) # Enter User Sub Map
 
 	i2c.write_reg(0x40, 0x80, 0x51) # ADI Required Write
@@ -314,42 +322,46 @@ def adv_init(i2c, test_mode=None):
 	i2c.write_reg(0x40, 0x13, 0x00) # Enable ADV7282A for 28_63636MHz crystal
 	i2c.write_reg(0x40, 0x1d, 0x40) # Enable LLC output driver
 
-	i2c.write_reg(0x40, 0xFD, 0x84) # Set VPP map address
-	i2c.write_reg(0x84, 0xA3, 0x00) # ADI Required Write [ADV7282A VPP writes begin]
-	i2c.write_reg(0x84, 0x5B, 0x00) # Enable Advanced Timing Mode
-	i2c.write_reg(0x84, 0x55, 0x80) # Enable the Deinterlacer for I2P [All ADV7282A Writes Finished]
+	#i2c.write_reg(0x40, 0xFD, 0x84) # Set VPP map address
+	#i2c.write_reg(0x84, 0xA3, 0x00) # ADI Required Write [ADV7282A VPP writes begin]
+	#i2c.write_reg(0x84, 0x5B, 0x00) # Enable Advanced Timing Mode
+	#i2c.write_reg(0x84, 0x55, 0x80) # Enable the Deinterlacer for I2P [All ADV7282A Writes Finished]
 
 
-def main(argv0, port='/dev/ttyUSB1'):
+def main(argv0, action, port='/dev/ttyACM0'):
 	wbi   = WishboneInterface(port=port)
 	i2c   = I2CMaster(wbi, 0x00000)
 	psram = QSPIController(wbi, 0x10000, cs=1)
 
-	wbi.aux_csr(1)
-	adv_init(i2c, test_mode='pal')
+	if action == 'init_cvbs':
+		wbi.aux_csr(1)
+		adv_init(i2c, port='cvbs')
 
-	return
+	elif action == 'init_svideo':
+		wbi.aux_csr(1)
+		adv_init(i2c, port='svideo')
 
-	# QPI enable
-	#print("[+] ID read")
-	#print(" PSRAM: " + hexdump(psram.spi_xfer(b'\x9f', dummy_len=3, rx_len=8)))
+	elif action == 'capture':
+		# Info debug
+		#print("[+] ID read")
+		#print(" PSRAM: " + hexdump(psram.spi_xfer(b'\x9f', dummy_len=3, rx_len=8)))
 
-	psram.spi_xfer(b'\x35')
+		# QPI enable
+		psram.spi_xfer(b'\x35')
 
-	# Issue capture command
-	wbi.write(0x20000, (1<<31))
-	time.sleep(1);
+		# Issue capture command
+		wbi.write(0x20000, (1<<31))
+		time.sleep(1);
 
-	# Issue read command of 1 block
-	N = 0x60000
-	N = 0x40000 // 2
-	for addr in range(0, N, 128):
-		wbi.write(0x20000, (1<<30) | addr)
-		for d in wbi.read_burst(0x20000, 128, 32):
-			print("%08x" % d)
+		# Issue read command of 1 block
+		N = 0x60000
+		for addr in range(0, N, 128):
+			wbi.write(0x20000, (1<<30) | addr)
+			for d in wbi.read_burst(0x20000, 128, 32):
+				print("%08x" % d)
 
-	# QPI disable
-	psram.qpi_xfer(b'\xf5')
+		# QPI disable
+		psram.qpi_xfer(b'\xf5')
 
 
 if __name__ == '__main__':

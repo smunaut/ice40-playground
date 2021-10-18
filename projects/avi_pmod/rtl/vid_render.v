@@ -53,6 +53,7 @@ module vid_render #(
 	reg         mem_r_buf_0;
 	wire  [8:0] mem_r_pix_0;
 	wire [31:0] mem_r_data_1;
+	reg  [31:0] mem_r_data_2;
 
 	// Mid line
 	wire       mid_eav_n;
@@ -259,13 +260,17 @@ module vid_render #(
 	// Output
 	// ------
 
+	// Pipeline to help timings
+	always @(posedge clk)
+		mem_r_data_2 <= mem_r_data_1;
+
 	// Convert to YCbCr
 	vid_ycbcr2rgb colconv_I (
-		.cb_0    (mem_r_data_1[31:24]),
-		.y0_0    (mem_r_data_1[23:16]),
-		.cr_0    (mem_r_data_1[15: 8]),
-		.y1_0    (mem_r_data_1[ 7: 0]),
-		.phase_0 (~r_addr_0[0]),
+		.cb_0    (mem_r_data_2[31:24]),
+		.y0_0    (mem_r_data_2[23:16]),
+		.cr_0    (mem_r_data_2[15: 8]),
+		.y1_0    (mem_r_data_2[ 7: 0]),
+		.phase_0 (r_addr_0[0]),
 		.r_5     (vo_data[23:16]),
 		.g_5     (vo_data[15: 8]),
 		.b_5     (vo_data[ 7: 0]),
@@ -282,7 +287,7 @@ module vid_render #(
 	end
 
 	// Align HSync / VSync / DE
-	delay_bus #(5,3) dly_sync (
+	delay_bus #(6,3) dly_sync (
 		{ hsync_1, vsync_1, de_1 },
 		{ vo_hsync, vo_vsync, vo_de },
 		clk

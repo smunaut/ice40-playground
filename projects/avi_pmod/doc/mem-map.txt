@@ -1,0 +1,59 @@
+
+
+CSR:
+
+[15]	Pending FIFO Full
+[14]	Pending FIFO Empty
+[13]	Pending FIFO Overflow
+[12]	Pending FIFO Underflow / Frame missed
+
+[11]	Done FIFO Full
+[10]	Done FIFO Empty
+ [9]	Done FIFO Overflow
+ [8]	(n/a)
+
+ [3]	Framce capture enable
+ [2]	Pixel capture enable
+ [1]	Pixel FIFO enable
+ [0]	Video ingress enable
+
+
+Frame Descriptor:
+
+Submit:
+
+[31:30] (n/a)
+[29:26] Frame ID
+[25:12] Mem Base	(1k aligned)
+[11: 0] Mem size	(1k blocks)
+
+
+Done:
+
+[31]    Valid
+[30]	Frame OK
+[29:26]	Frame ID
+[25:16] H total
+[15:10] V blank
+[ 9: 0] V total
+
+
+-------------------------
+
+DMA
+
+[0]	CSR
+
+	[15:8]	Last finished command ID
+	[7]	Command FIFO empty	
+	[6]	Command FIFO full
+	[3]	Busy
+
+[2]	[31: 0]	External RAM address
+
+[3]	[31:24] Transfer ID
+	[22:16]	Transfer length ( # words - 1 )
+	[15: 0]	Internal Buffer address ( word address )
+
+
+
