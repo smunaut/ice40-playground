@@ -109,7 +109,7 @@ module hdmi_phy_4x #(
 	endgenerate
 
 	SB_IO #(
-		.PIN_TYPE(6'b 0101_11)
+		.PIN_TYPE(6'b0101_11)
 	) io_ctrl_I[2:0] (
 		.PACKAGE_PIN(ctrl_pad),
 		.D_OUT_0(ctrl_iob_o),
