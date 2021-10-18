@@ -63,8 +63,6 @@ module hdmi_phy_4x #(
 
 	genvar i;
 
-	wire dummy;
-
 
 	// Clock
 	// -----
@@ -94,6 +92,9 @@ module hdmi_phy_4x #(
 
 	generate
 		for (i=0; i<3; i=i+1)
+		begin
+			wire dummy;
+
 			ice40_oserdes #(
 				.MODE("DATA"),
 				.SERDES_GRP(1024 + (i<<4))
@@ -104,6 +105,7 @@ module hdmi_phy_4x #(
 				.clk_1x(clk_1x),
 				.clk_4x(clk_4x)
 			);
+		end
 	endgenerate
 
 	SB_IO #(
@@ -129,6 +131,8 @@ module hdmi_phy_4x #(
 	generate
 		for (i=0; i<DW; i=i+1)
 		begin
+			wire dummy;
+
 			assign data_d[4*i+:4] = {
 				in_data0[i],
 				in_data1[i],
