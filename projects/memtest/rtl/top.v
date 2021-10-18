@@ -60,6 +60,10 @@ module top (
 	input  wire clk_in
 );
 
+	// Target UART baudrate
+	localparam integer BAUDRATE = 2000000;
+
+
 	// Signals
 	// -------
 
@@ -140,6 +144,7 @@ module top (
 
 `ifdef HAS_UART
 	uart2wb #(
+		.UART_DIV($rtoi((`SYS_FREQ / BAUDRATE) + 0.5)),
 `elsif HAS_USB
 	muacm2wb #(
 `endif
@@ -148,7 +153,6 @@ module top (
 `ifdef HAS_UART
 		.uart_rx  (uart_rx),
 		.uart_tx  (uart_tx),
-		.uart_div (8'd16),
 `elsif HAS_USB
 		.usb_dp   (usb_dp),
 		.usb_dn   (usb_dn),

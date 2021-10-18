@@ -38,20 +38,30 @@
 		// 48
 //	`define PLL_DIVF 7'b0111111
 //	`define PLL_DIVQ 3'b100
+//	`define SYS_FREQ 12e6
 
 		// 96
 //	`define PLL_DIVF 7'b0111111
 //	`define PLL_DIVQ 3'b011
+//	`define SYS_FREQ 24e6
 
 		// 144
 //	`define PLL_DIVF 7'b0101111
 //	`define PLL_DIVQ 3'b010
+//	`define SYS_FREQ 36e6
 
 		// 147
 	`define PLL_DIVF 7'b0110000
 	`define PLL_DIVQ 3'b010
+	`define SYS_FREQ 36.75e6
+
+		// 180
+//	`define PLL_DIVF 7'b0111011
+//	`define PLL_DIVQ 3'b010
+//	`define SYS_FREQ 45e6
 
 		// 200
 //	`define PLL_DIVF 7'b1000010
 //	`define PLL_DIVQ 3'b010
+//	`define SYS_FREQ 50e6
 `endif
