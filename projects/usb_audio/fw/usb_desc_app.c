@@ -91,7 +91,7 @@ static const struct {
 			.bInterfaceNumber	= 0,
 			.bAlternateSetting	= 0,
 			.bNumEndpoints		= 0,
-			.bInterfaceClass	= 0xfe,
+			.bInterfaceClass	= USB_CLS_APP_SPECIFIC,
 			.bInterfaceSubClass	= 0x01,
 			.bInterfaceProtocol	= 0x01,
 			.iInterface		= 5,
@@ -100,7 +100,7 @@ static const struct {
 			.bLength		= sizeof(struct usb_dfu_func_desc),
 			.bDescriptorType	= USB_DFU_DT_FUNC,
 			.bmAttributes		= 0x0d,
-			.wDetachTimeOut		= 1000,
+			.wDetachTimeOut		= 0,
 			.wTransferSize		= 4096,
 			.bcdDFUVersion		= 0x0101,
 		},
@@ -150,7 +150,7 @@ static const struct {
 				U16_TO_U8_LE(0x0003),	// Mute + Volume
 				U16_TO_U8_LE(0x0003),	// Mute + Volume
 			},
-			.iTerminal		= 0,
+			.iFeature		= 0,
 		},
 		.output = {
 			.bLength		= sizeof(struct usb_ac_ac_output_desc),
