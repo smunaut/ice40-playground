@@ -1,0 +1,33 @@
+# SPI
+set_io -nowarn spi_mosi 14
+set_io -nowarn spi_miso 17
+set_io -nowarn spi_clk 15
+set_io -nowarn spi_cs_n 16
+
+# USB
+set_io -nowarn usb_dp 43
+set_io -nowarn usb_dn 42
+set_io -nowarn usb_pu 38
+
+# UART
+set_io -nowarn -pullup yes uart_rx 18
+set_io -nowarn uart_tx 19
+
+# Clock
+set_io -nowarn clk_in 35
+
+# Button
+set_io -nowarn -pullup yes btn 10
+
+# Leds
+set_io -nowarn rgb[0] 39
+set_io -nowarn rgb[1] 40
+set_io -nowarn rgb[2] 41
+
+# AMR
+  # FIXME: pick IOs
+set_io -nowarn mc97_reset_n
+set_io -nowarn mc97_sdata_out
+set_io -nowarn mc97_sdata_in
+set_io -nowarn mc97_sync
+set_io -nowarn mc97_bitclk
