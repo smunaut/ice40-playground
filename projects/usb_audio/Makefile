@@ -28,8 +28,10 @@ PROJ_TOP_MOD := top
 
 # Target config
 BOARD ?= icebreaker
-DEVICE := $(shell awk '/^\#\# dev:/{print $$3; exit 1}' data/top-$(BOARD).pcf && echo up5k)
-PACKAGE := $(shell awk '/^\#\# pkg:/{print $$3; exit 1}' data/top-$(BOARD).pcf && echo sg48)
+
+H = \#
+DEVICE  := $(shell awk '/^$(H)$(H) dev:/{print $$3; exit 1}' data/top-$(BOARD).pcf && echo up5k)
+PACKAGE := $(shell awk '/^$(H)$(H) pkg:/{print $$3; exit 1}' data/top-$(BOARD).pcf && echo sg48)
 
 YOSYS_SYNTH_ARGS = -dffe_min_ce_use 4 -dsp
 NEXTPNR_ARGS = --pre-pack data/clocks.py --seed 2
