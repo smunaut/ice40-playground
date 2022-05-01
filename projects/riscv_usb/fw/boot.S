@@ -3,24 +3,17 @@
  *
  * SPI boot code
  *
- * Copyright (C) 2019 Sylvain Munaut <tnt@246tNt.com>
- *
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * Copyright (C) 2019-2022 Sylvain Munaut <tnt@246tNt.com>
+ * SPDX-License-Identifier: MIT
  */
+
+// #define BOOT_DEBUG
 
 #ifndef FLASH_APP_ADDR
 #define FLASH_APP_ADDR 0x00100000
 #endif
+
+	.equ    UART_BASE, 0x81000000
 
 	.section .text.start
 	.global _start
@@ -28,12 +21,11 @@ _start:
 
 #ifdef BOOT_DEBUG
 	// Set UART divisor
-	li	a0, 0x81000004
+	li	a0, UART_BASE
 	li	a1, 22
-	sw	a1, 0(a0)
+	sw	a1, 4(a0)
 
 	// Output 'a'
-	li	a0, 0x81000000
 	li	a1, 97
 	sw	a1, 0(a0)
 #endif
@@ -43,7 +35,7 @@ _start:
 
 #ifdef BOOT_DEBUG
 	// Output 'b'
-	li	a0, 0x81000000
+	li	a0, UART_BASE
 	li	a1, 98
 	sw	a1, 0(a0)
 #endif
@@ -59,7 +51,7 @@ _start:
 
 #ifdef BOOT_DEBUG
 	// Output 'c'
-	li	a0, 0x81000000
+	li	a0, UART_BASE
 	li	a1, 99
 	sw	a1, 0(a0)
 #endif
@@ -72,6 +64,12 @@ _start:
 	j	0x00020000
 
 
+// ---------------------------------------------------------------------------
+// SPI code
+// ---------------------------------------------------------------------------
+
+// Register definitions
+
 	.equ    SPI_BASE, 0x82000000
 	.equ    SPICR0,  4 * 0x08
 	.equ    SPICR1,  4 * 0x09
@@ -82,7 +80,9 @@ _start:
 	.equ    SPIRXDR, 4 * 0x0e
 	.equ    SPICSR,  4 * 0x0f
 
-
+// Initializes te SPI hardware
+//
+// Clobbers a0, a1
 spi_init:
 	li	a0, SPI_BASE
 
@@ -103,12 +103,13 @@ spi_init:
 
 	ret
 
-
+// Reads a block of memory from SPI flash
+//
 // Params:
 //  a0 - destination pointer
 //  a1 - length (bytes)
 //  a2 - flash offset
-//
+// Clobbers t0, t1, s0, s1, s2
 
 spi_flash_read:
 	// Save params
@@ -154,9 +155,12 @@ _spi_loop:
 	jr	s2
 
 
+// Performs a single 8 bit SPI xfer
+//
 // Params:  a0 - Data to TX
 // Returns: a0 - RX data
 // Clobbers t0, t1
+
 _spi_do_one:
 	li	t0, SPI_BASE
 	li	t1, 0x08

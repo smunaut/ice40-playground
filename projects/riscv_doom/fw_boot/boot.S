@@ -3,26 +3,17 @@
  *
  * Boot code
  *
- * Copyright (C) 2020 Sylvain Munaut <tnt@246tNt.com>
- *
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * Copyright (C) 2020-2022 Sylvain Munaut <tnt@246tNt.com>
+ * SPDX-License-Identifier: MIT
  */
+
+// #define BOOT_DEBUG
 
 #ifndef FLASH_APP_ADDR
 #define FLASH_APP_ADDR 0x00100000
 #endif
 
-#define BOOT_DEBUG
+	.equ    UART_BASE, 0x82000000
 
 	.section .text.start
 	.global _start
@@ -30,9 +21,9 @@ _start:
 
 #ifdef BOOT_DEBUG
 	// Set UART divisor
-	li	a0, 0x82000004
+	li	a0, UART_BASE
 	li	a1, 23
-	sw	a1, 0(a0)
+	sw	a1, 4(a0)
 #endif
 
 	// Delay boot
@@ -52,12 +43,17 @@ _start:
 	li	ra, (0x40000000 + FLASH_APP_ADDR)
 	ret
 
+
+// ---------------------------------------------------------------------------
+// SPI code
+// ---------------------------------------------------------------------------
+
 	.equ    SPI_BASE, 0x80000000
 	.equ    SPI_CSR,  4 * 0x00
 	.equ	SPI_RF,   4 * 0x03
 
-
 spi_init:
+
 	// Save return address
 	// -------------------
 
@@ -136,11 +132,15 @@ spi_init:
 	ret
 
 
+// ---------------------------------------------------------------------------
+// Debug helpers
+// ---------------------------------------------------------------------------
+
 #ifdef BOOT_DEBUG
 // Agument in a0
 // Clobbers a0, t0-t3
 print_hex:
-	li	t0, 0x82000000
+	li	t0, UART_BASE
 	li	t1, 8
 	la	t2, hexchar
 
@@ -156,7 +156,7 @@ print_hex:
 	bne	zero, t1, 1b
 
 print_nl:
-	li	t0, 0x82000000
+	li	t0, UART_BASE
 	li	a0, '\r'
 	sw	a0, 0(t0)
 	li	a0, '\n'

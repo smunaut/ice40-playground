@@ -8,7 +8,6 @@
  */
 
 `default_nettype none
-`include "boards.vh"
 
 module soc_picorv32_base #(
 	parameter integer WB_N  =  6,
