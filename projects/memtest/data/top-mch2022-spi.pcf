@@ -1,0 +1,8 @@
+# PSRAM
+set_io -nowarn -pullup no  spi_sck     19
+set_io -nowarn -pullup no  spi_io[0]   21
+set_io -nowarn -pullup no  spi_io[1]   13
+set_io -nowarn -pullup no  spi_io[2]   12
+set_io -nowarn -pullup no  spi_io[3]   20
+set_io -nowarn -pullup yes spi_cs_n[0] 16	# Dummy
+set_io -nowarn -pullup yes spi_cs_n[1] 18	# PSRAM
