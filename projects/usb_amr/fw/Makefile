@@ -1,5 +1,5 @@
 BOARD ?= icebreaker
-CROSS ?= riscv-none-embed-
+CROSS ?= riscv-none-elf-
 CC = $(CROSS)gcc
 OBJCOPY = $(CROSS)objcopy
 ICEPROG = iceprog
