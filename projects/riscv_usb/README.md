@@ -11,8 +11,8 @@ To run :
       * This will build `fw/boot.hex` and include it as the BRAM initial data
 
   * Flash the main application code in SPI at offset 1M
-      * `make -C fw prog_fw`
+      * `make -C fw prog`
 
   * Connect to the iCEBreaker uart console (`ttyUSB1`) with a 1M baudrate
-      * and then at the `Command>` prompt, press `r` for 'run'. This will
+      * and then at the `Command>` prompt, press `c` for 'connect'. This will
         start the USB detection and device should enumerate
