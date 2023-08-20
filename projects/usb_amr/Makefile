@@ -5,6 +5,7 @@ PROJ_DEPS := no2usb no2misc no2ice40
 PROJ_RTL_SRCS := $(addprefix rtl/, \
 	mc97.v \
 	mc97_fifo.v \
+	mc97_rfi.v \
 	mc97_wb.v \
 	dfu_helper.v \
 	picorv32.v \
@@ -18,6 +19,7 @@ PROJ_RTL_SRCS := $(addprefix rtl/, \
 )
 PROJ_TESTBENCHES := \
 	mc97_tb \
+	mc97_rfi_tb \
 	$(NULL)
 PROJ_PREREQ = \
 	$(BUILD_TMP)/boot.hex

@@ -98,6 +98,7 @@ module mc97_wb (
 
 	// LL Misc interface
 	reg         ll_run;
+	wire        ll_rfi;
 	wire        ll_stat_codec_ready;
 	wire [12:0] ll_stat_slot_valid;
 	wire [12:0] ll_stat_slot_req;
@@ -143,7 +144,7 @@ module mc97_wb (
 			wb_rdata <= 32'h00000000;
 		else
 			casez (wb_addr[2:0])
-				3'h0:    wb_rdata <= { 29'h0, ll_gpio_ena, mc97_reset_n, ll_run };
+				3'h0:    wb_rdata <= { 28'h0, ll_rfi, ll_gpio_ena, mc97_reset_n, ll_run };
 				3'h1:    wb_rdata <= { ll_stat_codec_ready, 2'h0, ll_stat_slot_req, 3'h0, ll_stat_slot_valid };
 				3'h2:    wb_rdata <= { ll_reg_valid, ll_reg_we, ll_reg_rerr_r, 7'h0, ll_reg_addr, ll_reg_rdata_r };
 				3'h4:    wb_rdata <= { 12'h0, ll_gpio_in  };
@@ -299,6 +300,7 @@ module mc97_wb (
 		.reg_we          (ll_reg_we),
 		.reg_ack         (ll_reg_ack),
 		.cfg_run         (ll_run),
+		.rfi             (ll_rfi),
 		.stat_codec_ready(ll_stat_codec_ready),
 		.stat_slot_valid (ll_stat_slot_valid),
 		.stat_slot_req   (ll_stat_slot_req),

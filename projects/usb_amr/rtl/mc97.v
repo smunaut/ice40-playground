@@ -40,6 +40,8 @@ module mc97 (
 	// User interface - Misc
 	input  wire        cfg_run,
 
+	output wire        rfi,
+
 	output wire        stat_codec_ready,
 	output reg  [12:0] stat_slot_valid,
 	output reg  [12:0] stat_slot_req,
@@ -268,6 +270,18 @@ module mc97 (
 
 	always @(posedge clk)
 		pcm_in_stb <= sui_ack & seq_rd_slot[5] & fc_slotvalid[5];
+
+
+	// Ring Frequency Indicator
+	// ------------------------
+
+	mc97_rfi rfi_I (
+		.pcm_data (pcm_in_data),
+		.pcm_stb  (pcm_in_stb),
+		.rfi      (rfi),
+		.clk      (clk),
+		.rst      (rst)
+	);
 
 
 	// GPIO (slot 12)

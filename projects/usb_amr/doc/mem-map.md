@@ -3,6 +3,7 @@ AC97 controller registers
 
 ```
 `0x00`	CSR
+		[3]     (R)  Ring Frequency Indicator
 		[2]	(RW) GPIO ena
 		[1]	(RW) AC97_reset_n
 		[0]	(RW) Run
