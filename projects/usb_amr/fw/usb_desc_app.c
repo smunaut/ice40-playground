@@ -29,6 +29,7 @@
 
 
 usb_cdc_union_desc_def(1);
+usb_cdc_coutry_sel_desc_def(71);
 usb_ac_ac_hdr_desc_def(2);
 usb_ac_ac_feature_desc_def(4);
 usb_ac_as_fmt_type1_desc_def(3);
@@ -80,6 +81,7 @@ static const struct {
 		struct usb_cdc_hdr_desc hdr;
 		struct usb_cdc_dlm_desc dlm;
 		struct usb_cdc_union_desc__1 ud;
+		struct usb_cdc_country_sel_desc__71 csd;
 		struct usb_ep_desc ep;
 	} __attribute__ ((packed)) cdc_dlm;
 
@@ -368,11 +370,27 @@ static const struct {
 			.bmCapabilities		= 0x02,
 		},
 		.ud = {
-			.bLength		= sizeof(struct usb_cdc_union_desc) + 1,
+			.bLength		= sizeof(struct usb_cdc_union_desc__1),
 			.bDescriptorType	= USB_CS_DT_INTF,
 			.bDescriptorsubtype	= USB_CDC_DST_UNION,
 			.bMasterInterface	= 4,
 			.bSlaveInterface	= { 1 },
+		},
+		.csd = {
+			.bLength		= sizeof(struct usb_cdc_country_sel_desc__71),
+			.bDescriptorType	= USB_CS_DT_INTF,
+			.bDescriptorsubtype	= USB_CDC_DST_COUNTRY_SEL,
+			.iCountryCodeRelDate	= 9,
+			.wCountryCode		= {
+				 32,  36,  40,  48,  56,  76, 100, 124, 152, 156,
+				158, 170, 191, 196, 203, 208, 218, 222, 246, 250,
+				276, 300, 316, 344, 348, 352, 356, 360, 372, 376,
+				380, 392, 398, 400, 410, 414, 422, 428, 442, 446,
+				458, 470, 484, 504, 512, 528, 554, 566, 578, 586,
+				604, 608, 616, 620, 642, 643, 682, 702, 703, 705,
+				710, 724, 752, 756, 760, 764, 784, 818, 826, 840,
+				887,
+			},
 		},
 		.ep = {
 			.bLength		= sizeof(struct usb_ep_desc),

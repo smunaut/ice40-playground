@@ -7,6 +7,8 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 
+#include <string.h>
+
 #include <no2usb/usb.h>
 #include <no2usb/usb_hw.h>
 #include <no2usb/usb_priv.h>
@@ -33,6 +35,69 @@ dlm_send_notif_ring_detect(void)
 
 	usb_data_write(usb_ep_regs[3].in.bd[0].ptr, &notif, sizeof(struct usb_ctrl_req));
 	usb_ep_regs[3].in.bd[0].csr = USB_BD_STATE_RDY_DATA | USB_BD_LEN(sizeof(struct usb_ctrl_req));
+}
+
+
+static int16_t g_cc = 0;
+
+static bool
+dlm_set_comm_feature_country_cb(struct usb_xfer *xfer)
+{
+	uint16_t new_cc;
+
+	if (xfer->len != sizeof(uint16_t))
+		return USB_FND_ERROR;
+
+	memcpy(&new_cc, xfer->data, sizeof(uint16_t));
+
+	if (mc97_select_country(new_cc)) {
+		g_cc = new_cc;
+		return USB_FND_SUCCESS;
+	}
+
+	return USB_FND_ERROR;
+}
+
+static enum usb_fnd_resp
+dlm_set_comm_feature(struct usb_ctrl_req *req, struct usb_xfer *xfer)
+{
+	/* Only country selection supported */
+	if (req->wValue != 0x02 /* COUNTRY_SETTING */)
+		return USB_FND_ERROR;
+
+	/* Setup call back */
+	xfer->len = sizeof(uint16_t);
+	xfer->cb_done = dlm_set_comm_feature_country_cb;
+
+	return USB_FND_SUCCESS;
+}
+
+static enum usb_fnd_resp
+dlm_get_comm_feature(struct usb_ctrl_req *req, struct usb_xfer *xfer)
+{
+	/* Only country selection supported */
+	if (req->wValue != 0x02 /* COUNTRY_SETTING */)
+		return USB_FND_ERROR;
+
+	/* Send the currently selected country code */
+	xfer->len = sizeof(uint16_t);
+	memcpy(xfer->data, &g_cc, sizeof(uint16_t));
+
+	return USB_FND_SUCCESS;
+}
+
+static enum usb_fnd_resp
+dlm_clear_comm_feature(struct usb_ctrl_req *req, struct usb_xfer *xfer)
+{
+	/* Only country selection supported */
+	if (req->wValue != 0x02 /* COUNTRY_SETTING */)
+		return USB_FND_ERROR;
+
+	/* Restore default */
+	g_cc = 0;
+	mc97_select_country(0);
+
+	return USB_FND_SUCCESS;
 }
 
 
@@ -73,10 +138,18 @@ dlm_ctrl_req(struct usb_ctrl_req *req, struct usb_xfer *xfer)
 	case USB_RT_CDC_SET_PULSE_TIME:
 		return USB_FND_ERROR;
 
-	/* TODO: Maybe implement SET_COMM_FEATURE for country selection ? */
+	/* Implement SET_COMM_FEATURE for country selection ? */
 	/* In theory not part of DLM but it's the closest to a standard
 	 * thing to support tweaking the codec params to match local specs
 	 * for a phone line */
+	case USB_RT_CDC_SET_COMM_FEATURE:
+		return dlm_set_comm_feature(req, xfer);
+
+	case USB_RT_CDC_GET_COMM_FEATURE:
+		return dlm_get_comm_feature(req, xfer);
+
+	case USB_RT_CDC_CLEAR_COMM_FEATURE:
+		return dlm_clear_comm_feature(req, xfer);
 	}
 
 	return USB_FND_ERROR;
