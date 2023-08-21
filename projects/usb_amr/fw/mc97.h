@@ -41,6 +41,7 @@ bool     mc97_select_country(int cc);
 
 void     mc97_set_aux_relay(bool disconnect);
 void     mc97_set_hook(enum mc97_hook_state s);
+void     mc97_test_ring(void);
 bool     mc97_get_ring_detect(void);
 void     mc97_set_loopback(enum mc97_loopback_mode m);
 

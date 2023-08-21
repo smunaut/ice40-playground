@@ -146,6 +146,8 @@ main()
 			case 'H': mc97_set_hook(OFF_HOOK);  break;
 			case 'C': mc97_set_hook(CALLER_ID); break;
 
+			case 'n': mc97_test_ring(); break;
+
 			case '0': mc97_set_loopback(MC97_LOOPBACK_NONE);            break;
 			case '1': mc97_set_loopback(MC97_LOOPBACK_DIGITAL_ADC);     break;
 			case '2': mc97_set_loopback(MC97_LOOPBACK_ANALOG_LOCAL);    break;

@@ -66,6 +66,7 @@ static struct {
 	uint16_t rc_46;	/* Cache of reg 0x46 */
 	uint16_t rc_5c; /* Cache of reg 0x5c */
 	uint16_t rc_62; /* Cache of reg 0x62 */
+	bool     test_ring;
 } g_mc97;
 
 
@@ -185,9 +186,20 @@ mc97_set_hook(enum mc97_hook_state s)
 	mc97_regs->gpio_out = gpio_out;
 }
 
+void
+mc97_test_ring(void)
+{
+	g_mc97.test_ring = true;
+}
+
 bool
 mc97_get_ring_detect(void)
 {
+	if (g_mc97.test_ring) {
+		g_mc97.test_ring = false;
+		return true;
+	}
+
 	return (
 		(mc97_regs->gpio_in & (1 << 5)) &&
 		(mc97_regs->csr & MC97_CSR_RFI)
