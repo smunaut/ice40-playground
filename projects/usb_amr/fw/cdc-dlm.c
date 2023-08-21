@@ -183,12 +183,19 @@ cdc_dlm_init(void)
 void
 cdc_dlm_poll(void)
 {
-	/* Nothing to do for now */
+	/* Ring detection */
+	static bool ring;
+
+	if (mc97_get_ring_detect()) {
+		if (!ring) {
+			dlm_send_notif_ring_detect();
+			ring = true;
+		}
+	} else {
+		ring = false;
+	}
 
 	/* TODO:
 	 *  - Pulse timing when pulse is implemented
-	 *  - Ring detection (note that it's not simply calling
-	 *    mc97_get_ring_detect(), it must be analyzed to see if the
-	 *    ringing frequency matches something between 10 and 100 Hz)
 	 */
 }

@@ -28,6 +28,7 @@ struct wb_mc97 {
 	uint32_t fifo_csr;
 } __attribute__((packed,aligned(4)));
 
+#define MC97_CSR_RFI			(1 <<  3)
 #define MC97_CSR_GPIO_ENA		(1 <<  2)
 #define MC97_CSR_RESET_N		(1 <<  1)
 #define MC97_CSR_RUN			(1 <<  0)
@@ -187,7 +188,10 @@ mc97_set_hook(enum mc97_hook_state s)
 bool
 mc97_get_ring_detect(void)
 {
-	return (mc97_regs->gpio_in & (1 << 5)) ? true : false;
+	return (
+		(mc97_regs->gpio_in & (1 << 5)) &&
+		(mc97_regs->csr & MC97_CSR_RFI)
+	) ? true : false;
 }
 
 void
