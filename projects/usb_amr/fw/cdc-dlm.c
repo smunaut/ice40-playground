@@ -47,9 +47,9 @@ dlm_ctrl_req(struct usb_ctrl_req *req, struct usb_xfer *xfer)
 	if ((req->wIndex & 0xff) != INTF_CDC_DLM)
 		return USB_FND_CONTINUE;
 
-	switch (req->bRequest)
+	switch (req->wRequestAndType)
 	{
-	case USB_REQ_CDC_SET_HOOK_STATE:
+	case USB_RT_CDC_SET_HOOK_STATE:
 		switch (req->wValue) {
 		case 0:  mc97_set_hook(ON_HOOK);   break;
 		case 1:  mc97_set_hook(OFF_HOOK);  break;
@@ -58,19 +58,19 @@ dlm_ctrl_req(struct usb_ctrl_req *req, struct usb_xfer *xfer)
 		}
 		return USB_FND_SUCCESS;
 
-	case USB_REQ_CDC_SET_AUX_LINE_STATE:
+	case USB_RT_CDC_SET_AUX_LINE_STATE:
 		/* Control the relay with that */
 		mc97_set_aux_relay(!req->wValue);
 		return USB_FND_SUCCESS;
 
-	case USB_REQ_CDC_RING_AUX_JACK:
+	case USB_RT_CDC_RING_AUX_JACK:
 		/* Can't do that ... */
 		return USB_FND_SUCCESS;
 
 	/* Pulse is not supported yet (also disabled in bmCapabilities) */
-	case USB_REQ_CDC_PULSE_SETUP:
-	case USB_REQ_CDC_SEND_PULSE:
-	case USB_REQ_CDC_SET_PULSE_TIME:
+	case USB_RT_CDC_PULSE_SETUP:
+	case USB_RT_CDC_SEND_PULSE:
+	case USB_RT_CDC_SET_PULSE_TIME:
 		return USB_FND_ERROR;
 
 	/* TODO: Maybe implement SET_COMM_FEATURE for country selection ? */
