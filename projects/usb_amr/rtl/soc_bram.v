@@ -21,6 +21,7 @@ module soc_bram #(
 	input  wire          clk
 );
 
+	(* no_rw_check *)
 	reg [31:0] mem [0:(1<<AW)-1];
 
 	initial
