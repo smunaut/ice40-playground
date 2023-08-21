@@ -105,7 +105,10 @@ main()
 	/* SPI */
 	spi_init();
 
-	/* Enable USB directly */
+	/* MC97 link */
+	mc97_init();
+
+	/* Init USB stack */
 	serial_no_init();
 	usb_init(&app_stack_desc);
 	usb_dfu_rt_init();
