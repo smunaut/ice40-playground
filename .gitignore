@@ -2,3 +2,5 @@ build-tmp
 __pycache__
 *.vcd
 .*.swp
+*~
+*.un~
