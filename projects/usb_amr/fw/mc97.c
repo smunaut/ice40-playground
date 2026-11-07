@@ -35,7 +35,7 @@ struct wb_mc97 {
 
 #define MC97_LLS_CODEC_READY		(1 << 31)
 #define MC97_LLS_SLOT_REQ(n)		(1 << ((n)+16))
-#define MC97_LLS_SLOT_VALID(n)		(1 << ((n)+16))
+#define MC97_LLS_SLOT_VALID(n)		(1 << (n))
 
 #define MC97_CRA_BUSY			(1 << 31)
 #define MC97_CRA_WRITE			(1 << 30)
