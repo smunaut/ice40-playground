@@ -168,7 +168,7 @@ module mc97_wb (
 	// ---
 
 	// Bus interface
-	assign fpi_r_ena  = b_re_ll_fifo_data & ~wb_rdata[28];
+	assign fpi_r_ena  = b_re_ll_fifo_data & ~wb_rdata[31];
 	assign fpo_w_data = wb_wdata[15:0];
 	assign fpo_w_ena  = b_we_ll_fifo_data;
 
